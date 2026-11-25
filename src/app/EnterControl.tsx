@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type SubmitEvent } from "react";
 import { signInWithGoogle } from "@/features/auth/actions";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./page.module.css";
@@ -16,12 +16,15 @@ function subscribe(callback: () => void) {
 
 export function EnterControl() {
   const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
-  if (!online) {
-    // Document navigation also works from the precached homepage.
-    return <a className={styles.enter} href="/estante-offline">{messages.home.enter}</a>;
+
+  function openOfflineShelf(event: SubmitEvent<HTMLFormElement>) {
+    if (navigator.onLine) return;
+    event.preventDefault();
+    window.location.assign("/estante-offline");
   }
+
   return (
-    <form action={signInWithGoogle}>
+    <form action={online ? signInWithGoogle : "/estante-offline"} onSubmit={openOfflineShelf}>
       <button className={styles.enter} type="submit">{messages.home.enter}</button>
     </form>
   );
