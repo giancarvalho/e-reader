@@ -71,3 +71,11 @@ A aceitação em aparelho real usa duas contas no mesmo grupo. Crie um grifo
 no aparelho A em modo avião, confira que reaparece após reabrir o leitor,
 reconecte A e aguarde o grifo em B. Mude o tamanho do texto em B e confira
 a âncora. Apague em A e confira que some em B.
+
+## Sprint 5 em execução
+
+A conversa de cada grifo é um fio plano. A folha mostra autor, nota e
+respostas em ordem cronológica. O autor da resposta pode apagá-la. O
+aparelho conserva novas respostas sem rede e reusa a fila e o cursor dos
+grifos para sincronizar ao reconectar. O teste em aparelhos reais usa dois
+membros que respondem ao mesmo grifo e verifica a exclusão em ambos.

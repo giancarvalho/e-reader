@@ -1,19 +1,15 @@
 "use server";
 
-import { getRequestAuth } from "@/lib/supabase/server";
+import { getVerifiedReaderClient } from "@/lib/supabase/server";
 import type { ReaderIdentity } from "@/lib/books/local";
 import type { ReaderPreferences, ReaderState, ReadingPosition } from "@/lib/reader/model";
 
 type Changes = { position?: ReadingPosition; preferences?: ReaderPreferences };
 
 export async function syncReaderState(identity: ReaderIdentity, changes: Changes): Promise<ReaderState | null> {
-  const auth = await getRequestAuth(true);
-  if (!auth || !/^[a-f0-9]{64}$/.test(identity.hash)) return null;
-
-  const { data, error } = await auth.client.auth.getUser();
-  if (error || data.user?.id !== identity.user) return null;
-
-  const context = { client: auth.client, identity };
+  const client = await getVerifiedReaderClient(identity);
+  if (!client) return null;
+  const context = { client, identity };
   const [position, preferences] = await Promise.all([
     syncPosition(context, changes.position),
     syncPreferences(context, changes.preferences),
@@ -22,7 +18,7 @@ export async function syncReaderState(identity: ReaderIdentity, changes: Changes
 }
 
 type Context = {
-  client: NonNullable<Awaited<ReturnType<typeof getRequestAuth>>>["client"];
+  client: NonNullable<Awaited<ReturnType<typeof getVerifiedReaderClient>>>;
   identity: ReaderIdentity;
 };
 
