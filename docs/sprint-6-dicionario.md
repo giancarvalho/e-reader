@@ -24,8 +24,10 @@ curl -fSL https://kaikki.org/dictionary/raw-wiktextract-data.jsonl.gz |
   node scripts/dict/build.mjs en - AAAA-MM-DD
 ```
 
-Os arquivos gerados são artefatos do deploy. Inclua-os em `public/dict`
-antes de publicar a aplicação. As definições são distribuídas sob
+Arquivos em `public/dict` são servidos localmente se estiverem no build.
+Na Vercel, quando esses arquivos não estiverem no build, o app usa o bucket
+público `dictionaries` do projeto Supabase definido em `SUPABASE_URL`.
+As definições são distribuídas sob
 CC BY-SA 4.0 e o leitor vincula cada verbete ao histórico de origem.
 O corpus completo em inglês exige uma máquina com espaço e banda
 compatíveis com o dump bruto (2,9 GB compactados no snapshot consultado).
@@ -47,3 +49,20 @@ set -o pipefail
 curl -fSL https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz |
   node scripts/dict/build.mjs en - 2026-10-01 public/dict english-only
 ```
+
+## Publicar o corpus na Vercel
+
+1. Aplique a migration que cria o bucket `dictionaries` no Supabase do
+   ambiente de destino. O bucket público contém somente verbetes e metadados
+   de licença. O bucket de EPUBs continua privado.
+2. Em um terminal administrativo, configure temporariamente `SUPABASE_URL`
+   e `SUPABASE_SERVICE_ROLE_KEY` para o projeto de destino. Use a chave
+   administrativa só no ambiente que publica o corpus.
+3. Execute `node scripts/dict/publish.mjs pt` e
+   `node scripts/dict/publish.mjs en`. O segundo argumento opcional indica
+   a pasta que contém os diretórios `pt` e `en`. Cada publicação envia os
+   fragmentos para um caminho versionado antes de atualizar o manifesto
+   consultado pelo leitor. Repetir o comando retoma envios incompletos.
+4. Depois do deploy, confira `/dict/pt/manifest.json` e
+   `/dict/en/manifest.json` no domínio do app. Consulte uma palavra em cada
+   idioma e repita em modo avião para confirmar o cache dos fragmentos.

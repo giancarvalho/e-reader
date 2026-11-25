@@ -85,5 +85,6 @@ membros que respondem ao mesmo grifo e verifica a exclusão em ambos.
 A seleção de uma palavra abre as definições no idioma do livro, tenta
 lemas e formas com hífen e apresenta as atribuições do Wikcionário. Os
 fragmentos consultados ficam disponíveis offline. O [processo do corpus](sprint-6-dicionario.md)
-gera a pasta a distribuir no deploy. A revisão de precisão contextual
-em 100 palavras de cada idioma ainda está pendente.
+gera os arquivos e publica os fragmentos versionados no Supabase. O deploy da
+Vercel mantém as consultas no domínio do app. A publicação em produção e a
+revisão de precisão contextual em 100 palavras de cada idioma ainda estão pendentes.
