@@ -87,3 +87,19 @@ body {
   --radius-round: 50%;
   --dialog-backdrop: rgb(0 0 0 / 48%);
 }
+
+:root {
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --layout-wide: 74rem;
+  --layout-copy: 29rem;
+  --home-feature-width: 13rem;
+  --mark-size: 2rem;
+  --radius-surface: 1rem;
+  --border-hairline: 1px;
+  --color-divider: color-mix(in srgb, var(--color-muted) 35%, transparent);
+  --font-display: 500 clamp(2.75rem, 6vw, 5.25rem)/0.98;
+  --font-section: 500 1.55rem/1.15;
+  --font-label: 600 0.9375rem/1.4;
+  --tracking-display: -0.03em;
+}

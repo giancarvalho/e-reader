@@ -1,7 +1,19 @@
 export const messages = {
   title: "Leitor compartilhado",
   description: "Leia EPUBs e compartilhe anotações com seu grupo.",
-  shellStatus: "A estante estará disponível após a configuração do acesso.",
+  home: {
+    heading: "Um livro.",
+    headingEmphasis: "Muitas leituras.",
+    intro: "Leia no seu ritmo e compartilhe com o clube os trechos que ficaram com você.",
+    enter: "Entrar no clube",
+    offline: "Abrir estante offline",
+    invite: "No primeiro acesso, você vai precisar de um convite.",
+    features: [
+      { title: "Leia onde estiver", description: "Baixe o EPUB e continue de onde parou, mesmo sem internet." },
+      { title: "Marque o que importa", description: "Grife passagens e guarde suas notas no próprio texto." },
+      { title: "Puxe conversa", description: "Comente os trechos e descubra o que chamou a atenção do grupo." },
+    ],
+  },
   auth: {
     signInTitle: "Entre no leitor compartilhado",
     google: "Entrar com Google",
