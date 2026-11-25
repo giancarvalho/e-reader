@@ -8,7 +8,7 @@ export async function finishGoogleSignIn(request: NextRequest) {
 
   if (auth && code) {
     const { error } = await auth.client.auth.exchangeCodeForSession(code);
-    if (!error) path = "/conta";
+    if (!error) path = "/convite";
   }
 
   return new NextResponse(null, {

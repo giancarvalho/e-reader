@@ -9,7 +9,7 @@ export default function Home() {
     <main className={styles.shell}>
       <Heading>{messages.title}</Heading>
       <Text tone="muted">{messages.shellStatus}</Text>
-      <Link href="/entrar">{messages.auth.google}</Link>
+      <Link href="/convite">{messages.auth.google}</Link>
     </main>
   );
 }
