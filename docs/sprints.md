@@ -40,3 +40,8 @@ O bucket privado e a tabela `books` usam caminhos derivados de grupo e SHA-256.
 A publicação, o livro atual e a ordenação são operações do organizador. Os
 membros recebem acesso aos arquivos após a publicação. O primeiro livro
 publicado é marcado como atual. O limite inicial é de 20 MiB por arquivo.
+
+A estante extrai metadados no navegador, envia o EPUB diretamente ao Storage
+por URL assinada e grava no IndexedDB apenas arquivos com SHA-256 conferido.
+Ao perder a rede, a navegação para a estante abre a lista de livros baixados
+na sessão local. O teste em aparelho real continua pendente.

@@ -1,0 +1,56 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getGroupAccess } from "@/features/access";
+import { Heading } from "@/design-system/components/Heading";
+import { Text } from "@/design-system/components/Text";
+import { messages } from "@/lib/messages/pt-br";
+import type { ShelfBook } from "@/lib/books/local";
+import { ShelfClient } from "./ShelfClient";
+import { UploadBook } from "./UploadBook";
+import styles from "./shelf.module.css";
+
+export async function ShelfPage() {
+  const access = await getGroupAccess();
+  if (access.status === "invite_required") redirect("/convite");
+  if (access.status === "unavailable") return <ShelfUnavailable />;
+
+  const { data, error } = await access.client.from("books")
+    .select("id,group_id,title,author,language,cover_path,position,is_current")
+    .eq("group_id", access.groupId).order("position").order("id")
+    .returns<ShelfBook[]>();
+  if (error) return <ShelfUnavailable />;
+
+  const books = data ?? [];
+  const paths = books.flatMap(book => book.cover_path ? [book.cover_path] : []);
+  const links = paths.length
+    ? await access.client.storage.from("books").createSignedUrls(paths, 600)
+    : null;
+  const byPath = new Map(links?.data?.map(link => [link.path, link.signedUrl]) ?? []);
+  const covers: Record<string, string> = {};
+  for (const book of books) {
+    const url = book.cover_path && byPath.get(book.cover_path);
+    if (url) covers[book.id] = url;
+  }
+
+  return (
+    <main className={styles.page}>
+      <Heading>{messages.access.shelfTitle}</Heading>
+      {access.organizer && <section className={styles.stack}>
+        <Heading as="h2">{messages.shelf.add}</Heading>
+        <Text>{messages.shelf.uploadLimit}</Text>
+        <UploadBook />
+      </section>}
+      <ShelfClient snapshot={{ userId: access.userId, books }} covers={covers} organizer={access.organizer} />
+      <Link href="/conta">{messages.access.account}</Link>
+    </main>
+  );
+}
+
+function ShelfUnavailable() {
+  return (
+    <main className={styles.page}>
+      <Heading>{messages.access.shelfTitle}</Heading>
+      <Text>{messages.access.errors.unavailable}</Text>
+    </main>
+  );
+}
