@@ -23,6 +23,8 @@ test("reopens the public shell offline after installation", async ({ page, conte
   await page.reload();
   await expect(page.getByRole("heading", { name: "Shared Margins" })).toBeVisible();
   await expect(page.locator("body")).toHaveCSS("font-family", /Inter Variable/);
-  await page.getByRole("link", { name: "Entrar", exact: true }).click();
+  const enter = page.getByRole("link", { name: "Entrar", exact: true });
+  await expect(enter).toHaveAttribute("href", "/estante-offline");
+  await enter.click();
   await expect(page.getByText("Estante offline", { exact: true })).toBeVisible();
 });
