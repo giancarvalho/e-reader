@@ -9,4 +9,4 @@
 | Supabase e Vercel | Registrar URLs de preview e callback, com time-box e inatividade desativados. Guardar credenciais nas plataformas. |
 | Dicionário PT | Registrar amostra real, licença e atribuição da fonte escolhida, limites de qualidade e próximos passos. |
 
-O PR de fundação cobre testes automatizados do shell. Preview, OAuth, execução em aparelho real e decisão editorial continuam pendentes.
+O PR de fundação cobre testes automatizados do shell. Preview, OAuth e execução em aparelho real continuam pendentes. A escolha da fonte e os resultados da amostra estão na [decisão do dicionário PT](sprint-0-dicionario-pt.md).

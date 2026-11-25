@@ -281,7 +281,7 @@ O leitor usa o foliate-js, vendorizado em `src/vendor/foliate/` (só EPUB). O sp
 
 ## 8. Dicionário PT e EN
 
-O dicionário funciona sem servidor e sem API paga: arquivos estáticos por prefixo de palavra, baixados sob demanda e guardados em cache. A **fonte dos dados para português ainda não está decidida** e é o primeiro risco a fechar (sprint 0).
+O dicionário funciona sem servidor e sem API paga: arquivos estáticos por prefixo de palavra, baixados sob demanda e guardados em cache. A fonte dos dados para português é a extração bruta do Wikcionário em português publicada pelo Kaikki. A [decisão da sprint 0](sprint-0-dicionario-pt.md) registra licença, amostra e limitações.
 
 **Fontes candidatas**
 
