@@ -61,8 +61,14 @@ function combine(records) {
   return entries;
 }
 
-export async function buildDictionary({ language, input, output, revision }) {
-  const source = sources[language];
+export async function buildDictionary({ language, input, output, revision, edition = "raw" }) {
+  const source = edition === "english-only" && language === "en"
+    ? {
+        ...sources.en,
+        url: "https://kaikki.org/dictionary/English/",
+        download: "https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz",
+      }
+    : edition === "raw" ? sources[language] : undefined;
   if (!source || !input || !output || !revision) throw new Error("Pass language, input dump, output directory and source revision.");
 
   const target = resolve(output, language);
@@ -134,8 +140,8 @@ export async function buildDictionary({ language, input, output, revision }) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [language, input, revision, output = "public/dict"] = process.argv.slice(2);
-  buildDictionary({ language, input, output, revision }).then(manifest => {
+  const [language, input, revision, output = "public/dict", edition] = process.argv.slice(2);
+  buildDictionary({ language, input, output, revision, edition }).then(manifest => {
     process.stdout.write(`${manifest.entries} entries in ${manifest.prefixes.length} shards\n`);
   }).catch(error => {
     process.stderr.write(`${error.message}\n`);

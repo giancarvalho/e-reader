@@ -65,6 +65,28 @@ export function ReaderCanvas({
     let destroy: (() => void) | undefined;
     const content = mount.current;
     let recording = false;
+    let selectionTimer: number | undefined;
+    let previousSelection = "";
+
+    function inspectSelection() {
+      if (!view?.renderer || document.visibilityState !== "visible") return;
+      for (const { doc, index } of view.renderer.getContents()) {
+        const selected = doc.getSelection();
+        const quote = selected?.toString().trim().slice(0, 4000);
+        if (!quote || !selected?.rangeCount) continue;
+        try {
+          const cfi = view.getCFI(index, selected.getRangeAt(0));
+          if (cfi.length <= 4096 && cfi !== previousSelection) {
+            previousSelection = cfi;
+            reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
+          }
+        } catch {
+          // A selection can disappear while the paginator changes chapters.
+        }
+        return;
+      }
+      previousSelection = "";
+    }
     lastCfi.current = initialCfi;
 
     async function open() {
@@ -82,14 +104,8 @@ export function ReaderCanvas({
       view.className = styles.canvas;
       view.addEventListener("external-link", event => event.preventDefault());
       view.addEventListener("load", event => {
-        const { doc, index } = (event as CustomEvent<{ doc: Document; index: number }>).detail;
-        doc.addEventListener("selectionchange", () => {
-          const selected = doc.getSelection();
-          const quote = selected?.toString().trim().slice(0, 4000);
-          if (!quote || !selected?.rangeCount || !view) return;
-          const cfi = view.getCFI(index, selected.getRangeAt(0));
-          if (cfi.length <= 4096) reportSelection({ cfi, quote });
-        });
+        const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
+        doc.addEventListener("selectionchange", inspectSelection);
       });
       view.addEventListener("draw-annotation", event => {
         const { annotation, draw } = (event as CustomEvent<{
@@ -121,6 +137,8 @@ export function ReaderCanvas({
         return;
       }
       viewRef.current = view;
+      // A sandboxed iframe can omit selectionchange events in WebKit.
+      selectionTimer = window.setInterval(inspectSelection, 350);
       setToc(book.toc ?? []);
       applied.current = appearance.current;
       view.renderer.setStyles(readerStyles(applied.current));
@@ -130,6 +148,7 @@ export function ReaderCanvas({
     }
 
     void open().catch(() => {
+      window.clearInterval(selectionTimer);
       view?.close();
       view?.remove();
       destroy?.();
@@ -137,6 +156,7 @@ export function ReaderCanvas({
     });
     return () => {
       cancelled = true;
+      window.clearInterval(selectionTimer);
       view?.close();
       view?.remove();
       destroy?.();

@@ -1,7 +1,10 @@
 import type { EPUB } from "./epub";
 
 export class View extends HTMLElement {
-  renderer: { setStyles(css: string): void };
+  renderer: {
+    setStyles(css: string): void;
+    getContents(): { doc: Document; index: number }[];
+  };
   open(book: EPUB): Promise<void>;
   init(options: { lastLocation?: string; showTextStart?: boolean }): Promise<void>;
   prev(): Promise<void>;

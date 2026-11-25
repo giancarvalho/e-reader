@@ -10,7 +10,7 @@ import { messages } from "@/lib/messages/pt-br";
 import type { Annotation, AnnotationColor } from "@/lib/sync/annotations";
 import styles from "./annotations.module.css";
 
-export type AnnotationSelection = { cfi: string; quote: string };
+export type AnnotationSelection = { cfi: string; quote: string; sample?: string };
 
 const colors: AnnotationColor[] = ["amber", "green", "blue", "pink"];
 
@@ -19,10 +19,11 @@ type Props = {
   selection?: AnnotationSelection;
   editing?: Annotation;
   cancel: () => void;
+  onLookup?: () => void;
   onSave: (row: Annotation) => Promise<boolean>;
 };
 
-export function AnnotationPanel({ identity, selection, editing, cancel, onSave }: Props) {
+export function AnnotationPanel({ identity, selection, editing, cancel, onSave, onLookup }: Props) {
   const [color, setColor] = useState<AnnotationColor>(editing?.color ?? "amber");
   const [note, setNote] = useState(editing?.note ?? "");
   const [busy, setBusy] = useState(false);
@@ -47,6 +48,7 @@ export function AnnotationPanel({ identity, selection, editing, cancel, onSave }
     <section className={styles.panel} aria-label={editing ? annotations.edit : annotations.add}>
       <Heading as="h2">{editing ? annotations.edit : annotations.add}</Heading>
       <Text>{quote}</Text>
+      {onLookup && <Button variant="quiet" onClick={onLookup}>{messages.dictionary.lookup}</Button>}
       <fieldset className={styles.colors}>
         <legend>{annotations.color}</legend>
         {colors.map(value => (
