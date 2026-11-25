@@ -1,0 +1,26 @@
+.page,
+.update {
+  display: grid;
+  gap: var(--space-16);
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  padding: var(--space-16);
+}
+
+.update {
+  padding-block-start: max(var(--space-8), env(safe-area-inset-top));
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+.summary dt {
+  color: var(--color-muted);
+}
+
+.summary dd {
+  margin: 0;
+}

@@ -7,6 +7,7 @@ import {
   applyReaderSync, readLocalBook, readLocalShelf, readReaderState,
   saveReaderPreferences, saveReadingPosition, type ReaderIdentity, type ShelfBook,
 } from "@/lib/books/local";
+import { recordDiagnostic } from "@/lib/diagnostics";
 import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import { messages } from "@/lib/messages/pt-br";
 import { ReadingWorkspace } from "./ReadingWorkspace";
@@ -56,7 +57,13 @@ export function ReaderPage() {
         position: sent.position?.pending ? sent.position.value : undefined,
         preferences: sent.preferences?.pending ? sent.preferences.value : undefined,
       });
-      if (!reply) return;
+      if (!reply) {
+        recordDiagnostic("reader", "error");
+        return;
+      }
+      if ((sent.position?.pending && !reply.position) || (sent.preferences?.pending && !reply.preferences)) {
+        recordDiagnostic("reader", "error");
+      } else recordDiagnostic("reader", "ok");
       const received = await applyReaderSync(identity, sent, reply);
       setReading(current => {
         if (!current || current.identity !== identity) return current;
@@ -72,7 +79,7 @@ export function ReaderPage() {
         };
       });
     } catch {
-      // Pending records survive a failed request and will be retried.
+      if (navigator.onLine) recordDiagnostic("reader", "error");
     } finally {
       syncing.current = false;
     }

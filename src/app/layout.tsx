@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/newsreader";
 import "@/design-system/tokens/base.css";
+import { UpdateNotice } from "@/features/diagnostics";
 import { messages } from "@/lib/messages/pt-br";
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="pt-BR" data-theme="auto">
-      <body>{children}</body>
+      <body><UpdateNotice />{children}</body>
     </html>
   );
 }

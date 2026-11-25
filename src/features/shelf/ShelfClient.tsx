@@ -9,6 +9,7 @@ import {
   readLocalBook, readLocalShelf, saveLocalBook, saveLocalShelf,
   type ShelfBook, type ShelfSnapshot,
 } from "@/lib/books/local";
+import { recordDiagnostic } from "@/lib/diagnostics";
 import { maxEpubBytes } from "@/lib/epub/inspect";
 import { messages } from "@/lib/messages/pt-br";
 import { editShelf, getBookDownload } from "./actions";
@@ -102,9 +103,11 @@ function ShelfCard({ userId, book, remoteCover, offline, children }: {
 
       await saveLocalBook(userId, book, file, localCover);
       setDownloadCount(count => count + 1);
+      recordDiagnostic("download", "ok");
       await navigator.storage.persist?.().catch(() => false);
     } catch {
       setNotice(shelf.downloadFailed);
+      recordDiagnostic("download", "error");
     } finally {
       setBusy(false);
     }
@@ -168,6 +171,7 @@ export function OfflineShelf() {
     <main className={styles.page}>
       <Heading>{access.shelfTitle}</Heading>
       <Text>{shelf.offline}</Text>
+      <a href="/diagnostico">{messages.diagnostics.title}</a>
       {(snapshot === null || snapshot?.books.length === 0) && <Text>{shelf.offlineEmpty}</Text>}
       {snapshot && snapshot.books.length > 0 && <ShelfClient snapshot={snapshot} offline />}
     </main>

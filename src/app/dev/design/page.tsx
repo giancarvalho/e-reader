@@ -6,6 +6,7 @@ import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import { TextField } from "@/design-system/components/TextField";
+import { StatusBanner } from "@/design-system/components/StatusBanner";
 import { messages } from "@/lib/messages/pt-br";
 import { SheetExample } from "./SheetExample";
 import styles from "./page.module.css";
@@ -26,6 +27,8 @@ export default function DesignCatalog() {
           <TextField label={catalog.invite} error={catalog.inviteError} defaultValue="ABCD" />
           <TextArea label={catalog.note} rows={3} />
           <TextArea label={catalog.noteUnavailable} rows={2} disabled />
+          <StatusBanner>{messages.diagnostics.updateAvailable}</StatusBanner>
+          <StatusBanner tone="warning">{messages.annotations.syncError}</StatusBanner>
           <Avatar name={catalog.author} />
           <SheetExample />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />

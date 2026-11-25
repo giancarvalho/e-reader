@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { recordDiagnostic } from "../diagnostics";
 import type { ReaderIdentity } from "../books/local";
 import { createBookSyncStore } from "./annotation-store";
 import { syncAnnotations, type AnnotationCursor, type RemoteRow, type SyncRow } from "./annotations";
@@ -9,7 +10,7 @@ type SyncStatus = "idle" | "offline" | "syncing" | "error";
 
 export function useBookSync<Row extends SyncRow>(
   identity: ReaderIdentity,
-  database: string,
+  database: "e-reader-annotations" | "e-reader-comments",
   transport: {
     send(identity: ReaderIdentity, row: Row): Promise<RemoteRow<Row> | null>;
     read(identity: ReaderIdentity, cursor: AnnotationCursor | null): Promise<RemoteRow<Row>[] | null>;
@@ -30,6 +31,7 @@ export function useBookSync<Row extends SyncRow>(
     if (busy.current) return;
     busy.current = true;
     const run = async () => {
+      const system = database === "e-reader-annotations" ? "annotations" : "comments";
       setStatus("syncing");
       try {
         await syncAnnotations(store, {
@@ -47,10 +49,12 @@ export function useBookSync<Row extends SyncRow>(
         delay.current = 0;
         retryAfter.current = 0;
         setStatus("idle");
+        recordDiagnostic(system, "ok");
       } catch {
         delay.current = Math.min(delay.current ? delay.current * 2 : 2_000, 60_000);
         retryAfter.current = Date.now() + delay.current;
         setStatus(navigator.onLine ? "error" : "offline");
+        if (navigator.onLine) recordDiagnostic(system, "error");
       } finally {
         await store.list().then(setRows).catch(() => setStatus("error"));
       }
