@@ -7,4 +7,4 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/", revision: process.env.GITHUB_SHA ?? crypto.randomUUID() }],
 });
 
-export default withSerwist({ reactStrictMode: true });
+export default withSerwist({ reactStrictMode: true, agentRules: false });
