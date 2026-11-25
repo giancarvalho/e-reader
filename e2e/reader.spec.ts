@@ -75,9 +75,23 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     return new Promise<number>(resolve => { count.onsuccess = () => { db.close(); resolve(count.result); }; });
   })).toBe(1);
 
+  await page.getByRole("combobox", { name: "Tema" }).selectOption("custom");
+  await page.getByLabel("Cor de fundo").fill("#333333");
+  await page.getByLabel("Cor do texto").fill("#333333");
+  await expect(page.getByText("O contraste está abaixo do recomendado para leitura.")).toBeVisible();
+  await expect.poll(async () => page.evaluate(async () => {
+    const open = indexedDB.open("e-reader-library");
+    const db = await new Promise<IDBDatabase>(resolve => { open.onsuccess = () => resolve(open.result); });
+    const read = db.transaction("readerPreferences").objectStore("readerPreferences").get("reader");
+    return new Promise<string>(resolve => {
+      read.onsuccess = () => { db.close(); resolve(read.result?.value.ink); };
+    });
+  })).toBe("#333333");
+
   if (browserName === "webkit") return;
   await context.setOffline(true);
   await page.reload();
+  await expect(page.getByRole("combobox", { name: "Tema" })).toHaveValue("custom");
   await expect(page.getByRole("button", { name: "Próxima página" })).toBeVisible();
   await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
 });

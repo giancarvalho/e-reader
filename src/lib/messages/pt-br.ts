@@ -67,7 +67,11 @@ export const messages = {
     night: "Noite",
     theme: "Tema",
     font: "Família do texto",
-    progressFailed: "Não foi possível salvar a posição de leitura.",
+    custom: "Personalizado",
+    background: "Cor de fundo",
+    ink: "Cor do texto",
+    lowContrast: "O contraste está abaixo do recomendado para leitura.",
+    progressFailed: "Não foi possível salvar o estado da leitura neste aparelho.",
   },
   catalog: {
     title: "Catálogo de componentes",
