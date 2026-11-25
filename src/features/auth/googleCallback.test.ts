@@ -1,3 +1,4 @@
+import type { CookieMethodsServer } from "@supabase/ssr";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { encodeGoogleFlow, googleFlowCookie, newGoogleFlow } from "./google";
@@ -5,14 +6,24 @@ import { finishDirectGoogleSignIn } from "./googleCallback";
 
 const signInWithIdToken = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/supabase/server", () => ({
-  getRequestAuth: async () => ({
-    config: { origin: "https://margins.example", secure: true },
-    client: { auth: { signInWithIdToken } },
+  createAuthClient: (_config: unknown, cookies: CookieMethodsServer) => ({
+    auth: {
+      signInWithIdToken: async (credentials: unknown) => {
+        const result = await signInWithIdToken(credentials);
+        if (!result.error) await cookies.setAll?.([
+          { name: "sb-local-auth-token", value: "session", options: { httpOnly: true, path: "/" } },
+        ], {});
+        return result;
+      },
+    },
   }),
 }));
 
 beforeEach(() => {
   signInWithIdToken.mockReset().mockResolvedValue({ error: null });
+  vi.stubEnv("APP_ORIGIN", "https://margins.example");
+  vi.stubEnv("SUPABASE_URL", "https://project.supabase.co");
+  vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "test-key");
   vi.stubEnv("GOOGLE_CLIENT_ID", "test-client.apps.googleusercontent.com");
   vi.stubEnv("GOOGLE_CLIENT_SECRET", "test-secret");
 });
@@ -39,7 +50,8 @@ it("accepts the expected state, creates a Supabase session and takes the reader 
   const response = await finishDirectGoogleSignIn(request);
   expect(response.status).toBe(303);
   expect(response.headers.get("location")).toBe("/convite");
-  expect(response.headers.get("set-cookie")).toContain("Path=/auth/google; Max-Age=0");
+  expect(response.cookies.get(googleFlowCookie)).toMatchObject({ path: "/auth/google", maxAge: 0 });
+  expect(response.cookies.get("sb-local-auth-token")).toMatchObject({ value: "session", httpOnly: true });
   expect(signInWithIdToken).toHaveBeenCalledWith({
     provider: "google", token: "id", access_token: "access", nonce: flow.nonce,
   });
