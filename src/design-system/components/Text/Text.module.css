@@ -1,0 +1,12 @@
+.text {
+  margin: 0;
+  font: var(--font-body) var(--font-ui);
+}
+
+.text[data-variant="reading"] {
+  font: var(--font-reading-body) var(--font-reading);
+}
+
+.text[data-tone="muted"] {
+  color: var(--color-muted);
+}

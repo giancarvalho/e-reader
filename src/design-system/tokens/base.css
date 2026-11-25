@@ -1,4 +1,4 @@
-:root {
+:root, [data-theme="day"] {
   --space-8: 0.5rem;
   --space-24: 1.5rem;
   --space-48: 3rem;
@@ -22,7 +22,7 @@
   color-scheme: light;
 }
 
-:root[data-theme="night"] {
+[data-theme="night"] {
   --color-bg: var(--night-bg);
   --color-surface: var(--night-surface);
   --color-ink: var(--night-ink);
@@ -52,4 +52,22 @@ body {
   color: var(--color-ink);
   background: var(--color-bg);
   font-family: var(--font-ui);
+}
+
+:root {
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --radius-control: 0.375rem;
+  --touch-target: 2.75rem;
+  --focus-ring: 0.125rem;
+  --control-disabled-opacity: 0.55;
+  --transition-short: 150ms ease-out;
+  --font-body: 1rem/1.5;
+  --font-reading-body: 1.125rem/1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-short: 0ms;
+  }
 }
