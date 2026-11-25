@@ -33,3 +33,10 @@ convite depende da validação do Google OAuth instalado na sprint 0.
 O banco de convites da sprint 1 inclui grupos, perfis, participações e RLS.
 A [configuração do grupo](sprint-1-acesso.md) registra a criação do primeiro
 organizador. A CI roda a suíte SQL do convite no Supabase local.
+
+## Sprint 2 em execução
+
+O bucket privado e a tabela `books` usam caminhos derivados de grupo e SHA-256.
+A publicação, o livro atual e a ordenação são operações do organizador. Os
+membros recebem acesso aos arquivos após a publicação. O primeiro livro
+publicado é marcado como atual. O limite inicial é de 20 MiB por arquivo.
