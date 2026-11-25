@@ -16,5 +16,5 @@ function subscribe(callback: () => void) {
 export function EnterLink() {
   const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
   // Document navigation also works from the precached homepage.
-  return <a className={styles.enter} href={online ? "/convite" : "/estante-offline"}>{messages.home.enter}</a>;
+  return <a className={styles.enter} href={online ? "/auth/google/start" : "/estante-offline"}>{messages.home.enter}</a>;
 }

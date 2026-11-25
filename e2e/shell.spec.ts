@@ -7,7 +7,7 @@ test("shows the reading shell in both system themes", async ({ page }) => {
   await expect(page.getByText("Um livro. Muitas leituras.", { exact: true })).toBeVisible();
   const home = page.getByRole("main");
   await expect(home.getByRole("link")).toHaveCount(1);
-  await expect(home.getByRole("link", { name: "Entrar", exact: true })).toHaveAttribute("href", "/convite");
+  await expect(home.getByRole("link", { name: "Entrar", exact: true })).toHaveAttribute("href", "/auth/google/start");
   await expect(home.locator("img")).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 245, 236)");
   await page.emulateMedia({ colorScheme: "dark" });
