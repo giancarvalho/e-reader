@@ -9,7 +9,7 @@ import {
 } from "@/lib/books/local";
 import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import { messages } from "@/lib/messages/pt-br";
-import { ReaderCanvas } from "./ReaderCanvas";
+import { ReadingWorkspace } from "./ReadingWorkspace";
 import { syncReaderState } from "./sync";
 import styles from "./reader.module.css";
 
@@ -122,8 +122,8 @@ export function ReaderPage() {
       </header>
       {reading === undefined && <Text>{reader.loading}</Text>}
       {reading === null && <Text>{reader.missing}</Text>}
-      {reading && <ReaderCanvas
-        file={reading.file} initialCfi={reading.cfi} preferences={reading.preferences}
+      {reading && <ReadingWorkspace
+        identity={reading.identity} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
         onPosition={save} onPreferences={changePreferences}
       />}
       {failed && <div role="status"><Text>{reader.progressFailed}</Text></div>}

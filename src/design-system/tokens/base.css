@@ -76,3 +76,9 @@ body {
   --reader-min-viewport: 14rem;
   --reader-viewport: 62dvh;
 }
+
+:root {
+  --highlight-green: #8fb573;
+  --highlight-blue: #7fa6c9;
+  --highlight-pink: #d98ba0;
+}
