@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -8,6 +9,7 @@ export default function Home() {
     <main className={styles.shell}>
       <Heading>{messages.title}</Heading>
       <Text tone="muted">{messages.shellStatus}</Text>
+      <Link href="/entrar">{messages.auth.google}</Link>
     </main>
   );
 }

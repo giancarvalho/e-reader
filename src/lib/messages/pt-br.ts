@@ -2,6 +2,16 @@ export const messages = {
   title: "Leitor compartilhado",
   description: "Leia EPUBs e compartilhe anotações com seu grupo.",
   shellStatus: "A estante estará disponível após a configuração do acesso.",
+  auth: {
+    signInTitle: "Entre no leitor compartilhado",
+    google: "Entrar com Google",
+    accountTitle: "Sua conta",
+    signOut: "Sair",
+    signOutFailed: "Não foi possível sair. Tente novamente.",
+    back: "Voltar ao início",
+    unavailable: "O login ainda precisa ser configurado neste ambiente.",
+    failed: "Não foi possível entrar com Google. Tente novamente.",
+  },
   catalog: {
     title: "Catálogo de componentes",
     day: "Dia",
