@@ -37,6 +37,7 @@ it("publishes an organizer upload and delivers its bytes only to members", async
     expect((await admin.from("groups").insert({ id: group, name: "Shelf integration" })).error).toBeNull();
     const organizer = await createAccount(url, anon, "organizer");
     const member = await createAccount(url, anon, "member");
+    const otherMember = await createAccount(url, anon, "member");
     const outsider = await createAccount(url, anon);
     const organizerStorage = organizer.storage.from("books");
     const memberStorage = member.storage.from("books");
@@ -65,6 +66,24 @@ it("publishes an organizer upload and delivers its bytes only to members", async
     const response = await fetch(download.data.signedUrl);
     expect(response.ok).toBe(true);
     expect(await response.text()).toBe(await bytes.text());
+
+    const userId = (await member.auth.getUser()).data.user?.id;
+    expect(userId).toBeTruthy();
+    const uploadedProgress = await member.from("progress").upsert({
+      group_id: group, book_id: hash, user_id: userId, cfi: "epubcfi(/6/4)", fraction: 0.4,
+    }).select("cfi,fraction,updated_at").single();
+    expect(uploadedProgress).toMatchObject({
+      error: null, data: { cfi: "epubcfi(/6/4)", fraction: 0.4, updated_at: expect.any(String) },
+    });
+    const uploadedPreferences = await member.from("user_preferences").upsert({
+      user_id: userId, theme: "custom", custom_bg: "#000000", custom_ink: "#ffffff",
+      font_size: 24, font_family: "sans",
+    }).select("theme,font_size,updated_at").single();
+    expect(uploadedPreferences).toMatchObject({
+      error: null, data: { theme: "custom", font_size: 24, updated_at: expect.any(String) },
+    });
+    expect((await otherMember.from("progress").select("cfi").eq("user_id", userId)).data).toEqual([]);
+    expect((await otherMember.from("user_preferences").select("theme").eq("user_id", userId)).data).toEqual([]);
   } finally {
     await admin.storage.from("books").remove([path]);
     await admin.from("groups").delete().eq("id", group);

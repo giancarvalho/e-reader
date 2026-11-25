@@ -1,5 +1,6 @@
 import { openDB, type DBSchema } from "idb";
 import { sha256 } from "../epub/inspect";
+import { reconcileRecord, type ReaderPreferences, type ReaderRecord, type ReaderState, type ReadingPosition } from "../reader/model";
 
 export type ShelfBook = {
   id: string;
@@ -23,22 +24,22 @@ type LocalBook = {
   coverType?: string;
 };
 
-export type ReadingPosition = { cfi: string; fraction: number };
-
 interface LibraryDb extends DBSchema {
-  positions: { key: [string, string, string]; value: ReadingPosition };
+  positions: { key: [string, string, string]; value: ReadingPosition | ReaderRecord<ReadingPosition> };
+  readerPreferences: { key: string; value: ReaderRecord<ReaderPreferences> };
   shelf: { key: "active"; value: ShelfSnapshot };
   files: { key: [string, string, string]; value: LocalBook };
 }
 
 function openLibrary() {
-  return openDB<LibraryDb>("e-reader-library", 2, {
+  return openDB<LibraryDb>("e-reader-library", 3, {
     upgrade(db, oldVersion) {
       if (oldVersion < 1) {
         db.createObjectStore("shelf");
         db.createObjectStore("files", { keyPath: ["userId", "groupId", "hash"] });
       }
       if (oldVersion < 2) db.createObjectStore("positions");
+      if (oldVersion < 3) db.createObjectStore("readerPreferences");
     },
     blocking(_currentVersion, _newVersion, event) {
       (event.target as IDBDatabase).close();
@@ -91,10 +92,54 @@ export async function saveLocalBook(userId: string, book: ShelfBook, file: Blob,
   }));
 }
 
-export function readReadingPosition(userId: string, book: ShelfBook) {
-  return withLibrary(db => db.get("positions", [userId, book.group_id, book.id]));
+export type ReaderIdentity = { user: string; group: string; hash: string };
+
+function positionKey({ user, group, hash }: ReaderIdentity): [string, string, string] {
+  return [user, group, hash];
 }
 
-export function saveReadingPosition(userId: string, book: ShelfBook, position: ReadingPosition) {
-  return withLibrary(db => db.put("positions", position, [userId, book.group_id, book.id]));
+function positionRecord(record: ReadingPosition | ReaderRecord<ReadingPosition> | undefined) {
+  if (!record || "value" in record) return record;
+  return { value: record, pending: "legacy", updatedAt: null };
+}
+
+export function readReaderState(identity: ReaderIdentity): Promise<ReaderState> {
+  return withLibrary(async db => {
+    const tx = db.transaction(["positions", "readerPreferences"]);
+    const [position, preferences] = await Promise.all([
+      tx.objectStore("positions").get(positionKey(identity)),
+      tx.objectStore("readerPreferences").get(identity.user),
+      tx.done,
+    ]);
+    return { position: positionRecord(position), preferences };
+  });
+}
+
+function pending<T>(value: T): ReaderRecord<T> {
+  return { value, pending: crypto.randomUUID(), updatedAt: null };
+}
+
+export function saveReadingPosition(identity: ReaderIdentity, position: ReadingPosition) {
+  return withLibrary(db => db.put("positions", pending(position), positionKey(identity)));
+}
+
+export function saveReaderPreferences(user: string, preferences: ReaderPreferences) {
+  return withLibrary(db => db.put("readerPreferences", pending(preferences), user));
+}
+
+export function applyReaderSync(identity: ReaderIdentity, sent: ReaderState, reply: ReaderState): Promise<ReaderState> {
+  return withLibrary(async db => {
+    const tx = db.transaction(["positions", "readerPreferences"], "readwrite");
+    const positions = tx.objectStore("positions");
+    const preferences = tx.objectStore("readerPreferences");
+    const key = positionKey(identity);
+    const currentPosition = positionRecord(await positions.get(key));
+    const currentPreferences = await preferences.get(identity.user);
+    const position = reconcileRecord(currentPosition, sent.position, reply.position);
+    const preference = reconcileRecord(currentPreferences, sent.preferences, reply.preferences);
+    if (position && position !== currentPosition) await positions.put(position, key);
+    if (preference && preference !== currentPreferences) await preferences.put(preference, identity.user);
+    await tx.done;
+    return { position, preferences: preference };
+  });
 }

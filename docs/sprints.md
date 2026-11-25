@@ -54,3 +54,8 @@ automático, dia ou noite, escala de 12 a 36 e texto com ou sem serifa.
 O primeiro teste de navegação e restauração offline passou em Chromium.
 A sincronização entre aparelhos, o tema personalizado e a avaliação em
 iPhone e Android instalados continuam nesta sprint.
+
+O progresso e as preferências de leitura agora são gravados localmente antes de
+qualquer envio. Ao abrir, reconectar ou voltar ao app, o leitor sincroniza com
+as tabelas privadas. Uma confirmação atrasada não descarta alterações mais
+novas feitas no aparelho. O tema personalizado avisa quando o contraste é baixo.

@@ -1,21 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import {
-  readLocalBook, readLocalShelf, readReadingPosition, saveReadingPosition,
-  type ReadingPosition, type ShelfBook,
+  applyReaderSync, readLocalBook, readLocalShelf, readReaderState,
+  saveReaderPreferences, saveReadingPosition, type ReaderIdentity, type ShelfBook,
 } from "@/lib/books/local";
+import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import { messages } from "@/lib/messages/pt-br";
 import { ReaderCanvas } from "./ReaderCanvas";
+import { syncReaderState } from "./sync";
 import styles from "./reader.module.css";
 
-type Reading = { user: string; book: ShelfBook; file: Blob; cfi?: string };
+type Reading = {
+  identity: ReaderIdentity;
+  book: ShelfBook;
+  file: Blob;
+  cfi?: string;
+  preferences: ReaderPreferences;
+};
 
 export function ReaderPage() {
   const [reading, setReading] = useState<Reading | null>();
   const [failed, setFailed] = useState(false);
+  const syncing = useRef(false);
+  const timer = useRef<number | undefined>(undefined);
+  const identity = reading?.identity;
   const { reader } = messages;
 
   useEffect(() => {
@@ -24,19 +35,83 @@ export function ReaderPage() {
       const activeShelf = await readLocalShelf();
       const book = activeShelf?.books.find(entry => entry.id === location.hash.slice(1));
       if (!activeShelf || !book) return null;
-      const [asset, position] = await Promise.all([
-        readLocalBook(activeShelf.userId, book),
-        readReadingPosition(activeShelf.userId, book),
-      ]);
-      return asset ? { user: activeShelf.userId, book, file: asset.file, cfi: position?.cfi } : null;
+      const user = activeShelf.userId;
+      const identity = { user, group: book.group_id, hash: book.id };
+      const [asset, state] = await Promise.all([readLocalBook(user, book), readReaderState(identity)]);
+      return asset ? {
+        identity, book, file: asset.file, cfi: state.position?.value.cfi,
+        preferences: state.preferences?.value ?? defaultPreferences,
+      } : null;
     }
     void load().then(result => { if (active) setReading(result); }).catch(() => { if (active) setReading(null); });
     return () => { active = false; };
   }, []);
 
+  const sync = useCallback(async () => {
+    if (!identity || !navigator.onLine || syncing.current) return;
+    syncing.current = true;
+    try {
+      const sent = await readReaderState(identity);
+      const reply = await syncReaderState(identity, {
+        position: sent.position?.pending ? sent.position.value : undefined,
+        preferences: sent.preferences?.pending ? sent.preferences.value : undefined,
+      });
+      if (!reply) return;
+      const received = await applyReaderSync(identity, sent, reply);
+      setReading(current => {
+        if (!current || current.identity !== identity) return current;
+        const remotePosition = !sent.position?.pending && received.position?.pending === null
+          && received.position.updatedAt !== sent.position?.updatedAt;
+        const remotePreferences = !sent.preferences?.pending && received.preferences?.pending === null
+          && received.preferences.updatedAt !== sent.preferences?.updatedAt;
+        if (!remotePosition && !remotePreferences) return current;
+        return {
+          ...current,
+          cfi: remotePosition ? received.position?.value.cfi : current.cfi,
+          preferences: remotePreferences ? received.preferences?.value ?? current.preferences : current.preferences,
+        };
+      });
+    } catch {
+      // Pending records survive a failed request and will be retried.
+    } finally {
+      syncing.current = false;
+    }
+  }, [identity]);
+
+  useEffect(() => {
+    if (!identity) return;
+    function syncWhenVisible() {
+      if (document.visibilityState === "visible") void sync();
+    }
+    function syncNow() { void sync(); }
+    syncNow();
+    const interval = window.setInterval(syncWhenVisible, 10_000);
+    window.addEventListener("online", syncNow);
+    window.addEventListener("pagehide", syncNow);
+    document.addEventListener("visibilitychange", syncNow);
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timer.current);
+      window.removeEventListener("online", syncNow);
+      window.removeEventListener("pagehide", syncNow);
+      document.removeEventListener("visibilitychange", syncNow);
+    };
+  }, [identity, sync]);
+
+  const scheduleSync = useCallback(() => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => void sync(), 1_000);
+  }, [sync]);
+
   const save = useCallback((position: ReadingPosition) => {
-    if (reading) void saveReadingPosition(reading.user, reading.book, position).catch(() => setFailed(true));
-  }, [reading]);
+    if (identity) void saveReadingPosition(identity, position).then(scheduleSync).catch(() => setFailed(true));
+  }, [identity, scheduleSync]);
+
+  function changePreferences(value: ReaderPreferences) {
+    if (!identity) return;
+    setReading(current => current ? { ...current, preferences: value } : current);
+    void saveReaderPreferences(identity.user, value).then(scheduleSync).catch(() => setFailed(true));
+  }
 
   return (
     <main className={styles.page}>
@@ -47,7 +122,10 @@ export function ReaderPage() {
       </header>
       {reading === undefined && <Text>{reader.loading}</Text>}
       {reading === null && <Text>{reader.missing}</Text>}
-      {reading && <ReaderCanvas file={reading.file} initialCfi={reading.cfi} onPosition={save} />}
+      {reading && <ReaderCanvas
+        file={reading.file} initialCfi={reading.cfi} preferences={reading.preferences}
+        onPosition={save} onPreferences={changePreferences}
+      />}
       {failed && <div role="status"><Text>{reader.progressFailed}</Text></div>}
     </main>
   );
