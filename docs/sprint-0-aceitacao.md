@@ -10,3 +10,6 @@
 | Dicionário PT | Registrar amostra real, licença e atribuição da fonte escolhida, limites de qualidade e próximos passos. |
 
 O PR de fundação cobre testes automatizados do shell. Preview, OAuth e execução em aparelho real continuam pendentes. A escolha da fonte e os resultados da amostra estão na [decisão do dicionário PT](sprint-0-dicionario-pt.md).
+
+O fluxo de OAuth está preparado no código. A [configuração de preview](sprint-0-oauth.md)
+descreve os valores necessários e as verificações ainda pendentes.

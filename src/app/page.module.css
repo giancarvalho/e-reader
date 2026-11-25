@@ -7,3 +7,15 @@
   padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
   padding-inline: max(var(--space-24), env(safe-area-inset-left)) max(var(--space-24), env(safe-area-inset-right));
 }
+
+.shell a {
+  display: inline-grid;
+  place-items: center start;
+  justify-self: start;
+  min-block-size: var(--touch-target);
+  color: var(--color-accent-text);
+}
+
+.shell a:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+}
