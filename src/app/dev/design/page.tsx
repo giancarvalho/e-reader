@@ -7,6 +7,7 @@ import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import { TextField } from "@/design-system/components/TextField";
 import { messages } from "@/lib/messages/pt-br";
+import { SheetExample } from "./SheetExample";
 import styles from "./page.module.css";
 
 export default function DesignCatalog() {
@@ -26,6 +27,7 @@ export default function DesignCatalog() {
           <TextArea label={catalog.note} rows={3} />
           <TextArea label={catalog.noteUnavailable} rows={2} disabled />
           <Avatar name={catalog.author} />
+          <SheetExample />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />
           <div className={styles.actions}>
             <Button>{catalog.primary}</Button>

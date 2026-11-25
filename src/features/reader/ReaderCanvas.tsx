@@ -88,7 +88,7 @@ export function ReaderCanvas({
           const quote = selected?.toString().trim().slice(0, 4000);
           if (!quote || !selected?.rangeCount || !view) return;
           const cfi = view.getCFI(index, selected.getRangeAt(0));
-          if (cfi.length <= 4096) reportSelection({ cfi, quote });
+          if (cfi.length <= 4096) reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
         });
       });
       view.addEventListener("draw-annotation", event => {

@@ -88,12 +88,32 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     });
   })).toBe("#333333");
 
+  if (process.env.TEST_DICTIONARY) {
+    const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
+    if (!frame) throw new Error("Missing chapter frame");
+    await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
+    await page.getByRole("button", { name: "Consultar dicionário" }).click();
+    const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
+    await expect(dictionary.getByRole("link", { name: "CC BY-SA 4.0" })).toBeVisible();
+    await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
+  }
+
   if (browserName === "webkit") return;
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Tema" })).toHaveValue("custom");
   await expect(page.getByRole("button", { name: "Próxima página" })).toBeVisible();
   await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
+  if (process.env.TEST_DICTIONARY) {
+    const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
+    if (!frame) throw new Error("Missing chapter frame");
+    await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
+    await page.getByRole("button", { name: "Consultar dicionário" }).click();
+    const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
+    await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
+  }
   const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
   if (!visibleFrame) throw new Error("Missing reading frame");
   await visibleFrame.getByText("Segundo capítulo").evaluate(element => {
@@ -130,3 +150,14 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByRole("button", { name: "Apagar grifo" }).click();
   await expect(page.getByText("Grifos (0)", { exact: true })).toBeVisible();
 });
+
+function selectChapterWord(element: Element) {
+  const text = element.firstChild;
+  if (!text) throw new Error("Missing chapter text");
+  const selection = element.ownerDocument.getSelection();
+  const range = element.ownerDocument.createRange();
+  range.setStart(text, "Segundo ".length);
+  range.setEnd(text, "Segundo capítulo".length);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
