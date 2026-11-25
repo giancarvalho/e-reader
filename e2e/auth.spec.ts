@@ -11,7 +11,7 @@ test("starts Google authentication directly from the home page", async ({ page, 
   });
   const [authorization] = await Promise.all([
     page.waitForRequest(request => request.url().startsWith(`${google}?`)),
-    page.getByRole("button", { name: "Entrar", exact: true }).click(),
+    page.getByRole("link", { name: "Entrar", exact: true }).click(),
   ]);
 
   const url = new URL(authorization.url());

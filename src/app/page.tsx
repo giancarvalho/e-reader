@@ -1,6 +1,6 @@
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
-import { EnterControl } from "./EnterControl";
+import { EnterLink } from "./EnterLink";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
       <div className={styles.intro}>
         <h1 className={styles.title}>{messages.title}</h1>
         <Text variant="reading" tone="muted">{messages.home.subtitle}</Text>
-        <EnterControl />
+        <EnterLink />
       </div>
     </main>
   );
