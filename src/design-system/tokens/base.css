@@ -71,3 +71,8 @@ body {
     --transition-short: 0ms;
   }
 }
+
+:root {
+  --reader-min-viewport: 14rem;
+  --reader-viewport: 62dvh;
+}

@@ -6,7 +6,7 @@ test("reopens a downloaded book listing from IndexedDB without a network", async
   await page.getByText("Conecte-se para baixar livros neste aparelho.").waitFor();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.evaluate(async () => {
-    const open = indexedDB.open("e-reader-library", 1);
+    const open = indexedDB.open("e-reader-library");
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       open.onsuccess = () => resolve(open.result);
       open.onerror = () => reject(open.error);

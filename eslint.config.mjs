@@ -15,5 +15,5 @@ export default defineConfig([
       }],
     },
   },
-  globalIgnores([".next/**", "next-env.d.ts", "public/sw.js"]),
+  globalIgnores(["src/vendor/**", ".next/**", "next-env.d.ts", "public/sw.js"]),
 ]);
