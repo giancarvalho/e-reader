@@ -3,9 +3,12 @@ import { expect, test } from "@playwright/test";
 test("shows the reading shell in both system themes", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Um livro. Muitas leituras." })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Entrar no clube" })).toHaveAttribute("href", "/convite");
-  await expect(page.getByRole("link", { name: "Abrir estante offline" })).toHaveAttribute("href", "/estante-offline");
+  await expect(page.getByRole("heading", { name: "Shared Margins" })).toBeVisible();
+  await expect(page.getByText("Um livro. Muitas leituras.", { exact: true })).toBeVisible();
+  const home = page.getByRole("main");
+  await expect(home.getByRole("link")).toHaveCount(1);
+  await expect(home.getByRole("link", { name: "Entrar", exact: true })).toHaveAttribute("href", "/convite");
+  await expect(home.locator("img")).toHaveCount(0);
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 245, 236)");
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(23, 19, 15)");
@@ -18,11 +21,8 @@ test("reopens the public shell offline after installation", async ({ page, conte
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Um livro. Muitas leituras." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Shared Margins" })).toBeVisible();
   await expect(page.locator("body")).toHaveCSS("font-family", /Inter Variable/);
-  await expect.poll(() => page.locator('img[src="/images/livro-aberto.webp"]').evaluate(
-    image => (image as HTMLImageElement).naturalWidth,
-  )).toBeGreaterThan(0);
-  await page.getByRole("link", { name: "Abrir estante offline" }).click();
+  await page.getByRole("link", { name: "Entrar", exact: true }).click();
   await expect(page.getByText("Estante offline", { exact: true })).toBeVisible();
 });

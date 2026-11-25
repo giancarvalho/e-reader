@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
     name: messages.title,
-    short_name: "Leitor",
+    short_name: messages.title,
     description: messages.description,
     lang: "pt-BR",
     start_url: "/",

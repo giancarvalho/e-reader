@@ -5,6 +5,10 @@ declare const self: ServiceWorkerGlobalScope & SerwistGlobalConfig & {
   __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
 };
 
+function opensShelf(path: string) {
+  return path === "/estante" || path === "/convite";
+}
+
 const worker = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   clientsClaim: true,
@@ -25,14 +29,14 @@ const worker = new Serwist({
     },
     {
       matcher: ({ request, sameOrigin, url }) =>
-        sameOrigin && request.mode === "navigate" && url.pathname === "/estante",
+        sameOrigin && request.mode === "navigate" && opensShelf(url.pathname),
       handler: new NetworkOnly(),
     },
   ],
   fallbacks: {
     entries: [{
       url: "/estante-offline",
-      matcher: ({ request }) => request.mode === "navigate" && new URL(request.url).pathname === "/estante",
+      matcher: ({ request }) => request.mode === "navigate" && opensShelf(new URL(request.url).pathname),
     }],
   },
 });
