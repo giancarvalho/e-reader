@@ -1,3 +1,3 @@
-export { ShelfPage as default } from "@/features/access";
+export { ShelfPage as default } from "@/features/shelf";
 
 export const dynamic = "force-dynamic";

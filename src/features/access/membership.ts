@@ -2,9 +2,7 @@ import { redirect } from "next/navigation";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { getRequestAuth } from "@/lib/supabase/server";
 
-type MembershipStatus = "member" | "invite_required" | "unavailable";
-
-export async function getMembershipStatus(): Promise<MembershipStatus> {
+export async function getGroupAccess() {
   const auth = await getRequestAuth();
   if (!auth) redirect("/entrar");
 
@@ -12,15 +10,25 @@ export async function getMembershipStatus(): Promise<MembershipStatus> {
   if (isAuthSessionMissingError(error) || error?.status === 401 || (!data.user && !error)) {
     redirect("/entrar");
   }
-  if (error || !data.user) return "unavailable";
+  if (error || !data.user) return { status: "unavailable" } as const;
 
   const membership = await auth.client
     .from("memberships")
-    .select("group_id")
+    .select("group_id, role")
     .eq("user_id", data.user.id)
+    .order("joined_at")
+    .order("group_id")
     .limit(1)
     .maybeSingle();
 
-  if (membership.error) return "unavailable";
-  return membership.data ? "member" : "invite_required";
+  if (membership.error) return { status: "unavailable" } as const;
+  if (!membership.data) return { status: "invite_required" } as const;
+
+  return {
+    status: "member",
+    userId: data.user.id,
+    groupId: membership.data.group_id as string,
+    organizer: membership.data.role === "organizer",
+    client: auth.client,
+  } as const;
 }

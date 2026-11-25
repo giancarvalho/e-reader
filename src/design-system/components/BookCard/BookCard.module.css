@@ -1,0 +1,12 @@
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  align-items: start;
+  gap: var(--space-12);
+}
+
+.details {
+  display: grid;
+  gap: var(--space-8);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,31 @@
+.page,
+.stack {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.page {
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  padding-block-start: max(var(--space-48), env(safe-area-inset-top));
+  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
+  padding-inline: max(var(--space-24), env(safe-area-inset-left)) max(var(--space-24), env(safe-area-inset-right));
+}
+
+.page a {
+  display: inline-grid;
+  align-items: center;
+  justify-self: start;
+  min-block-size: var(--touch-target);
+  color: var(--color-accent-text);
+}
+
+.page a:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}

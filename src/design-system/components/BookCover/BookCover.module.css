@@ -1,0 +1,22 @@
+.cover {
+  display: grid;
+  align-items: end;
+  aspect-ratio: 2 / 3;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: var(--focus-ring) solid var(--color-muted);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  font: var(--font-body) var(--font-reading);
+}
+
+.cover img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.cover span {
+  padding: var(--space-8);
+  overflow-wrap: anywhere;
+}

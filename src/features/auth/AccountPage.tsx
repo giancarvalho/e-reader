@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import { getRequestAuth } from "@/lib/supabase/server";
-import { signOut } from "./actions";
+import { SignOutForm } from "./SignOutForm";
 import styles from "./auth.module.css";
 
 export async function AccountPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
@@ -32,9 +31,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
       {name && <Text>{name}</Text>}
       <Link href="/convite">{auth.continue}</Link>
       {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
-      <form action={signOut}>
-        <Button type="submit">{auth.signOut}</Button>
-      </form>
+      <SignOutForm />
     </main>
   );
 }

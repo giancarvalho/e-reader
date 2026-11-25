@@ -1,10 +1,12 @@
 import withSerwistInit from "@serwist/next";
 
+const revision = process.env.GITHUB_SHA ?? crypto.randomUUID();
+
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
-  additionalPrecacheEntries: [{ url: "/", revision: process.env.GITHUB_SHA ?? crypto.randomUUID() }],
+  additionalPrecacheEntries: ["/", "/estante-offline"].map(url => ({ url, revision })),
 });
 
 export default withSerwist({ reactStrictMode: true, agentRules: false });

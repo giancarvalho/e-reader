@@ -1,1 +1,2 @@
-export { InvitePage, ShelfPage } from "./AccessPages";
+export { InvitePage } from "./AccessPages";
+export { getGroupAccess } from "./membership";
