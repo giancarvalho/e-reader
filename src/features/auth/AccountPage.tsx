@@ -27,6 +27,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
       {name && <><Avatar name={name} src={photo} /><Text>{name}</Text></>}
       <Link href="/convite">{auth.continue}</Link>
       {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
+      <Link href="/diagnostico">{messages.diagnostics.title}</Link>
       <SignOutForm />
     </main>
   );

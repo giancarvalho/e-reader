@@ -8,6 +8,7 @@ declare const self: ServiceWorkerGlobalScope & SerwistGlobalConfig & {
 const worker = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   clientsClaim: true,
+  precacheOptions: { cleanupOutdatedCaches: true },
   runtimeCaching: [{
     matcher: ({ request, sameOrigin, url }) =>
       sameOrigin && request.mode === "navigate" && url.pathname === "/estante",
