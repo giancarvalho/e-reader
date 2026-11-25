@@ -114,6 +114,10 @@ function ShelfCard({ userId, book, remoteCover, offline, children }: {
     <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover}
       status={stored ? shelf.available : undefined}>
       {!offline && !stored && <Button loading={busy} onClick={download}>{shelf.download}</Button>}
+      {stored && (
+        // A document navigation uses the precached reader shell while offline.
+        <a href={`/ler#${book.id}`}>{shelf.read}</a>
+      )}
       {notice && <div role="status">{notice}</div>}
       {children}
     </BookCard>

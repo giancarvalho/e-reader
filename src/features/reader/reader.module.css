@@ -1,0 +1,53 @@
+.page {
+  display: grid;
+  gap: var(--space-16);
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  padding-block-start: max(var(--space-16), env(safe-area-inset-top));
+  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
+  padding-inline: max(var(--space-16), env(safe-area-inset-left)) max(var(--space-16), env(safe-area-inset-right));
+}
+
+.header,
+.controls,
+.settings {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.page a {
+  display: inline-grid;
+  align-items: center;
+  min-block-size: var(--touch-target);
+  justify-self: start;
+  color: var(--color-accent-text);
+}
+
+.viewport:not(:empty) {
+  block-size: max(var(--reader-min-viewport), var(--reader-viewport));
+}
+
+.canvas {
+  display: block;
+  block-size: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.controls summary,
+.settings label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  min-block-size: var(--touch-target);
+}
+
+.settings :is(input, select) {
+  min-block-size: var(--touch-target);
+  font: inherit;
+}

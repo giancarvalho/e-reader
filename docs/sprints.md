@@ -45,3 +45,12 @@ A estante extrai metadados no navegador, envia o EPUB diretamente ao Storage
 por URL assinada e grava no IndexedDB apenas arquivos com SHA-256 conferido.
 Ao perder a rede, a navegação para a estante abre a lista de livros baixados
 na sessão local. O teste em aparelho real continua pendente.
+
+## Sprint 3 em execução
+
+O leitor abre EPUBs refluíveis do IndexedDB, oferece índice e navegação por
+páginas e restaura o CFI salvo por conta, grupo e livro. Já permite tema
+automático, dia ou noite, escala de 12 a 36 e texto com ou sem serifa.
+O primeiro teste de navegação e restauração offline passou em Chromium.
+A sincronização entre aparelhos, o tema personalizado e a avaliação em
+iPhone e Android instalados continuam nesta sprint.
