@@ -1,18 +1,9 @@
 export const messages = {
-  title: "Leitor compartilhado",
+  title: "Shared Margins",
   description: "Leia EPUBs e compartilhe anotações com seu grupo.",
   home: {
-    heading: "Um livro.",
-    headingEmphasis: "Muitas leituras.",
-    intro: "Leia no seu ritmo e compartilhe com o clube os trechos que ficaram com você.",
-    enter: "Entrar no clube",
-    offline: "Abrir estante offline",
-    invite: "No primeiro acesso, você vai precisar de um convite.",
-    features: [
-      { title: "Leia onde estiver", description: "Baixe o EPUB e continue de onde parou, mesmo sem internet." },
-      { title: "Marque o que importa", description: "Grife passagens e guarde suas notas no próprio texto." },
-      { title: "Puxe conversa", description: "Comente os trechos e descubra o que chamou a atenção do grupo." },
-    ],
+    subtitle: "Um livro. Muitas leituras.",
+    enter: "Entrar",
   },
   auth: {
     signInTitle: "Entre no leitor compartilhado",
