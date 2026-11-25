@@ -40,3 +40,8 @@ commit;
 A interface consome o retorno de `join_group(code)`. Somente `joined`
 contém um `group_id`. As respostas de erro permitem que a interface
 mostre mensagens distintas para código inválido e limite de tentativas.
+
+Após o login, `/convite` consulta a participação da pessoa. Um membro
+segue para `/estante`. Uma pessoa sem participação recebe o formulário e
+vê o erro da RPC no mesmo lugar, com o código preservado para correção.
+A estante exige sessão e vínculo com o grupo.

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
@@ -29,6 +30,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
         <img className={styles.photo} src={photoUrl.href} referrerPolicy="no-referrer" alt="" />
       )}
       {name && <Text>{name}</Text>}
+      <Link href="/convite">{auth.continue}</Link>
       {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
       <form action={signOut}>
         <Button type="submit">{auth.signOut}</Button>

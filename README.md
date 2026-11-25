@@ -26,7 +26,7 @@ carregue as variáveis da CLI e rode o teste.
 ```sh
 supabase start
 eval "$(supabase status -o env)"
-SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" npm run test:integration
+SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npm run test:integration
 supabase stop
 ```
 
