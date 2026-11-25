@@ -9,9 +9,11 @@ for (const path of ["/conta", "/convite", "/estante"]) {
   });
 }
 
-test("a callback without a code cannot log a reader in or redirect away", async ({ request }) => {
-  const response = await request.get("/auth/callback?next=https://other.example", { maxRedirects: 0 });
-  expect(response.status()).toBe(303);
-  expect(response.headers().location).toBe("/entrar?status=failed");
-  expect(response.headers()["cache-control"]).toContain("no-store");
-});
+for (const path of ["/auth/callback", "/auth/google/callback"]) {
+  test(`rejects an unsolicited callback at ${path}`, async ({ request }) => {
+    const response = await request.get(`${path}?next=https://other.example`, { maxRedirects: 0 });
+    expect(response.status()).toBe(303);
+    expect(response.headers().location).toBe("/entrar?status=failed");
+    expect(response.headers()["cache-control"]).toContain("no-store");
+  });
+}
