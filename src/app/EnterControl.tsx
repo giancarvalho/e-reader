@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { signInWithGoogle } from "@/features/auth/actions";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./page.module.css";
 
@@ -13,8 +14,15 @@ function subscribe(callback: () => void) {
   };
 }
 
-export function EnterLink() {
+export function EnterControl() {
   const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
-  // Document navigation also works from the precached homepage.
-  return <a className={styles.enter} href={online ? "/convite" : "/estante-offline"}>{messages.home.enter}</a>;
+  if (!online) {
+    // Document navigation also works from the precached homepage.
+    return <a className={styles.enter} href="/estante-offline">{messages.home.enter}</a>;
+  }
+  return (
+    <form action={signInWithGoogle}>
+      <button className={styles.enter} type="submit">{messages.home.enter}</button>
+    </form>
+  );
 }

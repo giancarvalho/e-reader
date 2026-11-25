@@ -5,6 +5,7 @@ import { decodeGoogleFlow } from "./google";
 const mocks = vi.hoisted(() => ({
   set: vi.fn(),
   redirect: vi.fn((url: string): never => { throw new Error(url); }),
+  getUser: vi.fn(),
   hosted: vi.fn(),
 }));
 
@@ -13,17 +14,25 @@ vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/lib/supabase/server", () => ({
   getRequestAuth: async () => ({
     config: { origin: "https://margins.example", secure: true },
-    client: { auth: { signInWithOAuth: mocks.hosted } },
+    client: { auth: { getUser: mocks.getUser, signInWithOAuth: mocks.hosted } },
   }),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.getUser.mockResolvedValue({ data: { user: null } });
   vi.stubEnv("GOOGLE_CLIENT_ID", "test-client.apps.googleusercontent.com");
   vi.stubEnv("GOOGLE_CLIENT_SECRET", "test-secret");
 });
 
 afterEach(vi.unstubAllEnvs);
+
+it("takes a signed-in reader straight to the group entry point", async () => {
+  mocks.getUser.mockResolvedValue({ data: { user: { id: "reader" } } });
+  await expect(signInWithGoogle()).rejects.toThrow("/convite");
+  expect(mocks.set).not.toHaveBeenCalled();
+  expect(mocks.hosted).not.toHaveBeenCalled();
+});
 
 it("starts directly at Google and sets a short-lived flow cookie for the app callback", async () => {
   await expect(signInWithGoogle()).rejects.toThrow("https://accounts.google.com/");

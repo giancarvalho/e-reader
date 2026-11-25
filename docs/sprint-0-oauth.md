@@ -1,6 +1,7 @@
 # Preview e validação do Google OAuth
 
-O botão de `/entrar` leva o navegador direto ao Google. O Google retorna ao
+O botão **Entrar** da página inicial leva visitantes sem sessão direto ao
+Google. O Google retorna ao
 domínio do Shared Margins em `/auth/google/callback`. O servidor valida
 `state`, usa PKCE para trocar o código e envia o token de identidade e o
 `nonce` ao Supabase Auth para abrir a sessão. O fluxo segue para o convite

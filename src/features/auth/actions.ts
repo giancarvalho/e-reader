@@ -12,6 +12,9 @@ export async function signInWithGoogle() {
   const auth = await getRequestAuth(true);
   if (!auth) redirect("/entrar?status=unavailable");
   const { config, client } = auth;
+  const { data: { user } } = await client.auth.getUser();
+  if (user) redirect("/convite");
+
   const google = getGoogleConfig(process.env, config.origin);
   if (!google) {
     if (hasGoogleCredentials(process.env)) redirect("/entrar?status=unavailable");
