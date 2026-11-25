@@ -1,0 +1,47 @@
+.panel {
+  display: grid;
+  gap: var(--space-8);
+  overflow-wrap: anywhere;
+}
+
+.panel summary {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--touch-target);
+  cursor: pointer;
+}
+
+.colors,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.colors {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-block-size: var(--touch-target);
+}
+
+.swatch[data-color="amber"] { --swatch: var(--color-amber); }
+.swatch[data-color="green"] { --swatch: var(--highlight-green); }
+.swatch[data-color="blue"] { --swatch: var(--highlight-blue); }
+.swatch[data-color="pink"] { --swatch: var(--highlight-pink); }
+
+.swatch input {
+  accent-color: var(--swatch);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-12);
+  padding-inline-start: var(--space-16);
+}

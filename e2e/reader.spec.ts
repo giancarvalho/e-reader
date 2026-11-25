@@ -94,4 +94,25 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(page.getByRole("combobox", { name: "Tema" })).toHaveValue("custom");
   await expect(page.getByRole("button", { name: "Próxima página" })).toBeVisible();
   await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
+  const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
+  if (!visibleFrame) throw new Error("Missing reading frame");
+  await visibleFrame.getByText("Segundo capítulo").evaluate(element => {
+    const selection = element.ownerDocument.getSelection();
+    const range = element.ownerDocument.createRange();
+    range.selectNodeContents(element);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  });
+  await expect(page.getByRole("heading", { name: "Novo grifo" })).toBeVisible();
+  await page.getByLabel("Verde", { exact: true }).check();
+  await page.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
+  await page.getByRole("button", { name: "Salvar grifo" }).click();
+  await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
+  await page.getByText("Grifos (1)", { exact: true }).click();
+  await expect(page.getByText("Leitura sem rede")).toBeVisible();
+  await page.getByRole("button", { name: "Editar grifo" }).click();
+  await page.getByRole("button", { name: "Apagar grifo" }).click();
+  await expect(page.getByText("Grifos (0)", { exact: true })).toBeVisible();
 });

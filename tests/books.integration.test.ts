@@ -84,6 +84,20 @@ it("publishes an organizer upload and delivers its bytes only to members", async
     });
     expect((await otherMember.from("progress").select("cfi").eq("user_id", userId)).data).toEqual([]);
     expect((await otherMember.from("user_preferences").select("theme").eq("user_id", userId)).data).toEqual([]);
+
+    const annotation = {
+      id: randomUUID(), group_id: group, book_id: hash, author_id: userId,
+      cfi: "epubcfi(/6/4)", color: "amber", quote_text: "Example quote",
+    };
+    expect((await member.from("annotations").upsert(annotation)).error).toBeNull();
+    const changes = { target_group: group, target_book: hash };
+    const firstPage = await otherMember.rpc("list_annotation_changes", changes);
+    expect(firstPage).toMatchObject({ error: null, data: [{ id: annotation.id, deleted_at: null }] });
+    const cursor = firstPage.data[0].updated_at;
+    expect((await member.from("annotations").upsert({ ...annotation, deleted_at: new Date().toISOString() })).error).toBeNull();
+    const tombstones = await otherMember.rpc("list_annotation_changes", { ...changes, after_stamp: cursor, after_id: annotation.id });
+    expect(tombstones).toMatchObject({ error: null, data: [{ id: annotation.id, deleted_at: expect.any(String) }] });
+    expect((await outsider.rpc("list_annotation_changes", changes)).data).toEqual([]);
   } finally {
     await admin.storage.from("books").remove([path]);
     await admin.from("groups").delete().eq("id", group);

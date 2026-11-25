@@ -59,3 +59,15 @@ O progresso e as preferências de leitura agora são gravados localmente antes d
 qualquer envio. Ao abrir, reconectar ou voltar ao app, o leitor sincroniza com
 as tabelas privadas. Uma confirmação atrasada não descarta alterações mais
 novas feitas no aparelho. O tema personalizado avisa quando o contraste é baixo.
+
+## Sprint 4 em execução
+
+O leitor exibe grifos das quatro cores, com nota opcional e edição e
+exclusão pelo próprio autor. A lista agrupa por capítulo. Grifos feitos
+offline entram no IndexedDB junto da fila e são enviados após reconectar.
+O servidor oferece um cursor por livro e replica exclusões como tombstones.
+
+A aceitação em aparelho real usa duas contas no mesmo grupo. Crie um grifo
+no aparelho A em modo avião, confira que reaparece após reabrir o leitor,
+reconecte A e aguarde o grifo em B. Mude o tamanho do texto em B e confira
+a âncora. Apague em A e confira que some em B.
