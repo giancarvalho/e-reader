@@ -1,0 +1,32 @@
+import { notFound } from "next/navigation";
+import { Button } from "@/design-system/components/Button";
+import { Heading } from "@/design-system/components/Heading";
+import { Text } from "@/design-system/components/Text";
+import { messages } from "@/lib/messages/pt-br";
+import styles from "./page.module.css";
+
+export default function DesignCatalog() {
+  if (process.env.NODE_ENV !== "development") notFound();
+  const { catalog } = messages;
+
+  return (
+    <main className={styles.catalog}>
+      <Heading>{catalog.title}</Heading>
+      {(["day", "night"] as const).map((theme) => (
+        <section className={styles.panel} data-theme={theme} key={theme}>
+          <Heading as="h2">{catalog[theme]}</Heading>
+          <Text>{catalog.body}</Text>
+          <Text variant="reading" tone="muted">{catalog.reading}</Text>
+          <div className={styles.actions}>
+            <Button>{catalog.primary}</Button>
+            <Button variant="secondary">{catalog.secondary}</Button>
+            <Button variant="quiet">{catalog.quiet}</Button>
+            <Button variant="icon" aria-label={catalog.add}><span aria-hidden="true">+</span></Button>
+            <Button disabled>{catalog.disabled}</Button>
+            <Button loading>{catalog.loading}</Button>
+          </div>
+        </section>
+      ))}
+    </main>
+  );
+}
