@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Avatar } from "@/design-system/components/Avatar";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
@@ -24,6 +25,7 @@ export default function DesignCatalog() {
           <TextField label={catalog.invite} error={catalog.inviteError} defaultValue="ABCD" />
           <TextArea label={catalog.note} rows={3} />
           <TextArea label={catalog.noteUnavailable} rows={2} disabled />
+          <Avatar name={catalog.author} />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />
           <div className={styles.actions}>
             <Button>{catalog.primary}</Button>

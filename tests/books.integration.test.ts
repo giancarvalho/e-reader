@@ -94,6 +94,26 @@ it("publishes an organizer upload and delivers its bytes only to members", async
     const firstPage = await otherMember.rpc("list_annotation_changes", changes);
     expect(firstPage).toMatchObject({ error: null, data: [{ id: annotation.id, deleted_at: null }] });
     const cursor = firstPage.data[0].updated_at;
+
+    const otherId = (await otherMember.auth.getUser()).data.user?.id;
+    const reply = {
+      id: randomUUID(), group_id: group, book_id: hash, author_id: otherId,
+      annotation_id: annotation.id, text: "Group response",
+    };
+    expect((await otherMember.from("comments").upsert(reply)).error).toBeNull();
+    const answer = { ...reply, id: randomUUID(), author_id: userId, text: "Author response" };
+    expect((await member.from("comments").upsert(answer)).error).toBeNull();
+    const thread = await member.rpc("list_comment_changes", changes);
+    expect(thread).toMatchObject({ error: null, data: [
+      { id: reply.id, text: "Group response" }, { id: answer.id, text: "Author response" },
+    ] });
+    expect((await otherMember.from("comments").upsert({
+      ...reply, deleted_at: new Date().toISOString(),
+    })).error).toBeNull();
+    const replyTombstone = await member.rpc("list_comment_changes", {
+      ...changes, after_stamp: thread.data[1].updated_at, after_id: answer.id,
+    });
+    expect(replyTombstone).toMatchObject({ error: null, data: [{ id: reply.id, deleted_at: expect.any(String) }] });
     expect((await member.from("annotations").upsert({ ...annotation, deleted_at: new Date().toISOString() })).error).toBeNull();
     const tombstones = await otherMember.rpc("list_annotation_changes", { ...changes, after_stamp: cursor, after_id: annotation.id });
     expect(tombstones).toMatchObject({ error: null, data: [{ id: annotation.id, deleted_at: expect.any(String) }] });

@@ -26,3 +26,11 @@ export async function getRequestAuth(writable = false) {
   });
   return { client, config };
 }
+
+export async function getVerifiedReaderClient(identity: { user: string; hash: string }) {
+  if (!/^[a-f0-9]{64}$/.test(identity.hash)) return null;
+  const auth = await getRequestAuth(true);
+  if (!auth) return null;
+  const { data, error } = await auth.client.auth.getUser();
+  return !error && data.user?.id === identity.user ? auth.client : null;
+}

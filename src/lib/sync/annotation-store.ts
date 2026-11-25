@@ -1,21 +1,21 @@
 import { openDB, type DBSchema } from "idb";
-import { compareCursor, type Annotation, type AnnotationCursor, type AnnotationQueue, type PendingAnnotation, type RemoteAnnotation } from "./annotations";
+import { compareCursor, type Annotation, type AnnotationCursor, type AnnotationQueue, type PendingAnnotation, type RemoteRow, type SyncRow } from "./annotations";
 
 type Scope = [userId: string, groupId: string, bookId: string];
 type Key = [...Scope, annotationId: string];
 
-interface AnnotationDb extends DBSchema {
+interface AnnotationDb<Row extends SyncRow> extends DBSchema {
   annotations: {
     key: Key;
-    value: { scope: Scope; row: Annotation | RemoteAnnotation };
+    value: { scope: Scope; row: Row | RemoteRow<Row> };
     indexes: { byBook: Scope };
   };
-  outbox: { key: Key; value: { scope: Scope; operation: PendingAnnotation }; indexes: { byBook: Scope } };
+  outbox: { key: Key; value: { scope: Scope; operation: PendingAnnotation<Row> }; indexes: { byBook: Scope } };
   cursors: { key: Scope; value: AnnotationCursor };
 }
 
-function openAnnotations() {
-  return openDB<AnnotationDb>("e-reader-annotations", 1, {
+function openAnnotations<Row extends SyncRow>(name: string) {
+  return openDB<AnnotationDb<Row>>(name, 1, {
     upgrade(db) {
       const annotations = db.createObjectStore("annotations");
       annotations.createIndex("byBook", "scope");
@@ -29,8 +29,8 @@ function openAnnotations() {
   });
 }
 
-async function withAnnotations<T>(run: (db: Awaited<ReturnType<typeof openAnnotations>>) => Promise<T>) {
-  const db = await openAnnotations();
+async function withAnnotations<Row extends SyncRow, T>(name: string, run: (db: Awaited<ReturnType<typeof openAnnotations<Row>>>) => Promise<T>) {
+  const db = await openAnnotations<Row>(name);
   try {
     return await run(db);
   } finally {
@@ -38,16 +38,22 @@ async function withAnnotations<T>(run: (db: Awaited<ReturnType<typeof openAnnota
   }
 }
 
-function isForBook(scope: Scope, row: Annotation) {
+function isForBook(scope: Scope, row: SyncRow) {
   return row.group_id === scope[1] && row.book_id === scope[2];
 }
 
-export function createAnnotationStore(scope: Scope): AnnotationQueue & {
-  list(): Promise<Annotation[]>;
-  save(annotation: Annotation): Promise<void>;
+export function createAnnotationStore(scope: Scope) {
+  return createBookSyncStore<Annotation>("e-reader-annotations", scope);
+}
+
+export function createBookSyncStore<Row extends SyncRow>(name: string, scope: Scope): AnnotationQueue<Row> & {
+  list(): Promise<Row[]>;
+  save(annotation: Row): Promise<void>;
 } {
+  const access = <T,>(run: (db: Awaited<ReturnType<typeof openAnnotations<Row>>>) => Promise<T>) =>
+    withAnnotations<Row, T>(name, run);
   return {
-    list: async () => withAnnotations(async db => {
+    list: async () => access(async db => {
       const rows = await db.getAllFromIndex("annotations", "byBook", scope);
       return rows.map(value => value.row).filter(row => row.deleted_at === null);
     }),
@@ -55,7 +61,7 @@ export function createAnnotationStore(scope: Scope): AnnotationQueue & {
       if (!isForBook(scope, row) || row.author_id !== scope[0]) throw new Error("Invalid local annotation scope");
       const key: Key = [...scope, row.id];
       const operation = { revision: crypto.randomUUID(), annotation: row };
-      await withAnnotations(async db => {
+      await access(async db => {
         const tx = db.transaction(["annotations", "outbox"], "readwrite");
         await Promise.all([
           tx.objectStore("annotations").put({ scope, row }, key),
@@ -64,14 +70,14 @@ export function createAnnotationStore(scope: Scope): AnnotationQueue & {
         ]);
       });
     },
-    pending: async () => withAnnotations(async db => {
+    pending: async () => access(async db => {
       const rows = await db.getAllFromIndex("outbox", "byBook", scope);
       return rows.map(value => value.operation);
     }),
     acknowledge: async (operation, row) => {
       if (!isForBook(scope, row) || row.id !== operation.annotation.id) throw new Error("Invalid annotation reply");
       const key: Key = [...scope, row.id];
-      await withAnnotations(async db => {
+      await access(async db => {
         const tx = db.transaction(["annotations", "outbox"], "readwrite");
         const outbox = tx.objectStore("outbox");
         const current = await outbox.get(key);
@@ -82,10 +88,10 @@ export function createAnnotationStore(scope: Scope): AnnotationQueue & {
         await tx.done;
       });
     },
-    readCursor: async () => withAnnotations(async db => await db.get("cursors", scope) ?? null),
+    readCursor: async () => access(async db => await db.get("cursors", scope) ?? null),
     receive: async (rows, cursor) => {
       if (rows.some(row => !isForBook(scope, row))) throw new Error("Invalid annotation page");
-      await withAnnotations(async db => {
+      await access(async db => {
         const tx = db.transaction(["annotations", "outbox", "cursors"], "readwrite");
         const cursorStore = tx.objectStore("cursors");
         const prior = await cursorStore.get(scope);

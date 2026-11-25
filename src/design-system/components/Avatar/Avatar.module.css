@@ -1,0 +1,20 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  inline-size: var(--touch-target);
+  block-size: var(--touch-target);
+  overflow: hidden;
+  border-radius: var(--radius-round);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: var(--font-body) var(--font-ui);
+}
+
+.avatar img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
