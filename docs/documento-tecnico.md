@@ -198,7 +198,7 @@ As respostas têm um nível só: cada grifo tem um fio de comentários, sem resp
 
 | Tabela | Quem lê | Quem escreve |
 | --- | --- | --- |
-| `profiles` | Membros do mesmo grupo | Cada pessoa, só o próprio perfil |
+| `profiles` | A própria pessoa e membros do mesmo grupo | Cada pessoa, só o próprio perfil |
 | `groups` | Membros | Ninguém pelo app |
 | `group_invites` | Organizador | Organizador |
 | `memberships` | Membros do grupo | Ninguém direto; só `join_group` |
@@ -210,8 +210,8 @@ As respostas têm um nível só: cada grifo tem um fio de comentários, sem resp
 
 **Entrada por código de convite**
 
-- A função `join_group(code)` roda com privilégio no servidor: valida o código, cria a participação e devolve o `group_id`. Nada mais cria participações.
-- O código é aleatório, com no mínimo 16 caracteres (base32). Tentativas erradas são limitadas por usuário (proposta: 5 a cada 15 minutos).
+- A função `join_group(code)` roda com privilégio no servidor: valida o código e cria a participação como membro. A RPC devolve uma linha com `status` (`joined`, `invalid_code` ou `rate_limited`) e `group_id` quando a entrada é confirmada. Repetir uma entrada é seguro e preserva o papel já atribuído. A participação inicial do organizador é criada na configuração administrativa.
+- O código é aleatório, com no mínimo 16 caracteres (base32). Tentativas erradas são limitadas a cinco por usuário numa janela de 15 minutos. A janela começa na primeira tentativa errada, e só a RPC acessa o contador.
 - O grupo e o primeiro organizador são criados por seed/migration. Remover membro e trocar o código são operações manuais no banco, por decisão de escopo.
 
 **Campos de sincronização:** `updated_at` é sempre preenchido por trigger no servidor (não pelo relógio do aparelho), e há índice em `(group_id, updated_at)` nas tabelas sincronizadas. As políticas têm testes SQL próprios (`supabase test db`): membro lê, não membro não, autor edita o seu, ninguém edita o alheio, progresso alheio é invisível.

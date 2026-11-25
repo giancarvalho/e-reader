@@ -48,6 +48,7 @@ jobs:
       - run: |
           eval "$(supabase status -o env)"
           SUPABASE_URL="$API_URL" SUPABASE_ANON_KEY="$ANON_KEY" npm run test:integration
+      - run: supabase test db
       - if: always()
         run: supabase stop --no-backup
 
