@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
-import { Heading } from "@/design-system/components/Heading";
+import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -23,19 +23,12 @@ type Props = {
 };
 
 export function CommentThread({ identity, annotation, rows, status, save, retry, close }: Props) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const title = useId();
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const { comments } = messages;
   const thread = rows.filter(row => row.annotation_id === annotation.id)
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
 
-  useEffect(() => {
-    const element = dialog.current;
-    element?.showModal();
-    return () => { element?.close(); };
-  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,12 +45,7 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
   }
 
   return (
-    <dialog ref={dialog} className={styles.dialog} aria-labelledby={title} onCancel={event => {
-      event.preventDefault();
-      close();
-    }}>
-      <div className={styles.panel}>
-        <div id={title}><Heading as="h2">{comments.thread}</Heading></div>
+    <Sheet title={comments.thread} onClose={close}>
         <Text>{annotation.quote_text}</Text>
         {annotation.note && <Text tone="muted">{annotation.note}</Text>}
         {thread.length === 0 && <Text>{comments.empty}</Text>}
@@ -85,7 +73,6 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
           <Button type="submit" loading={busy} disabled={!reply.trim()}>{comments.send}</Button>
         </form>
         <Button variant="quiet" onClick={close}>{comments.close}</Button>
-      </div>
-    </dialog>
+    </Sheet>
   );
 }

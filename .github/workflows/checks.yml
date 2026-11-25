@@ -63,5 +63,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
+      - run: |
+          node scripts/dict/build.mjs pt tests/fixtures/dictionary.jsonl test-fixture
+          node scripts/dict/build.mjs en tests/fixtures/dictionary.jsonl test-fixture
       - run: npm run build
       - run: npm run test:e2e
+        env:
+          TEST_DICTIONARY: fixture

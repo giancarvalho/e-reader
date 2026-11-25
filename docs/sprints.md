@@ -79,3 +79,11 @@ respostas em ordem cronológica. O autor da resposta pode apagá-la. O
 aparelho conserva novas respostas sem rede e reusa a fila e o cursor dos
 grifos para sincronizar ao reconectar. O teste em aparelhos reais usa dois
 membros que respondem ao mesmo grifo e verifica a exclusão em ambos.
+
+## Sprint 6 em execução
+
+A seleção de uma palavra abre as definições no idioma do livro, tenta
+lemas e formas com hífen e apresenta as atribuições do Wikcionário. Os
+fragmentos consultados ficam disponíveis offline. O [processo do corpus](sprint-6-dicionario.md)
+gera a pasta a distribuir no deploy. A revisão de precisão contextual
+em 100 palavras de cada idioma ainda está pendente.

@@ -8,6 +8,7 @@ import { TextArea } from "@/design-system/components/TextArea";
 import { TextField } from "@/design-system/components/TextField";
 import { StatusBanner } from "@/design-system/components/StatusBanner";
 import { messages } from "@/lib/messages/pt-br";
+import { SheetExample } from "./SheetExample";
 import styles from "./page.module.css";
 
 export default function DesignCatalog() {
@@ -29,6 +30,7 @@ export default function DesignCatalog() {
           <StatusBanner>{messages.diagnostics.updateAvailable}</StatusBanner>
           <StatusBanner tone="warning">{messages.annotations.syncError}</StatusBanner>
           <Avatar name={catalog.author} />
+          <SheetExample />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />
           <div className={styles.actions}>
             <Button>{catalog.primary}</Button>

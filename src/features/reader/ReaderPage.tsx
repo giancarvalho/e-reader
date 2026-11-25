@@ -130,7 +130,7 @@ export function ReaderPage() {
       {reading === undefined && <Text>{reader.loading}</Text>}
       {reading === null && <Text>{reader.missing}</Text>}
       {reading && <ReadingWorkspace
-        identity={reading.identity} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
+        identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
         onPosition={save} onPreferences={changePreferences}
       />}
       {failed && <div role="status"><Text>{reader.progressFailed}</Text></div>}

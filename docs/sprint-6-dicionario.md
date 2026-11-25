@@ -36,3 +36,14 @@ Falta medir a precisão em contexto das 100 formas de cada idioma.
 
 A execução completa da fonte PT selecionada gerou 380.075 entradas em 490
 fragmentos, ocupando 32 MiB no disco de teste.
+
+Para o snapshot de 01/10/2026, a exportação compactada somente em inglês
+também está disponível (534 MB). O argumento `english-only` registra essa
+origem no manifesto. O Kaikki sinaliza que a exportação por idioma poderá
+ser removida. O dump bruto continua sendo a fonte padrão.
+
+```sh
+set -o pipefail
+curl -fSL https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz |
+  node scripts/dict/build.mjs en - 2026-10-01 public/dict english-only
+```
