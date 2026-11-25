@@ -13,6 +13,10 @@ export const messages = {
     quiet: "Discreto",
     add: "Adicionar",
     disabled: "Desabilitado",
+    invite: "Código de convite",
+    inviteError: "Confira o código de convite e tente novamente.",
+    note: "Nota",
+    noteUnavailable: "Nota indisponível",
     loading: "Carregando",
   },
 };

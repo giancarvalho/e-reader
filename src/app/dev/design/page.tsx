@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
+import { TextArea } from "@/design-system/components/TextArea";
+import { TextField } from "@/design-system/components/TextField";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./page.module.css";
 
@@ -17,6 +19,10 @@ export default function DesignCatalog() {
           <Heading as="h2">{catalog[theme]}</Heading>
           <Text>{catalog.body}</Text>
           <Text variant="reading" tone="muted">{catalog.reading}</Text>
+          <TextField label={catalog.invite} autoComplete="off" />
+          <TextField label={catalog.invite} error={catalog.inviteError} defaultValue="ABCD" />
+          <TextArea label={catalog.note} rows={3} />
+          <TextArea label={catalog.noteUnavailable} rows={2} disabled />
           <div className={styles.actions}>
             <Button>{catalog.primary}</Button>
             <Button variant="secondary">{catalog.secondary}</Button>

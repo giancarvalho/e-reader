@@ -26,6 +26,6 @@ O roteiro de validação, as evidências esperadas e as pendências desta sprint
 ## Sprint 1 em execução
 
 O catálogo de desenvolvimento em `/dev/design` começa com `Button`, `Text`
-e `Heading`. A validação manual dos componentes inclui foco por teclado,
+e `Heading`, além de `TextField` e `TextArea` com estados de erro e desabilitado. A validação manual dos componentes inclui foco por teclado,
 toque em 320 px, texto ampliado e os painéis Dia e Noite. O fluxo com
 convite depende da validação do Google OAuth instalado na sprint 0.
