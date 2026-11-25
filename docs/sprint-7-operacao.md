@@ -9,7 +9,9 @@ a versão do deploy e se o service worker controla a página.
 Com o Supabase local iniciado, execute `scripts/ops/check-local-restore.sh`.
 O ensaio cria um grupo e um livro temporários, gera um dump lógico, restaura
 em outro banco do mesmo Postgres e compara os metadados. O runner usa
-somente a instância local de teste.
+somente a instância local de teste. Quando o papel administrativo do
+container não está disponível, o ensaio restaura sem os proprietários e
+privilégios originais. As políticas são verificadas na suíte SQL.
 
 ## Preparar o ambiente hospedado
 

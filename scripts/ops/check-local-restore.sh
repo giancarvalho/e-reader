@@ -25,10 +25,22 @@ insert into public.groups (id, name) values ('$book_group', 'Local restore fixtu
 insert into public.books (group_id, id, title) values ('$book_group', '$book_hash', 'Restore test EPUB');
 SQL
 
-docker exec "$container" pg_dump -U supabase_admin -d postgres --format=custom > "$snapshot"
+database_command() {
+  docker exec -i "$container" sh -c 'export PGPASSWORD="${POSTGRES_PASSWORD:-}"; exec "$@"' sh "$@"
+}
+
+if database_command psql -X -At -U supabase_admin -d postgres -c "select 1" >/dev/null 2>&1; then
+  restore_role=supabase_admin
+  restore_options=()
+else
+  restore_role=postgres
+  restore_options=(--no-owner --no-privileges)
+fi
+
+database_command pg_dump -U "$restore_role" -d postgres --format=custom > "$snapshot"
 docker exec "$container" createdb -U postgres --template=template0 "$database"
 created=true
-docker exec -i "$container" pg_restore -U supabase_admin --exit-on-error --dbname="$database" < "$snapshot"
+database_command pg_restore -U "$restore_role" --exit-on-error --dbname="$database" "${restore_options[@]}" < "$snapshot"
 
 restored=$(docker exec "$container" psql -X -At -U postgres -d "$database"   -c "select title || '|' || file_hash from public.books where group_id = '$book_group' and id = '$book_hash'")
 [[ "$restored" == "Restore test EPUB|$book_hash" ]]
