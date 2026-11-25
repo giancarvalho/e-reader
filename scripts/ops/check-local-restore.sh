@@ -31,7 +31,7 @@ database_command() {
 
 if database_command psql -X -At -U supabase_admin -d postgres -c "select 1" >/dev/null 2>&1; then
   restore_role=supabase_admin
-  restore_options=()
+  restore_options=(--no-privileges)
 else
   restore_role=postgres
   restore_options=(--no-owner --no-privileges)
