@@ -47,11 +47,11 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
       }],
     }, "active");
     transaction.objectStore("files").put({
-      userId: "reader", groupId: "group", hash, file: new Blob([Uint8Array.from(bytes)]), cover: null,
+      userId: "reader", groupId: "group", hash, file: Uint8Array.from(bytes).buffer, cover: null,
     });
     await new Promise<void>((resolve, reject) => {
       transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
+      transaction.onerror = event => reject((event.target as IDBRequest).error ?? transaction.error);
     });
     db.close();
   }, { bytes: Array.from(bytes), hash });
