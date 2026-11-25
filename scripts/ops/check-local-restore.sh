@@ -25,10 +25,10 @@ insert into public.groups (id, name) values ('$book_group', 'Local restore fixtu
 insert into public.books (group_id, id, title) values ('$book_group', '$book_hash', 'Restore test EPUB');
 SQL
 
-docker exec "$container" pg_dump -U postgres -d postgres --format=custom > "$snapshot"
+docker exec "$container" pg_dump -U supabase_admin -d postgres --format=custom > "$snapshot"
 docker exec "$container" createdb -U postgres --template=template0 "$database"
 created=true
-docker exec -i "$container" pg_restore -U postgres --exit-on-error --dbname="$database" < "$snapshot"
+docker exec -i "$container" pg_restore -U supabase_admin --exit-on-error --dbname="$database" < "$snapshot"
 
 restored=$(docker exec "$container" psql -X -At -U postgres -d "$database"   -c "select title || '|' || file_hash from public.books where group_id = '$book_group' and id = '$book_hash'")
 [[ "$restored" == "Restore test EPUB|$book_hash" ]]
