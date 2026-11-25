@@ -188,7 +188,7 @@ Toda tabela de conteúdo carrega `group_id`, mesmo com um único grupo no MVP, p
 | `memberships` | `user_id`, `group_id`, `role` (`organizer` ou `member`), `joined_at` | Criada apenas pela função de convite. |
 | `books` | `id`, `group_id`, `file_hash` (SHA-256), `title`, `author`, `language`, `file_path`, `cover_path`, `position`, `is_current` | `(group_id, file_hash)` único. |
 | `annotations` | `id`, `group_id`, `book_id`, `author_id`, `cfi`, `color`, `quote_text`, `note`, `updated_at`, `deleted_at` | O grifo e a nota do próprio autor. |
-| `comments` | `id`, `group_id`, `annotation_id`, `author_id`, `text`, `updated_at`, `deleted_at` | Respostas de qualquer membro a um grifo, em fio plano e ordem cronológica. |
+| `comments` | `id`, `group_id`, `book_id`, `annotation_id`, `author_id`, `text`, `created_at`, `updated_at`, `deleted_at` | Respostas de qualquer membro a um grifo, em fio plano e ordem cronológica. |
 | `progress` | `user_id`, `book_id`, `group_id`, `cfi`, `fraction`, `updated_at` | Chave `(user_id, group_id, book_id)`. Privada. |
 | user\_preferences | user\_id (chave), theme, custom\_bg, custom\_ink, font\_size, font\_family, updated\_at | Uma linha por pessoa; vale em todos os aparelhos. Privada. |
 
