@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { AnnotationList, AnnotationPanel, useAnnotations, type AnnotationSelection } from "@/features/annotations";
+import { CommentThread, useComments } from "@/features/comments";
 import { Button } from "@/design-system/components/Button";
 import { Text } from "@/design-system/components/Text";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -23,6 +24,11 @@ type Props = {
 
 export function ReadingWorkspace({ identity, file, cfi, preferences, onPosition, onPreferences }: Props) {
   const { rows, status, save, retry } = useAnnotations(identity);
+  const comments = useComments(identity);
+  const [threadId, openThread] = useState<string>();
+  const thread = rows.find(row => row.id === threadId);
+  const counts = new Map<string, number>();
+  for (const row of comments.rows) counts.set(row.annotation_id, (counts.get(row.annotation_id) ?? 0) + 1);
   const [selection, setSelection] = useState<AnnotationSelection>();
   const [editing, setEditing] = useState<Annotation>();
   const [target, setTarget] = useState<{ cfi: string }>();
@@ -53,16 +59,16 @@ export function ReadingWorkspace({ identity, file, cfi, preferences, onPosition,
         onPosition={onPosition} onPreferences={onPreferences}
         annotations={rows} annotationTarget={target} onChapter={setCurrentChapter} onChapters={setChapters}
         onSelection={value => { setEditing(undefined); setSelection(value); }}
-        onAnnotation={id => {
-          const row = rows.find(entry => entry.id === id);
-          if (row?.author_id === identity.user) edit(row);
-        }}
+        onAnnotation={openThread}
       >
         <div role="status">{announcement}</div>
         {(selection || editing) && <AnnotationPanel key={editing?.id ?? selection?.cfi}
           identity={identity} selection={selection} editing={editing} cancel={cancel} onSave={save} />}
         <AnnotationList rows={rows} userId={identity.user} chapters={chapters} currentChapter={currentChapter}
-          onGo={row => setTarget({ cfi: row.cfi })} onEdit={edit} />
+          onGo={row => setTarget({ cfi: row.cfi })} onEdit={edit}
+          commentCounts={counts} onThread={row => openThread(row.id)} />
+        {thread && <CommentThread key={thread.id} identity={identity} annotation={thread} rows={comments.rows}
+          status={comments.status} save={comments.save} retry={comments.retry} close={() => openThread(undefined)} />}
       </ReaderCanvas>
     </>
   );

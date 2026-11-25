@@ -82,3 +82,8 @@ body {
   --highlight-blue: #7fa6c9;
   --highlight-pink: #d98ba0;
 }
+
+:root {
+  --radius-round: 50%;
+  --dialog-backdrop: rgb(0 0 0 / 48%);
+}

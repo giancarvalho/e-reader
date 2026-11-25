@@ -14,9 +14,11 @@ type Props = {
   currentChapter?: number;
   onGo: (row: Annotation) => void;
   onEdit: (row: Annotation) => void;
+  commentCounts: ReadonlyMap<string, number>;
+  onThread: (row: Annotation) => void;
 };
 
-export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, onEdit }: Props) {
+export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, onEdit, commentCounts, onThread }: Props) {
   const { annotations } = messages;
   const groups = new Map<number, Annotation[]>();
   for (const row of rows) {
@@ -38,6 +40,9 @@ export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, o
                 <li key={row.id} className={styles.panel}>
                   <Button variant="quiet" onClick={() => onGo(row)}>{row.quote_text}</Button>
                   {row.note && <Text>{row.note}</Text>}
+                  <Button variant="quiet" onClick={() => onThread(row)}>
+                    {messages.comments.label} ({commentCounts.get(row.id) ?? 0})
+                  </Button>
                   {row.author_id === userId && <Button variant="secondary" onClick={() => onEdit(row)}>{annotations.edit}</Button>}
                 </li>
               ))}

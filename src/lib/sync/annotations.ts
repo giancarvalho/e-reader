@@ -12,20 +12,22 @@ export type Annotation = {
   deleted_at: string | null;
 };
 
-export type RemoteAnnotation = Annotation & { updated_at: string };
+export type SyncRow = Pick<Annotation, "id" | "group_id" | "book_id" | "author_id" | "deleted_at">;
+export type RemoteRow<Row extends SyncRow> = Row & { updated_at: string };
+export type RemoteAnnotation = RemoteRow<Annotation>;
 export type AnnotationCursor = { timestamp: string; id: string };
-export type PendingAnnotation = { revision: string; annotation: Annotation };
+export type PendingAnnotation<Row extends SyncRow = Annotation> = { revision: string; annotation: Row };
 
-export interface AnnotationTransport {
-  send(annotation: Annotation): Promise<RemoteAnnotation>;
-  read(cursor: AnnotationCursor | null): Promise<RemoteAnnotation[]>;
+export interface AnnotationTransport<Row extends SyncRow = Annotation> {
+  send(annotation: Row): Promise<RemoteRow<Row>>;
+  read(cursor: AnnotationCursor | null): Promise<RemoteRow<Row>[]>;
 }
 
-export interface AnnotationQueue {
-  pending(): Promise<PendingAnnotation[]>;
-  acknowledge(operation: PendingAnnotation, reply: RemoteAnnotation): Promise<void>;
+export interface AnnotationQueue<Row extends SyncRow = Annotation> {
+  pending(): Promise<PendingAnnotation<Row>[]>;
+  acknowledge(operation: PendingAnnotation<Row>, reply: RemoteRow<Row>): Promise<void>;
   readCursor(): Promise<AnnotationCursor | null>;
-  receive(rows: RemoteAnnotation[], cursor: AnnotationCursor): Promise<void>;
+  receive(rows: RemoteRow<Row>[], cursor: AnnotationCursor): Promise<void>;
 }
 
 export function compareCursor(a: AnnotationCursor, b: AnnotationCursor) {
@@ -34,7 +36,7 @@ export function compareCursor(a: AnnotationCursor, b: AnnotationCursor) {
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
-export async function syncAnnotations(queue: AnnotationQueue, transport: AnnotationTransport) {
+export async function syncAnnotations<Row extends SyncRow>(queue: AnnotationQueue<Row>, transport: AnnotationTransport<Row>) {
   for (const operation of await queue.pending()) {
     const reply = await transport.send(operation.annotation);
     if (reply.id !== operation.annotation.id) throw new Error("Unexpected annotation acknowledgement");

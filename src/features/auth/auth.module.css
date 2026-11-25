@@ -19,10 +19,3 @@
 .panel a:focus-visible {
   outline: var(--focus-ring) solid var(--color-accent-text);
 }
-
-.photo {
-  inline-size: var(--touch-target);
-  block-size: var(--touch-target);
-  border-radius: 50%;
-  object-fit: cover;
-}
