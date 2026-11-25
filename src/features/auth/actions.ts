@@ -3,24 +3,22 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getRequestAuth } from "@/lib/supabase/server";
-import { getAuthConfig } from "@/lib/supabase/config";
 import {
   encodeGoogleFlow, getGoogleConfig, googleAuthorizationUrl, googleFlowCookie,
   googleFlowLifetime, googleFlowPath, hasGoogleCredentials, newGoogleFlow,
 } from "./google";
 
 export async function signInWithGoogle() {
-  const auth = getAuthConfig(process.env);
-  const google = auth && getGoogleConfig(process.env, auth.origin);
+  const auth = await getRequestAuth(true);
   if (!auth) redirect("/entrar?status=unavailable");
+  const { config, client } = auth;
+  const google = getGoogleConfig(process.env, config.origin);
   if (!google) {
     if (hasGoogleCredentials(process.env)) redirect("/entrar?status=unavailable");
 
-    const request = await getRequestAuth(true);
-    if (!request) redirect("/entrar?status=unavailable");
-    const { data, error } = await request.client.auth.signInWithOAuth({
+    const { data, error } = await client.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: new URL("/auth/callback", auth.origin).href },
+      options: { redirectTo: new URL("/auth/callback", config.origin).href },
     });
     if (error || !data.url) redirect("/entrar?status=failed");
     redirect(data.url);
@@ -29,7 +27,7 @@ export async function signInWithGoogle() {
   const flow = newGoogleFlow();
   const store = await cookies();
   store.set(googleFlowCookie, encodeGoogleFlow(flow), {
-    httpOnly: true, secure: auth.secure, sameSite: "lax", path: googleFlowPath, maxAge: googleFlowLifetime,
+    httpOnly: true, secure: config.secure, sameSite: "lax", path: googleFlowPath, maxAge: googleFlowLifetime,
   });
   redirect(googleAuthorizationUrl(google, flow));
 }

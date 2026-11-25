@@ -11,14 +11,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/headers", () => ({ cookies: async () => ({ set: mocks.set }) }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/lib/supabase/server", () => ({
-  getRequestAuth: async () => ({ client: { auth: { signInWithOAuth: mocks.hosted } } }),
+  getRequestAuth: async () => ({
+    config: { origin: "https://margins.example", secure: true },
+    client: { auth: { signInWithOAuth: mocks.hosted } },
+  }),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubEnv("APP_ORIGIN", "https://margins.example");
-  vi.stubEnv("SUPABASE_URL", "https://project.supabase.co");
-  vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "test-key");
   vi.stubEnv("GOOGLE_CLIENT_ID", "test-client.apps.googleusercontent.com");
   vi.stubEnv("GOOGLE_CLIENT_SECRET", "test-secret");
 });
