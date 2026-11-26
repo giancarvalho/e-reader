@@ -20,8 +20,7 @@
 .definition {
   display: grid;
   gap: var(--space-8);
-  /* stylelint-disable-next-line unit-disallowed-list -- baseline(B1) */
-  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
+  border-block-start: var(--border-divider);
   padding-block-start: var(--space-12);
 }
 
@@ -75,7 +74,7 @@
   padding: var(--space-16);
   /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
   border: var(--focus-ring) solid var(--color-surface);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B1) */
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
   border-radius: var(--radius-control);
 }
 
