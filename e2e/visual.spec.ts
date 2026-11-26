@@ -34,8 +34,8 @@ for (const theme of themes) {
         await page.goto(path);
         await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
         await settled(page);
-        // The diagnostics version is the commit hash, which changes on every build.
-        await expect(page).toHaveScreenshot(`${name}-${theme}.png`, { fullPage: true, mask: [page.locator("dd").first()] });
+        // Diagnostics values (build hash, service worker state) differ between runs.
+        await expect(page).toHaveScreenshot(`${name}-${theme}.png`, { fullPage: true, mask: [page.locator("dd")] });
       });
     }
 
