@@ -143,6 +143,8 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByRole("link", { name: "CC BY-SA 4.0" })).toBeVisible();
+    await expect(dictionary.getByRole("link", { name: "Histórico e autores" })).toBeVisible();
+    await expect(dictionary.getByText("Definições adaptadas", { exact: true })).toHaveCount(0);
     await dictionary.getByRole("heading", { name: "capítulo", exact: true }).click();
     await expect(dictionary).toBeVisible();
     await page.mouse.click(1, 1);

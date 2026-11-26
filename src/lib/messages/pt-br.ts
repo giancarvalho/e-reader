@@ -189,7 +189,6 @@ export const messages = {
     source: "Extraído e adaptado pelo Wiktextract, via Kaikki.",
     wiktionary: "Wikcionário",
     history: "Histórico e autores",
-    adapted: "Definições adaptadas",
     license: "CC BY-SA 4.0",
     close: "Fechar dicionário",
     pos: {
