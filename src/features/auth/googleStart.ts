@@ -1,4 +1,5 @@
 import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
+import { redeemInvite } from "../access/redeemInvite";
 import { cookies } from "next/headers";
 import { getRequestAuth } from "@/lib/supabase/server";
 import {
@@ -12,7 +13,7 @@ export async function getGoogleSignInDestination(inviteValue?: string) {
   if (!auth) return signInPath("unavailable", invite);
   const { config, client } = auth;
   const { data: { user } } = await client.auth.getUser();
-  if (user) return invitePath(invite);
+  if (user) return invite ? await redeemInvite(client, invite) : invitePath();
   const store = await cookies();
   if (invite || store.get(pendingInviteCookie)) {
     store.set(pendingInviteCookie, invite ?? "", {

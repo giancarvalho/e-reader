@@ -1,4 +1,5 @@
 import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
+import { redeemInvite } from "../access/redeemInvite";
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthConfig } from "../../lib/supabase/config";
 import { createAuthClient } from "@/lib/supabase/server";
@@ -32,7 +33,7 @@ export async function finishDirectGoogleSignIn(request: NextRequest) {
           },
         });
         const { error } = await client.auth.signInWithIdToken(credentials);
-        if (!error) response.headers.set("Location", invitePath(invite));
+        if (!error) response.headers.set("Location", invite ? await redeemInvite(client, invite) : invitePath());
       }
     } catch {
       // Network failures and malformed provider responses return to the sign-in page.

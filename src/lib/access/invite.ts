@@ -18,3 +18,7 @@ export function signInPath(status?: "failed" | "unavailable", code?: string) {
 }
 
 export const pendingInviteOptions = { path: "/auth", httpOnly: true, sameSite: "lax", maxAge: 600 } as const;
+
+export function homeInvitePath(code: string) {
+  return `/?invite=${encodeURIComponent(code)}`;
+}
