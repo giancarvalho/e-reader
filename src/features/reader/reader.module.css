@@ -1,53 +1,131 @@
 .page {
-  display: grid;
-  gap: var(--space-16);
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  padding-block-start: max(var(--space-16), env(safe-area-inset-top));
-  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
-  padding-inline: max(var(--space-16), env(safe-area-inset-left)) max(var(--space-16), env(safe-area-inset-right));
+  min-block-size: 100dvh;
 }
 
-.header,
-.controls,
-.settings {
+.header {
   display: grid;
   gap: var(--space-8);
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  padding: var(--space-24);
 }
 
-.page a {
-  display: inline-grid;
-  align-items: center;
-  min-block-size: var(--touch-target);
-  justify-self: start;
+.header a, .state a {
   color: var(--color-accent-text);
 }
 
-.viewport:not(:empty) {
-  block-size: max(var(--reader-min-viewport), var(--reader-viewport));
+.reader {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--color-ink);
+  background: var(--color-bg);
 }
 
-.canvas {
-  display: block;
+.viewport {
   block-size: 100%;
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  box-sizing: border-box;
+  padding-block: env(safe-area-inset-top) max(var(--touch-target), env(safe-area-inset-bottom));
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
+.canvas { display: block; block-size: 100%; }
+
+.toolbarTop, .toolbarBottom, .progressOnly {
+  position: absolute;
+  inset-inline: 0;
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  box-sizing: border-box;
 }
 
-.controls summary,
-.settings label {
+.toolbarTop, .toolbarBottom {
+  background: var(--color-bg);
+}
+
+.toolbarTop {
+  inset-block-start: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  padding: max(var(--space-8), env(safe-area-inset-top)) var(--space-8) var(--space-8);
+  border-block-end: var(--focus-ring) solid var(--color-surface);
+}
+
+.toolbarTop h1 {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--font-label) var(--font-ui);
+  text-align: center;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--touch-target);
+  min-block-size: var(--touch-target);
+  color: var(--color-accent-text);
+  text-decoration: none;
+  font: var(--font-heading) var(--font-reading);
+}
+
+.toolbarBottom, .progressOnly {
+  inset-block-end: 0;
+  padding-block-end: env(safe-area-inset-bottom);
+}
+
+.toolbarBottom { border-block-start: var(--focus-ring) solid var(--color-surface); }
+.tools { display: flex; justify-content: space-between; }
+.tools button { padding-inline: var(--space-8); }
+
+.progress {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-8);
+  width: 100%;
   min-block-size: var(--touch-target);
+  padding-inline: var(--space-24);
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font: var(--font-label) var(--font-ui);
+  cursor: pointer;
 }
 
-.settings :is(input, select) {
-  min-block-size: var(--touch-target);
-  font: inherit;
+.progress span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.reader[data-theme="custom"] .progressOnly .progress { color: var(--color-ink); background: var(--color-bg); }
+.reader :is(.progress, .back):focus-visible { outline: var(--focus-ring) solid var(--color-accent-text); outline-offset: calc(-1 * var(--focus-ring)); }
+
+.settings, .state { display: grid; gap: var(--space-16); }
+.settings fieldset { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+.settings legend { margin-block-end: var(--space-8); }
+.options, .size { display: flex; flex-wrap: wrap; gap: var(--space-8); align-items: center; }
+.size output { min-inline-size: var(--touch-target); text-align: center; }
+.toc { list-style: none; margin: 0; padding-inline-start: var(--space-12); }
+.toc button { text-align: start; }
+.state { position: absolute; inset-block-start: var(--space-24); inset-inline: var(--space-24); }
+.selection {
+  position: absolute;
+  inset-block-end: max(var(--space-8), env(safe-area-inset-bottom));
+  inset-inline: var(--space-8);
+  max-inline-size: var(--layout-width);
+  max-block-size: 56dvh;
+  overflow: auto;
+  margin-inline: auto;
+  padding: var(--space-16);
+  border: var(--focus-ring) solid var(--color-muted);
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+}
+.progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }

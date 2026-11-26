@@ -17,3 +17,10 @@
   gap: var(--space-8);
   overflow-wrap: anywhere;
 }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--space-8);
+}

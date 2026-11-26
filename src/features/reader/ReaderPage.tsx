@@ -122,18 +122,18 @@ export function ReaderPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
+      {!reading && <header className={styles.header}>
         {/* Use a document navigation so the service worker can provide the offline shelf. */}
         <a href="/estante">{reader.shelf}</a>
-        <Heading>{reading?.book.title ?? reader.title}</Heading>
-      </header>
+        <Heading>{reader.title}</Heading>
+      </header>}
       {reading === undefined && <Text>{reader.loading}</Text>}
       {reading === null && <Text>{reader.missing}</Text>}
-      {reading && <ReadingWorkspace
+      {reading && <ReadingWorkspace title={reading.book.title}
         identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
         onPosition={save} onPreferences={changePreferences}
       />}
-      {failed && <div role="status"><Text>{reader.progressFailed}</Text></div>}
+      {failed && <div className={styles.progressError} role="status"><Text>{reader.progressFailed}</Text></div>}
     </main>
   );
 }

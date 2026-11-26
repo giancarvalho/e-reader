@@ -2,10 +2,12 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Heading } from "../Heading";
+import { Button } from "../Button";
 import styles from "./Sheet.module.css";
 
-export function Sheet({ title, onClose, children }: {
+export function Sheet({ title, closeLabel, onClose, children }: {
   title: string;
+  closeLabel?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -24,7 +26,10 @@ export function Sheet({ title, onClose, children }: {
       onClose();
     }}>
       <div className={styles.content}>
-        <div id={headingId}><Heading as="h2">{title}</Heading></div>
+        <div className={styles.header}>
+          <div id={headingId}><Heading as="h2">{title}</Heading></div>
+          {closeLabel && <Button variant="icon" aria-label={closeLabel} onClick={onClose}>×</Button>}
+        </div>
         {children}
       </div>
     </dialog>
