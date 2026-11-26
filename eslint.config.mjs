@@ -48,6 +48,7 @@ export default defineConfig([
       "no-restricted-properties": ["error",
         { object: "Intl", property: "NumberFormat", message: "Format numbers through src/lib/format." },
         { object: "Intl", property: "DateTimeFormat", message: "Format dates through src/lib/format." },
+        { object: "window", property: "visualViewport", message: "Read the visible area through src/design-system/viewport (getViewport, observeViewport)." },
       ],
       "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
     },

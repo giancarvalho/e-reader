@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
+import { getViewport, observeViewport } from "@/design-system/viewport";
 import { getNoteAuthor } from "@/features/annotations";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
@@ -43,9 +44,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
     if (!node) return;
     const place = () => {
       const position = anchor?.();
-      const viewport = window.visualViewport;
-      const left = viewport?.offsetLeft ?? 0, top = viewport?.offsetTop ?? 0;
-      const width = viewport?.width ?? window.innerWidth, height = viewport?.height ?? window.innerHeight;
+      const { left, top, width, height } = getViewport();
       const inset = parseFloat(getComputedStyle(node).paddingTop);
       node.style.maxWidth = Math.max(0, width - 2 * inset) + "px";
       node.style.maxHeight = Math.max(0, height - 2 * inset) + "px";
@@ -67,10 +66,8 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
     place();
     const observer = new ResizeObserver(place);
     observer.observe(node);
-    window.visualViewport?.addEventListener("resize", place);
-    window.visualViewport?.addEventListener("scroll", place);
-    window.addEventListener("resize", place);
-    return () => { observer.disconnect(); window.visualViewport?.removeEventListener("resize", place); window.visualViewport?.removeEventListener("scroll", place); window.removeEventListener("resize", place); };
+    const stopObserving = observeViewport(place);
+    return () => { observer.disconnect(); stopObserving(); };
   }, [anchor]);
   useEffect(() => {
     const node = panel.current;

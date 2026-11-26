@@ -32,6 +32,10 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `Avatar` | Foto ou iniciais de uma pessoa | |
 | `BookCard`, `BookCover` | Livro na estante. Traz fundo, raio e margem próprios; `featured` usa o título de página em vez do de seção | `BookCover` é composto por `BookCard` |
 
+## Utilitários
+
+- `src/design-system/viewport.ts`: `getViewport()` devolve a área realmente visível (posição, tamanho e o espaço coberto pelo teclado, `bottomInset`); `observeViewport(callback)` avisa quando ela muda. `Sheet` e o balão de comentário usam; todo painel flutuante novo deve usar (regra 12).
+
 ## Tokens (`src/design-system/tokens/base.css`)
 
 Espaço `--space-8/12/16/24/48`; raio `--radius-control`, `--radius-round`;
@@ -60,6 +64,7 @@ O `npm run lint` bloqueia, fora de `src/design-system`:
 - `role="status"` e `role="alert"` à mão (use `Notice`);
 - `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus (um `<input type="hidden">` é permitido);
 - `navigator.onLine` e `addEventListener("online" | "offline")` (use `src/lib/online`: `useOnline`, `useOnReconnect`, `isOnline`, `onReconnect`, `onDisconnect`);
+- `window.visualViewport` (use `src/design-system/viewport`: `getViewport`, `observeViewport`; é o que mantém folhas e painéis acima do teclado virtual);
 - `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`: `formatPercent`, `formatDateTime`; formatadores novos entram lá);
 - importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`, com a interface) ou `@/features/<nome>/server` (o `server.ts`, só para código de servidor, como rotas e callbacks, sem carregar a interface);
 - arquivos com mais de 300 linhas.
