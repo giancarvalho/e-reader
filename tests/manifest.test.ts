@@ -7,6 +7,10 @@ describe("PWA manifest", () => {
     expect(manifest()).toMatchObject({ id: "/", start_url: "/estante", scope: "/", display: "standalone" });
   });
 
+  it("gives the installed Android window a dark fallback for its system bars", () => {
+    expect(manifest()).toMatchObject({ theme_color: "#17130F", background_color: "#17130F" });
+  });
+
   it("ships install icons at the declared sizes", () => {
     const icons = manifest().icons ?? [];
     expect(icons.map(({ sizes }) => sizes)).toEqual(["192x192", "512x512"]);

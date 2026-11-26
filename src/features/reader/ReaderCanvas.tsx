@@ -11,6 +11,7 @@ import { messages } from "@/lib/messages/pt-br";
 import type { TocEntry } from "@/vendor/foliate/epub";
 import type { View } from "@/vendor/foliate/view";
 import styles from "./reader.module.css";
+import { bindWordPress, pressInProgress } from "./word-press";
 
 type Props = {
   title: string;
@@ -35,6 +36,7 @@ export function ReaderCanvas({
   title, annotationCount, onOpenAnnotations, file, initialCfi, preferences, onPosition, onPreferences, annotations, annotationTarget,
   onSelection, onAnnotation, onChapter, onChapters, selectionReset, children,
 }: Props) {
+  const readerSurface = useRef<HTMLElement>(null);
   const mount = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>(null);
   const lastCfi = useRef(initialCfi);
@@ -76,6 +78,7 @@ export function ReaderCanvas({
     let selectionTimer: number | undefined;
     let selectionSettle: number | undefined;
     let pointerId: number | undefined;
+    let words: AbortController | undefined;
     let previousSelection = "";
     let lastAnnotationTap = -Infinity;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -120,6 +123,7 @@ export function ReaderCanvas({
     function inspectSelection() {
       if (!view?.renderer || pointerId !== undefined || document.visibilityState !== "visible") return;
       for (const { doc, index } of view.renderer.getContents()) {
+        if (pressInProgress(doc)) continue;
         const selected = doc.getSelection();
         const quote = selected?.toString().trim().slice(0, 4000);
         if (!quote || !selected?.rangeCount) continue;
@@ -129,7 +133,7 @@ export function ReaderCanvas({
             previousSelection = cfi;
             window.clearTimeout(selectionSettle);
             selectionSettle = window.setTimeout(() => {
-              if (!cancelled && pointerId === undefined && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
+              if (!cancelled && pointerId === undefined && !pressInProgress(doc) && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
                 reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
               }
             }, 180);
@@ -159,8 +163,15 @@ export function ReaderCanvas({
       view.className = styles.canvas;
       view.addEventListener("external-link", event => event.preventDefault());
       view.addEventListener("load", event => {
+        if (cancelled) return;
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
         pointerId = undefined;
+        words?.abort();
+        words = new AbortController();
+        bindWordPress(doc, words.signal, () => {
+          pointerId = undefined;
+          inspectSelection();
+        });
         doc.addEventListener("pointerdown", event => {
           pointerId = event.pointerId;
           previousSelection = "";
@@ -229,6 +240,7 @@ export function ReaderCanvas({
     void open().catch(() => {
       window.clearInterval(selectionTimer);
       window.clearTimeout(selectionSettle);
+      words?.abort();
       view?.close();
       view?.remove();
       destroy?.();
@@ -240,6 +252,7 @@ export function ReaderCanvas({
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
       window.clearTimeout(selectionSettle);
+      words?.abort();
       view?.close();
       view?.remove();
       destroy?.();
@@ -256,6 +269,16 @@ export function ReaderCanvas({
     view.renderer.setStyles(readerStyles(preferences));
     if (cfi) void view.goTo(cfi).catch(() => setFailed(true));
   }, [preferences]);
+
+  useEffect(() => {
+    const surface = readerSurface.current;
+    if (!surface || preferences.theme === "auto") return;
+    const theme = document.createElement("meta");
+    theme.name = "theme-color";
+    theme.content = getComputedStyle(surface).backgroundColor;
+    document.head.prepend(theme);
+    return () => { theme.remove(); };
+  }, [preferences.theme, preferences.background]);
 
   useEffect(() => {
     if (ready && viewRef.current) void refresh(viewRef.current);
@@ -280,7 +303,7 @@ export function ReaderCanvas({
   const position = new Intl.NumberFormat("pt-BR", { style: "percent" }).format(location.fraction);
   const controlLabel = controls ? reader.hideControls : reader.showControls;
   return (
-    <section className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
+    <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
       {!ready && !failed && <div className={styles.state} role="status"><Text>{reader.loading}</Text></div>}
       {failed && <div className={styles.state} role="alert"><Text>{reader.failed}</Text>
         <a href="/estante">{reader.shelf}</a></div>}
@@ -404,6 +427,10 @@ function readerStyles(preferences: ReaderPreferences) {
     : "";
   probe.remove();
   return `
+    html[data-reader-word-press="pending"], html[data-reader-word-press="pending"] * {
+      -webkit-user-select: none !important; user-select: none !important;
+    }
+    @media (pointer: coarse) { html { -webkit-touch-callout: none; } }
     html, body { ${colors} color-scheme: ${preferences.theme === "auto" ? "light dark" : scheme}; }
     body { font: ${preferences.size}px/1.55 ${preferences.font === "serif" ? "serif" : "sans-serif"} !important; }
     p, li, blockquote { color: inherit !important; font-family: inherit !important; font-size: 1em !important; }

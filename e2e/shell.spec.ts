@@ -18,6 +18,9 @@ test("shows the reading shell in both system themes", async ({ page }) => {
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 245, 236)");
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(23, 19, 15)");
+  await expect(page.locator("html")).toHaveCSS("background-color", "rgb(23, 19, 15)");
+  await expect(page.locator('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]'))
+    .toHaveAttribute("content", "#17130F");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
