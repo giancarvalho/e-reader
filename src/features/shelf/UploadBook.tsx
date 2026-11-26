@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { TextField } from "@/design-system/components/TextField";
 import { inspectEpub } from "@/lib/epub/inspect";
 import { messages } from "@/lib/messages/pt-br";
@@ -85,7 +86,7 @@ export function UploadBook() {
         onChange={event => void choose(event.target.files?.[0])} />
       {selected && <BookCard title={selected.book.title} author={selected.book.author} cover={cover} />}
       <Button type="submit" loading={busy} disabled={!selected || inspecting}>{shelf.publish}</Button>
-      <div role="status">{busy ? shelf.uploading : inspecting ? shelf.inspecting : notice}</div>
+      <Notice>{busy ? shelf.uploading : inspecting ? shelf.inspecting : notice}</Notice>
     </form>
   );
 }

@@ -6,6 +6,7 @@ import { getNoteAuthor } from "@/features/annotations/actions";
 import { AnnotationIcon } from "@/features/annotations/AnnotationIcon";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -172,7 +173,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
             })}
           </ul>}
         </div>}
-        {failed && <div role="alert"><Text>{messages.annotations.saveFailed}</Text></div>}
+        {failed && <Notice live="alert">{messages.annotations.saveFailed}</Notice>}
         {composing && <form className={styles.composer} onSubmit={submit}>
           <TextArea ref={replyField} label={comments.reply} hideLabel value={reply}
             placeholder={comments.reply} onChange={event => setReply(event.target.value)} maxLength={4000} rows={1} required />

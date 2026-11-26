@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Avatar } from "@/design-system/components/Avatar";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Link } from "@/design-system/components/Link";
@@ -32,6 +33,8 @@ export default function DesignCatalog() {
           <TextArea label={catalog.noteUnavailable} rows={2} disabled />
           <StatusBanner>{messages.diagnostics.updateAvailable}</StatusBanner>
           <StatusBanner tone="warning">{messages.annotations.syncError}</StatusBanner>
+          <Notice>{messages.annotations.saved}</Notice>
+          <Notice live="alert">{messages.annotations.saveFailed}</Notice>
           <Avatar name={catalog.author} />
           <SheetExample />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />

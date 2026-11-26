@@ -2,9 +2,3 @@
   display: grid;
   gap: var(--space-16);
 }
-
-.panel [role="status"]:empty,
-.onlyAnnouncement {
-  position: absolute;
-  clip-path: inset(50%);
-}

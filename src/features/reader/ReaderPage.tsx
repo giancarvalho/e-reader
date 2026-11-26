@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
+import { Notice } from "@/design-system/components/Notice";
 import { Page } from "@/design-system/components/Page";
 import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
@@ -135,7 +136,7 @@ export function ReaderPage() {
         identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
         onPosition={save} onPreferences={changePreferences}
       />}
-      {failed && <div className={styles.progressError} role="status"><Text>{reader.progressFailed}</Text></div>}
+      {failed && <div className={styles.progressError}><Notice>{reader.progressFailed}</Notice></div>}
     </main>
   );
 }
