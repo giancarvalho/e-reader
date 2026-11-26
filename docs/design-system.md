@@ -57,6 +57,21 @@ as tarefas B4, B5 e B7 do plano. Até lá, ao precisar de um deles, crie-o
 seguindo a regra 3 em vez de repetir o padrão na feature; o lint vai apontar
 quem ainda usa o padrão antigo pela linha de base.
 
+## Capturas visuais
+
+`e2e/visual.spec.ts` compara capturas de tela em 320 px e 390 px, nos temas Dia
+e Noite: início, créditos, diagnóstico, estante offline e a barra de seleção do
+leitor. As imagens de referência ficam em `e2e/visual.spec.ts-snapshots/` e só
+valem se geradas no runner da CI (Linux, Chromium do projeto); as geradas em
+outra máquina não servem. Alterou a aparência de propósito?
+
+1. Apague as imagens afetadas e envie o PR. O job `e2e` falha e grava as novas.
+2. Baixe o artefato `visual-snapshots` da execução (`gh run download <id> -n visual-snapshots -D e2e/visual.spec.ts-snapshots`).
+3. Revise as imagens, faça commit e envie de novo. Mudança visual sem motivo é regressão.
+
+Tolerância: 2% dos pixels (`playwright.config.ts`). Para telas que precisam de
+login, ainda não há captura; cubra com o catálogo `/dev/design`.
+
 ## Linha de base (exceções antigas)
 
 Violações anteriores às regras estão registradas e só podem diminuir:

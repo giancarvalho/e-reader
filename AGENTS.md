@@ -30,7 +30,7 @@
 - [ ] Procurei componentes e utilitários existentes e registrei o resultado
 - [ ] `npm run lint`, `npm run typecheck`, `npm run dup` e `npm run test:unit` passam, sem exceção nova na linha de base
 - [ ] Nenhum valor visual literal fora dos tokens
-- [ ] Testado nos temas Dia e Noite e com texto grande
+- [ ] Testado nos temas Dia e Noite e com texto grande; mudança visual intencional atualiza as capturas de `e2e/visual.spec.ts` (veja `docs/design-system.md`)
 - [ ] Testes novos e antigos passam; lint e typecheck limpos
 - [ ] Tabelas novas têm RLS e testes de política
 - [ ] Este documento reflete qualquer contrato alterado
