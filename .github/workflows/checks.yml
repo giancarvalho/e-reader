@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+# PR runs share a group; each main push keeps its own run.
+concurrency:
+  group: checks-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
