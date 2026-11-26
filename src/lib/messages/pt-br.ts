@@ -106,6 +106,7 @@ export const messages = {
   annotations: {
     selection: "Ações do trecho selecionado",
     addNote: "Adicionar nota",
+    define: "Definir",
     saved: "Grifo salvo neste aparelho.",
     undo: "Desfazer",
     shared: "Os grifos e as notas são compartilhados com seu grupo.",

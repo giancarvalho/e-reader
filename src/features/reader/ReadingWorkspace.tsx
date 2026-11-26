@@ -49,6 +49,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   const [selection, setSelection] = useState<AnnotationSelection>();
   const activeChange = change?.row.cfi === selection?.cfi ? change : undefined;
   const selectedHighlight = activeChange?.row ?? rows.find(row => row.cfi === selection?.cfi && row.author_id === identity.user);
+  const definable = Boolean(selection && dictionaryWord(selection.quote));
   const [editing, setEditing] = useState<{ annotation: Annotation; noteOnly: boolean }>();
   const [target, setTarget] = useState<{ cfi: string }>();
   const [chapters, setChapters] = useState<Record<string, Chapter>>({});
@@ -66,14 +67,15 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   function select(value: AnnotationSelection) {
     setChange(undefined);
     setColorFailed(false);
-    const word = dictionaryWord(value.quote);
-    if (word) {
-      setSelection(undefined);
-      setLookup({ word, language: detectDictionaryLanguage(language, value.sample) });
-    } else {
-      setLookup(undefined);
-      setSelection(value);
-    }
+    setLookup(undefined);
+    setSelection(value);
+  }
+
+  function define() {
+    const word = selection && dictionaryWord(selection.quote);
+    if (!selection || !word) return;
+    setLookup({ word, language: detectDictionaryLanguage(language, selection.sample) });
+    setSelection(undefined);
   }
 
   function edit(annotation: Annotation, noteOnly = false) {
@@ -133,6 +135,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           <AnnotationColors color={selectedHighlight?.color} disabled={quickBusy} onSelect={color => void selectColor(color)} />
           <Button variant="quiet" disabled={!selectedHighlight || quickBusy}
             onClick={() => { if (selectedHighlight) edit(selectedHighlight, true); }}>{annotations.addNote}</Button>
+          {definable && <Button variant="quiet" disabled={quickBusy} onClick={define}>{annotations.define}</Button>}
           {activeChange && <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>}
           <Button variant="icon" onClick={cancel} aria-label={annotations.cancel}>×</Button>
           {colorFailed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
