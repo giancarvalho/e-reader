@@ -140,6 +140,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByLabel("Verde", { exact: true }).check();
   await page.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
   await page.getByRole("button", { name: "Salvar grifo" }).click();
+  await expect(page.getByRole("heading", { name: "Novo grifo" })).toHaveCount(0);
   await page.reload();
   await controls();
   await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
