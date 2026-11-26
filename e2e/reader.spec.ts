@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { strToU8, zipSync } from "fflate";
 
 const xhtml = (body: string) =>
@@ -85,6 +85,26 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect.poll(() => chapterVisible("Primeiro capítulo")).toBe(true);
   expect(await page.locator("body").getAttribute("data-epub-script")).toBeNull();
   expect(remote).toEqual([]);
+
+  if (browserName === "webkit") {
+    const view = page.locator("foliate-view");
+    const swipe = (x: number, y: number, pause: number, cancelled = false) =>
+      swipePaginator(view, { x, y, pause, cancelled });
+    const pageOffset = () => view.evaluate(element =>
+      (element as HTMLElement & { renderer: { start: number } }).renderer.start);
+    const firstPageOffset = await pageOffset();
+    await swipe(-54, 5, 200);
+    await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
+    await swipe(26, -3, 0);
+    await expect.poll(() => chapterVisible("Primeiro capítulo")).toBe(true);
+    await swipe(-8, 72, 0);
+    expect(await pageOffset()).toBe(firstPageOffset);
+    await swipe(-60, 0, 200, true);
+    await expect.poll(pageOffset).toBe(firstPageOffset);
+    await expect.poll(() => chapterVisible("Primeiro capítulo")).toBe(true);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  }
+
   await page.getByRole("button", { name: "Sumário", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Sumário" })).toBeVisible();
   await page.getByRole("button", { name: "Dois", exact: true }).click();
@@ -242,6 +262,28 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByRole("button", { name: "Apagar grifo" }).click();
   await expect(page.getByText("Grifos (0)", { exact: true })).toBeVisible();
 });
+
+async function swipePaginator(view: Locator, gesture: { x: number; y: number; pause: number; cancelled: boolean }) {
+  // Playwright WebKit only supports native touchscreen taps, so dispatch the touch sequence to the paginator.
+  await view.evaluate((element, { x, y, pause, cancelled }) => {
+    const { renderer: target } = element as HTMLElement & { renderer: HTMLElement };
+    const send = (type: string, dx: number, dy: number, timeStamp: number) => {
+      const touch = { identifier: 1, target, screenX: 150 + dx, screenY: 200 + dy,
+        clientX: 150 + dx, clientY: 200 + dy };
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperties(event, {
+        timeStamp: { value: timeStamp },
+        changedTouches: { value: [touch] },
+        touches: { value: type === "touchstart" || type === "touchmove" ? [touch] : [] },
+      });
+      target.dispatchEvent(event);
+    };
+    send("touchstart", 0, 0, 0);
+    send("touchmove", x * 0.75, y * 0.75, 20);
+    send("touchmove", x, y, 40 + pause);
+    send(cancelled ? "touchcancel" : "touchend", x, y, 45 + pause);
+  }, gesture);
+}
 
 function selectChapterWord(element: Element) {
   const text = element.firstChild;
