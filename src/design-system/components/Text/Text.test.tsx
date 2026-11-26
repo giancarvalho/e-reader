@@ -12,3 +12,8 @@ it("renders muted reading text as a paragraph", () => {
   expect(paragraph.dataset.variant).toBe("reading");
   expect(paragraph.dataset.tone).toBe("muted");
 });
+
+it("renders a label variant for small captions", () => {
+  render(<Text variant="label" tone="muted">Substantivo</Text>);
+  expect(screen.getByText("Substantivo").dataset.variant).toBe("label");
+});

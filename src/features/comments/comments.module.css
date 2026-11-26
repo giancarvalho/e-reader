@@ -1,17 +1,3 @@
-.panel,
-.list {
-  display: grid;
-  gap: var(--space-8);
-  overflow-wrap: anywhere;
-}
-
-.list {
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
 .author {
   display: flex;
   align-items: center;
@@ -67,12 +53,8 @@
   gap: var(--space-8);
 }
 .toolbar { margin-inline-start: auto; }
-.toolbar button[data-variant="icon"], .panel button[data-variant="icon"] { color: var(--color-muted); }
+.toolbar button[data-variant="icon"], .replies button[data-variant="icon"] { color: var(--color-muted); }
 .menu { align-self: end; }
-.panel {
-  padding-block-start: var(--space-8);
-  border-block-start: var(--border-divider);
-}
 .composer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

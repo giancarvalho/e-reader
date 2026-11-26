@@ -6,6 +6,7 @@ import { getNoteAuthor } from "@/features/annotations";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
 import { IconButton } from "@/design-system/components/IconButton";
+import { List, ListItem } from "@/design-system/components/List";
 import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
@@ -155,22 +156,22 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
         {menu && edit && <div className={styles.menu}><Button variant="quiet" onClick={edit}>{messages.annotations.edit}</Button></div>}
         {(annotation.note || thread.length > 0) && <div className={styles.replies}>
           {annotation.note && <Text>{annotation.note}</Text>}
-          {thread.length > 0 && <ul className={styles.list}>
+          {thread.length > 0 && <List>
             {thread.map(row => {
               const own = row.author_id === identity.user;
               const name = row.name || (own ? comments.you : comments.member);
               return (
-                <li className={styles.panel} key={row.id}>
+                <ListItem key={row.id} divided>
                   <div className={styles.header}>
                     <div className={styles.author}><Avatar src={row.avatar} name={name} /><Text>{name}</Text></div>
                     {own && <IconButton icon="trash" label={comments.remove}
                       onClick={async () => setFailed(!await save({ ...row, deleted_at: new Date().toISOString() }))} />}
                   </div>
                   <Text>{row.text}</Text>
-                </li>
+                </ListItem>
               );
             })}
-          </ul>}
+          </List>}
         </div>}
         {failed && <Notice live="alert">{messages.annotations.saveFailed}</Notice>}
         {composing && <form className={styles.composer} onSubmit={submit}>

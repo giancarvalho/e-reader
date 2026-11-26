@@ -21,13 +21,16 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `ColorField` | Seletor de cor com rótulo | Substitui `<input type="color">` |
 | `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
 | `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
-| `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
+| `Heading`, `Text` | Títulos e texto. `Heading` tem `variant` `page` (padrão), `section` (grupo dentro da tela) e `display` (título grande da home). `Text` tem `variant` `body`, `reading` e `label` (legenda pequena) e `tone` `default` ou `muted` | Não defina `font-*` em CSS de feature |
+| `Section` | Grupo de conteúdo com título opcional (h2). `variant` `divided` (separado por uma linha) ou `outlined` (cartão com borda) | Substitui `<section>` com borda e `h2` estilizados à mão |
+| `List`, `ListItem` | Lista sem marcadores que mantém a semântica de lista; `ListItem divided` põe uma linha acima | `List as="ol"` para lista ordenada. O espaçamento entre itens é do `ListItem` |
+| `Disclosure` | Grupo expansível nativo (`details`) com resumo de 44 px | `open` define o estado inicial |
 | `TextField`, `TextArea` | Campos com rótulo, erro e foco consistentes | Rótulo obrigatório; `hideLabel` só quando há placeholder claro |
 | `Sheet` | Painéis modais (dicionário, listas, ajustes). Variante `compact` | Já trata o teclado virtual e a área segura |
 | `Notice` | Mensagem curta que leitores de tela anunciam. `live` `status` (padrão, educado) ou `alert` (falhas); `announceOnly` para texto já visível em outro lugar | Nunca escreva `role="status"`/`role="alert"` à mão. A região fica no DOM mesmo vazia. Botões e links ficam fora dela |
 | `StatusBanner` | Aviso persistente com ação opcional | Compõe `Notice` |
 | `Avatar` | Foto ou iniciais de uma pessoa | |
-| `BookCard`, `BookCover` | Livro na estante | `BookCover` é composto por `BookCard` |
+| `BookCard`, `BookCover` | Livro na estante. Traz fundo, raio e margem próprios; `featured` usa o título de página em vez do de seção | `BookCover` é composto por `BookCard` |
 
 ## Tokens (`src/design-system/tokens/base.css`)
 

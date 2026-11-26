@@ -12,3 +12,10 @@ it("renders one accessible title with optional author, status and actions", () =
   expect(screen.getByText("Disponível offline")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Ler" })).toBeTruthy();
 });
+
+it("uses the section heading unless the card is featured", () => {
+  const { rerender } = render(<BookCard title="Ficção" />);
+  expect(screen.getByRole("heading", { name: "Ficção" }).dataset.variant).toBe("section");
+  rerender(<BookCard title="Ficção" featured />);
+  expect(screen.getByRole("heading", { name: "Ficção" }).dataset.variant).toBe("page");
+});

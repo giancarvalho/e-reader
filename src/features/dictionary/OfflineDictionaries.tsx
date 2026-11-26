@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/design-system/components/Button";
-import { Heading } from "@/design-system/components/Heading";
 import { Notice } from "@/design-system/components/Notice";
 import { Progress } from "@/design-system/components/Progress";
+import { Section } from "@/design-system/components/Section";
 import { Text } from "@/design-system/components/Text";
 import type { DictionaryLanguage } from "@/lib/dictionary/catalog";
 import type { DictionaryDownloadMessage, DictionaryProgress } from "@/lib/dictionary/offline-download";
@@ -95,8 +95,7 @@ export function OfflineDictionaries() {
     const info = local?.[language];
     const label = dictionary.languages[language];
     const downloading = busy?.language === language && busy.action === "download";
-    return <section className={styles.pack} key={language}>
-      <Heading as="h2">{label}</Heading>
+    return <Section variant="outlined" title={label} key={language}>
       {info?.installed && (message?.language !== language || message.key !== "installed")
         && <Text tone="muted">{dictionary.installed}</Text>}
       {downloading && progress && <Progress label={label} value={progress.done} max={progress.total}
@@ -115,6 +114,6 @@ export function OfflineDictionaries() {
           onClick={() => void remove(language)}>{dictionary.removePack}</Button>}
       </div>
       {message?.language === language && <Notice>{dictionary[message.key]}</Notice>}
-    </section>;
+    </Section>;
   });
 }

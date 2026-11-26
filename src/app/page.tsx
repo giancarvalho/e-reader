@@ -1,3 +1,4 @@
+import { Heading } from "@/design-system/components/Heading";
 import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -10,7 +11,7 @@ export default function Home() {
     <main className={`${styles.shell} ${styles.home}`}>
       <ThemeToggle />
       <div className={styles.intro}>
-        <h1 className={styles.title}>{messages.title}</h1>
+        <Heading variant="display">{messages.title}</Heading>
         <Text variant="reading" tone="muted">{messages.home.subtitle}</Text>
         <EnterLink />
       </div>

@@ -1,6 +1,7 @@
 import { Avatar } from "@/design-system/components/Avatar";
 import { redirect } from "next/navigation";
 import { Link } from "@/design-system/components/Link";
+import { Section } from "@/design-system/components/Section";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
@@ -27,20 +28,18 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
       <Heading>{auth.accountTitle}</Heading>
       {name && <section className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></section>}
       <Link href="/convite" client>{auth.continue}</Link>
-      <section className={styles.section}>
-        <Heading as="h2">{auth.storage}</Heading>
+      <Section title={auth.storage}>
         <Link href="/estante-offline">{messages.shelf.offline}</Link>
         <Link href="/dicionarios">{messages.dictionary.offlineTitle}</Link>
-      </section>
-      <section className={styles.section}>
-        <Heading as="h2">{auth.help}</Heading>
+      </Section>
+      <Section title={auth.help}>
         <Link href="/diagnostico" client>{messages.diagnostics.title}</Link>
-      </section>
-      <section className={styles.section}>
+      </Section>
+      <Section>
         <Text tone="muted">{auth.signOutEffect}</Text>
         {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
         <SignOutForm />
-      </section>
+      </Section>
     </Page>
   );
 }
