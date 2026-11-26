@@ -1,3 +1,4 @@
+import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import { EnterLink } from "./EnterLink";
@@ -13,7 +14,7 @@ export default function Home() {
         <Text variant="reading" tone="muted">{messages.home.subtitle}</Text>
         <EnterLink />
       </div>
-      <footer className={styles.credits}><a href="/creditos">{messages.home.credits}</a></footer>
+      <footer className={styles.credits}><Link href="/creditos" tone="muted">{messages.home.credits}</Link></footer>
     </main>
   );
 }

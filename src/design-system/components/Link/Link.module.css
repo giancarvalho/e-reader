@@ -1,0 +1,24 @@
+.link {
+  color: var(--color-accent-text);
+  text-underline-offset: var(--focus-ring);
+}
+
+.link[data-tone="muted"] {
+  color: inherit;
+}
+
+.link[data-variant="standalone"] {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-block-size: var(--touch-target);
+}
+
+.link:hover {
+  text-decoration-thickness: var(--focus-ring);
+}
+
+.link:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
+}

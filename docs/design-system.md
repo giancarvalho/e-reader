@@ -13,6 +13,8 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | Componente | Use para | Observações |
 |---|---|---|
 | `Button` | Qualquer ação clicável. Variantes `primary`, `secondary`, `quiet`, `icon`; estados `disabled` e `loading` | `icon` exige `aria-label`. Alvo de toque de 44 px já incluído |
+| `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
+| `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
 | `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
 | `TextField`, `TextArea` | Campos com rótulo, erro e foco consistentes | Rótulo obrigatório; `hideLabel` só quando há placeholder claro |
 | `Sheet` | Painéis modais (dicionário, listas, ajustes). Variante `compact` | Já trata o teclado virtual e a área segura |

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Link } from "@/design-system/components/Link";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { normalizeInviteCode } from "@/lib/access/invite";
@@ -26,7 +26,7 @@ export async function InvitePage({ searchParams }: { searchParams: Promise<{ cod
       {result.status === "unavailable"
         ? <Text>{access.errors.unavailable}</Text>
         : <><Text>{typeof group === "string" ? `${access.invitedTo} ${group}` : access.inviteHint}</Text><InviteForm initialCode={code} /></>}
-      <Link href="/conta">{access.account}</Link>
+      <Link href="/conta" client>{access.account}</Link>
     </main>
   );
 }

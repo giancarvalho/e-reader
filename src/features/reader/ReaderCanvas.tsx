@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Link } from "@/design-system/components/Link";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { contrastRatio, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
@@ -389,7 +390,7 @@ export function ReaderCanvas({
   return (
     <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
       {failed && <div className={styles.state} role="alert"><Text>{reader.failed}</Text>
-        <a href="/estante">{reader.shelf}</a></div>}
+        <Link href="/estante">{reader.shelf}</Link></div>}
       <div ref={mount} className={styles.viewport} />
       {ready && !failed && <>
         {controls && <header className={styles.toolbarTop}>

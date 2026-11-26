@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { LinkButton } from "@/design-system/components/LinkButton";
 import { invitePath, normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
-import styles from "./page.module.css";
 
 function subscribe(callback: () => void) {
   window.addEventListener("online", callback);
@@ -50,6 +50,6 @@ export function EnterLink() {
   return <>
     {rawInvite !== null && !invite && <p role="status">{messages.access.errors.invalid_code}</p>}
     {invite && !online && <p role="status">{messages.access.errors.unavailable}</p>}
-    <a className={styles.enter} href={online ? destination : "/estante-offline"}>{messages.home.enter}</a>
+    <LinkButton href={online ? destination : "/estante-offline"}>{messages.home.enter}</LinkButton>
   </>;
 }

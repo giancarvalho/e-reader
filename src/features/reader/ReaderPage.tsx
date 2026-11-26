@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
+import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
 import {
   applyReaderSync, readLocalBook, readLocalShelf, readReaderState, rememberOpenedBook,
@@ -125,7 +126,7 @@ export function ReaderPage() {
     <main className={styles.page}>
       {!reading && <header className={styles.header}>
         {/* Use a document navigation so the service worker can provide the offline shelf. */}
-        <a href="/estante">{reader.shelf}</a>
+        <Link href="/estante">{reader.shelf}</Link>
         <Heading>{reader.title}</Heading>
       </header>}
       {reading === null && <Text>{reader.missing}</Text>}

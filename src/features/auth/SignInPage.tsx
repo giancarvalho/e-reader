@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Button } from "@/design-system/components/Button";
+import { Link } from "@/design-system/components/Link";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -25,7 +25,7 @@ export async function SignInPage({ searchParams }: { searchParams: Promise<{ sta
         {invite && <input type="hidden" name="codigo" value={invite} />}
         <Button type="submit" disabled={!configured}>{auth.google}</Button>
       </form>
-      <Link href="/">{auth.back}</Link>
+      <Link href="/" client>{auth.back}</Link>
     </main>
   );
 }
