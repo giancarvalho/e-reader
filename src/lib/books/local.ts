@@ -27,12 +27,13 @@ type LocalBook = {
 interface LibraryDb extends DBSchema {
   positions: { key: [string, string, string]; value: ReadingPosition | ReaderRecord<ReadingPosition> };
   readerPreferences: { key: string; value: ReaderRecord<ReaderPreferences> };
+  lastOpened: { key: string; value: ReaderIdentity };
   shelf: { key: "active"; value: ShelfSnapshot };
   files: { key: [string, string, string]; value: LocalBook };
 }
 
 function openLibrary() {
-  return openDB<LibraryDb>("e-reader-library", 3, {
+  return openDB<LibraryDb>("e-reader-library", 4, {
     upgrade(db, oldVersion) {
       if (oldVersion < 1) {
         db.createObjectStore("shelf");
@@ -40,6 +41,7 @@ function openLibrary() {
       }
       if (oldVersion < 2) db.createObjectStore("positions");
       if (oldVersion < 3) db.createObjectStore("readerPreferences");
+      if (oldVersion < 4) db.createObjectStore("lastOpened");
     },
     blocking(_currentVersion, _newVersion, event) {
       (event.target as IDBDatabase).close();
@@ -93,6 +95,14 @@ export async function saveLocalBook(userId: string, book: ShelfBook, file: Blob,
 }
 
 export type ReaderIdentity = { user: string; group: string; hash: string };
+
+export function rememberOpenedBook(identity: ReaderIdentity) {
+  return withLibrary(db => db.put("lastOpened", identity, identity.user));
+}
+
+export function readLastOpenedBook(user: string) {
+  return withLibrary(db => db.get("lastOpened", user));
+}
 
 function positionKey({ user, group, hash }: ReaderIdentity): [string, string, string] {
   return [user, group, hash];

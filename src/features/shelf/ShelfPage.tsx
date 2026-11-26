@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getGroupAccess } from "@/features/access";
 import { Heading } from "@/design-system/components/Heading";
@@ -6,7 +5,6 @@ import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import type { ShelfBook } from "@/lib/books/local";
 import { ShelfClient } from "./ShelfClient";
-import { UploadBook } from "./UploadBook";
 import styles from "./shelf.module.css";
 
 export async function ShelfPage() {
@@ -34,14 +32,7 @@ export async function ShelfPage() {
 
   return (
     <main className={styles.page}>
-      <Heading>{messages.access.shelfTitle}</Heading>
-      {access.organizer && <section className={styles.stack}>
-        <Heading as="h2">{messages.shelf.add}</Heading>
-        <Text>{messages.shelf.uploadLimit}</Text>
-        <UploadBook />
-      </section>}
       <ShelfClient snapshot={{ userId: access.userId, books }} covers={covers} organizer={access.organizer} />
-      <Link href="/conta">{messages.access.account}</Link>
     </main>
   );
 }

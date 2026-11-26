@@ -17,13 +17,15 @@ test("reopens a downloaded book listing from IndexedDB without a network", async
       id: "a".repeat(64), group_id: group, title: "Livro baixado", author: "Autora",
       language: "pt", cover_path: null, position: 0, is_current: true,
     };
-    const transaction = db.transaction(["shelf", "files"], "readwrite");
+    const transaction = db.transaction(["shelf", "files", "lastOpened", "positions"], "readwrite");
     transaction.objectStore("shelf").put({ userId: user, books: [
       book, { ...book, id: "b".repeat(64), title: "Livro não baixado", is_current: false },
     ] }, "active");
     transaction.objectStore("files").put({
       userId: user, groupId: group, hash: book.id, file: new Blob(["fixture"]), cover: null,
     });
+    transaction.objectStore("lastOpened").put({ user, group, hash: book.id }, user);
+    transaction.objectStore("positions").put({ cfi: "epubcfi(/6/2)", fraction: 0.4 }, [user, group, book.id]);
     await new Promise<void>((resolve, reject) => {
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
@@ -35,5 +37,7 @@ test("reopens a downloaded book listing from IndexedDB without a network", async
   await expect(page.getByText("Estante offline")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Livro baixado" })).toBeVisible();
   await expect(page.getByText("Disponível offline")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Continuar lendo" })).toHaveAttribute("href", /\/ler#/);
+  await expect(page.getByRole("progressbar", { name: "Progresso de leitura" })).toHaveAttribute("value", "0.4");
   await expect(page.getByRole("heading", { name: "Livro não baixado" })).toHaveCount(0);
 });
