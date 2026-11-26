@@ -10,7 +10,8 @@
 .link[data-variant="standalone"] {
   display: inline-flex;
   align-items: center;
-  justify-self: start;
+  /* Sized to its text so the container decides the alignment (start in forms, centered in credits). */
+  inline-size: fit-content;
   min-block-size: var(--touch-target);
 }
 
