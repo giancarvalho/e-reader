@@ -54,7 +54,7 @@ O `npm run lint:css` bloqueia, fora de `src/design-system`:
 - cores literais (`#fff`, `rgb()`), `px`, `rem`, `em`;
 - `outline*`, `border-radius`, `box-shadow`, `list-style`;
 - `font-family`, `font-weight`, `font-size`, `letter-spacing` e o atalho `font` com tokens de fonte;
-- `min-*-size` com `--touch-target` ou `--layout-width`, e bordas com `--focus-ring`. Exceção permanente e restrita: o cromo fixo do leitor (`src/features/reader`) pode usar `--layout-width` para acompanhar a coluna.
+- `min-*-size` com `--touch-target` ou `--layout-width`, e bordas com `--focus-ring`. Exceções permanentes e restritas: o cromo fixo do leitor (`src/features/reader`) pode usar `--layout-width` para acompanhar a coluna, e `reader-chrome.module.css` (as barras superior e inferior do leitor) também pode ter bordas, tipografia, alvos de toque e anel de foco próprios; o botão da faixa de progresso do leitor é o único `<button>` cru permitido (`ReaderToolbars.tsx`).
 
 Se você precisa de algo disso, o componente certo não existe ainda: crie-o no
 design system.
