@@ -41,6 +41,7 @@ export function useReaderView({
 }: Options) {
   const mount = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>(null);
+  const clearReaderSelection = useRef<(removeRanges: boolean) => void>(null);
   const lastCfi = useRef(initialCfi);
   const [location, setLocation] = useState({ fraction: 0, chapter: undefined as string | undefined, href: undefined as string | undefined });
   const [toc, setToc] = useState<TocEntry[]>([]);
@@ -125,10 +126,7 @@ export function useReaderView({
         if (cancelled || currentTap.annotationHit || event.button !== 0) return;
         if (dismissAnnotation() || event.defaultPrevented || event.detail > 1 || interactive ||
           doc.getSelection()?.toString() || !area?.width || !bounds) return;
-        if (selectionShown) {
-          clearSelection();
-          return;
-        }
+        if (selectionShown) return;
         const fraction = (bounds.left + event.clientX - area.left) / area.width;
         if (fraction < 0.22) turn("prev");
         else if (fraction > 0.78) turn("next");
@@ -154,7 +152,8 @@ export function useReaderView({
             selectionSettle = window.setTimeout(() => {
               if (!cancelled && pointerId === undefined && !pressInProgress(doc) && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
                 selectionShown = true;
-                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000), anchor: () => annotationAnchor(content, range) });
+                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000),
+                  anchor: () => annotationAnchor(content, range, { wholeRange: true }) });
               }
             }, 180);
           }
@@ -169,18 +168,17 @@ export function useReaderView({
     function clearSelection(removeRanges = false) {
       previousSelection = "";
       window.clearTimeout(selectionSettle);
-      if (selectionShown) {
-        selectionShown = false;
-        reportSelection();
-      }
+      if (selectionShown) reportSelection();
+      selectionShown = false;
       if (removeRanges) {
         for (const { doc } of view?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
       }
     }
+    clearReaderSelection.current = clearSelection;
     lastCfi.current = initialCfi;
 
     function openAnnotation(id: string, range?: Range, point?: { x: number; y: number }) {
-      reportAnnotation(id, () => annotationAnchor(content, range, point));
+      reportAnnotation(id, () => annotationAnchor(content, range, { point }));
     }
 
     async function open() {
@@ -291,6 +289,7 @@ export function useReaderView({
     });
     return () => {
       cancelled = true;
+      clearReaderSelection.current = null;
       window.removeEventListener("keydown", readKey);
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
@@ -318,7 +317,7 @@ export function useReaderView({
   }, [annotations, commentCounts, ready]);
 
   useEffect(() => {
-    for (const { doc } of viewRef.current?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
+    clearReaderSelection.current?.(true);
   }, [selectionReset]);
 
   useEffect(() => {

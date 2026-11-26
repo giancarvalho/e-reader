@@ -45,7 +45,6 @@
 
 .selectionMenu > button {
   justify-content: start;
-  color: var(--color-ink);
   text-align: start;
 }
 

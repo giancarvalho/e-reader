@@ -42,7 +42,10 @@ export function drawing(row: Annotation, hasComments: boolean): DrawnAnnotation 
 }
 
 /** Where a highlight sits on screen, for placing a panel beside it. */
-export function annotationAnchor(content: HTMLElement | null, range?: Range, point?: { x: number; y: number }) {
+export function annotationAnchor(content: HTMLElement | null, range?: Range, options?: {
+  point?: { x: number; y: number };
+  wholeRange?: boolean;
+}) {
   const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
   const bounds = frame?.getBoundingClientRect();
   const area = content?.getBoundingClientRect();
@@ -53,6 +56,13 @@ export function annotationAnchor(content: HTMLElement | null, range?: Range, poi
     top: Math.max(area.top, bounds.top, bounds.top + rect.top),
     bottom: Math.min(area.bottom, bounds.bottom, bounds.top + rect.bottom),
   })).filter(rect => rect.right > rect.left && rect.bottom > rect.top);
+  if (options?.wholeRange && visible.length) {
+    const left = Math.min(...visible.map(rect => rect.left));
+    const right = Math.max(...visible.map(rect => rect.right));
+    return { x: (left + right) / 2, top: Math.min(...visible.map(rect => rect.top)),
+      bottom: Math.max(...visible.map(rect => rect.bottom)) };
+  }
+  const point = options?.point;
   const line = point && visible.find(rect => {
     const x = bounds.left + point.x;
     const y = bounds.top + point.y;
