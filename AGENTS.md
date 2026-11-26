@@ -1,11 +1,13 @@
 # Instruções do repositório
 
+1. **Os guarda-corpos mecânicos valem mais que este texto.** `npm run lint` (ESLint e Stylelint), `npm run typecheck`, `npm run dup` e `npm run test:unit` precisam passar. Não contorne uma regra: corrija o código ou crie o componente que falta no design system. Nunca adicione exceção à linha de base (`eslint-suppressions.json`, comentários `stylelint-disable ... baseline`, `threshold` do `.jscpd.json`) para a CI passar; ela só pode diminuir. Veja [docs/design-system.md](docs/design-system.md).
 2. **Reutilize antes de criar.** Antes de criar um componente, hook ou utilitário:
-   1. Procure em `src/design-system` e `src/features` (nome, propósito e usos parecidos).
+   1. Leia `docs/design-system.md` e procure em `src/design-system` e `src/features` (nome, propósito e usos parecidos).
    2. Se algo igual ou similar existir, use-o ou estenda-o por props ou variantes.
-   3. Só crie um novo se nenhum existente puder ser adaptado com uma mudança pequena. Na descrição do PR, registre o que foi procurado e por que não serviu.
-3. **Componente reutilizável nasce no design system.** Vai em `src/design-system/components/<Nome>/`, com tipos, variantes por props, todos os estados (hover, foco, desabilitado, carregando), suporte aos temas, entrada no catálogo e testes. Um componente de uso único vive na feature e compõe peças do design system.
-4. **Harmonia visual antes de tudo.** Todo componente novo precisa parecer da mesma família: mesma escala de espaçamento, mesmos raios, mesma tipografia (Newsreader para o texto de leitura e títulos editoriais, Inter para a interface), transições suaves e discretas, acento terracota. O âmbar é só para grifos e decoração, nunca para texto. Confira nos temas Dia e Noite antes de entregar.
+   3. Só crie um novo se nenhum existente puder ser adaptado com uma mudança pequena. Na descrição do PR, registre o que foi procurado e por que não serviu (o template de PR tem a seção).
+   4. **Regra de três, antecipada:** ao escrever a segunda ocorrência de um padrão de interface (layout de página, link de ação, aviso, lista, painel flutuante, escuta de conectividade), extraia para o design system ou para `src/lib` no mesmo PR, se couber numa mudança pequena. Se não couber, registre a tarefa no plano de manutenção em vez de copiar.
+3. **Componente reutilizável nasce no design system.** Vai em `src/design-system/components/<Nome>/`, com tipos, variantes por props, todos os estados (hover, foco, desabilitado, carregando), suporte aos temas, entrada no catálogo (`/dev/design`) e testes, incluindo uma verificação de acessibilidade com axe. O teste `components.contract.test.ts` falha se faltar índice, teste, catálogo ou axe. Um componente de uso único vive na feature e compõe peças do design system.
+4. **Harmonia visual antes de tudo.** Todo componente novo precisa parecer da mesma família: mesma escala de espaçamento, mesmos raios, mesma tipografia (Newsreader para o texto de leitura e títulos editoriais, Inter para a interface), transições suaves e discretas, acento terracota. O âmbar é só para grifos e decoração, nunca para texto. Confira nos temas Dia e Noite antes de entregar. O `npm run lint:css` bloqueia, fora do design system, cores e unidades literais e as propriedades que definem a identidade de um componente (foco, raio, sombra, tipografia, alvo de toque, largura de página).
 5. **Acessibilidade é requisito.** Contraste mínimo WCAG AA, alvos de toque de pelo menos 44 px, foco visível, rótulo em todo ícone, e respeito a `prefers-reduced-motion`.
 6. **Testes acompanham o código.** Unitários para lógica pura (sync, CFI, lematização, parsing); de componente para o design system (render, variantes, interação, a11y); de integração onde camadas se cruzam (sync com Supabase local, políticas RLS, entrada por código); e2e para os fluxos críticos de cada sprint. Corrigiu um bug? Escreva o teste de regressão.
 7. **Segurança de dados.** Toda tabela nova nasce com RLS ligada e testes de política (membro lê, não membro não, autor edita só o que é seu). Nunca coloque `service_role` no cliente.
@@ -26,6 +28,7 @@
 **Checklist antes de abrir um PR**
 
 - [ ] Procurei componentes e utilitários existentes e registrei o resultado
+- [ ] `npm run lint`, `npm run typecheck`, `npm run dup` e `npm run test:unit` passam, sem exceção nova na linha de base
 - [ ] Nenhum valor visual literal fora dos tokens
 - [ ] Testado nos temas Dia e Noite e com texto grande
 - [ ] Testes novos e antigos passam; lint e typecheck limpos

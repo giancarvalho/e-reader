@@ -7,6 +7,7 @@
 .panel summary {
   display: list-item;
   line-height: var(--touch-target);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B3) */
   min-block-size: var(--touch-target);
   color: var(--color-muted);
   cursor: pointer;
@@ -29,13 +30,17 @@
   box-sizing: border-box;
   inline-size: var(--space-24);
   block-size: var(--space-24);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
   border: var(--focus-ring) solid var(--color-muted);
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B1) */
   border-radius: var(--radius-round);
   background: var(--swatch);
 }
 
 .colors button[aria-pressed="true"] .swatch {
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B3) */
   outline: var(--focus-ring) solid var(--color-ink);
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B3) */
   outline-offset: var(--focus-ring);
 }
 
@@ -46,6 +51,7 @@
 
 .list {
   display: grid;
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -64,6 +70,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: var(--space-8);
+  /* stylelint-disable-next-line unit-disallowed-list -- baseline(B1) */
   border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
   padding-block: var(--space-8);
 }

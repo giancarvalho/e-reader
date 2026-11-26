@@ -5,6 +5,7 @@
 }
 
 .page {
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B2) */
   max-inline-size: var(--layout-width);
   margin-inline: auto;
   padding-block-start: max(var(--space-48), env(safe-area-inset-top));
@@ -16,11 +17,13 @@
   display: inline-grid;
   align-items: center;
   justify-self: start;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B3) */
   min-block-size: var(--touch-target);
   color: var(--color-accent-text);
 }
 
 .page a:focus-visible {
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B3) */
   outline: var(--focus-ring) solid var(--color-accent-text);
 }
 
@@ -39,12 +42,15 @@
 }
 
 .page { padding-block-start: max(var(--space-24), env(safe-area-inset-top)); }
+/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7) */
 .page h2, .page h3 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
 .featured h3 { font: var(--font-heading) var(--font-reading); }
 
 .featured, .book {
   min-inline-size: 0;
   padding: var(--space-12);
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B1) */
   border-radius: var(--radius-control);
   background: var(--color-surface);
 }
@@ -52,10 +58,12 @@
 .featured a.read, .book a.read {
   justify-self: stretch;
   padding-inline: var(--space-12);
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B1) */
   border-radius: var(--radius-control);
   background: var(--color-accent-text);
   color: var(--color-bg);
   text-align: center;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
   font: var(--font-label) var(--font-ui);
   text-decoration: none;
 }
