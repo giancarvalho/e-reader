@@ -46,3 +46,6 @@
   outline: var(--focus-ring) solid var(--color-accent-text);
   outline-offset: var(--focus-ring);
 }
+
+.credits { position: absolute; inset-block-end: max(var(--space-24), env(safe-area-inset-bottom)); color: var(--color-muted); }
+.credits a { color: inherit; }

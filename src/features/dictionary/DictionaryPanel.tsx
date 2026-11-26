@@ -68,10 +68,6 @@ export function DictionaryPanel({ word, language, close }: Props) {
           </section>
         ))}
         {canExpand && !expanded && <Button variant="quiet" onClick={() => setExpanded(true)}>{dictionary.more}</Button>}
-        {results.length > 0 && <footer className={styles.attribution}>
-          <Text tone="muted">{dictionary.source}</Text>
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">{dictionary.license}</a>
-        </footer>}
     </Sheet>
   );
 }
