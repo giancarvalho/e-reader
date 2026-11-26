@@ -445,7 +445,6 @@ export class Paginator extends HTMLElement {
     #mediaQueryListener
     #scrollBounds
     #touchState
-    #touchScrolled
     #lastVisibleRange
     constructor() {
         super()
@@ -562,15 +561,14 @@ export class Paginator extends HTMLElement {
             }
         }, 250))
 
-        const opts = { passive: false }
-        this.addEventListener('touchstart', this.#onTouchStart.bind(this), opts)
-        this.addEventListener('touchmove', this.#onTouchMove.bind(this), opts)
-        this.addEventListener('touchend', this.#onTouchEnd.bind(this))
-        this.addEventListener('load', ({ detail: { doc } }) => {
-            doc.addEventListener('touchstart', this.#onTouchStart.bind(this), opts)
-            doc.addEventListener('touchmove', this.#onTouchMove.bind(this), opts)
-            doc.addEventListener('touchend', this.#onTouchEnd.bind(this))
-        })
+        const addTouchListeners = target => {
+            target.addEventListener('touchstart', e => this.#onTouchStart(e))
+            target.addEventListener('touchmove', e => this.#onTouchMove(e), { passive: false })
+            target.addEventListener('touchend', e => this.#onTouchEnd(e))
+            target.addEventListener('touchcancel', e => this.#onTouchEnd(e))
+        }
+        addTouchListeners(this)
+        this.addEventListener('load', ({ detail: { doc } }) => addTouchListeners(doc))
 
         this.addEventListener('relocate', ({ detail }) => {
             if (detail.reason === 'selection') setSelectionTo(this.#anchor, 0)
@@ -799,66 +797,79 @@ export class Paginator extends HTMLElement {
         element[scrollProp] = Math.max(min, Math.min(max,
             element[scrollProp] + delta))
     }
-    snap(vx, vy) {
-        const velocity = this.#vertical ? vy : vx
-        const [offset, a, b] = this.#scrollBounds
-        const { start, end, pages, size } = this
-        const min = Math.abs(offset) - a
-        const max = Math.abs(offset) + b
-        const d = velocity * (this.#rtl ? -size : size)
-        const page = Math.floor(
-            Math.max(min, Math.min(max, (start + end) / 2
-                + (isNaN(d) ? 0 : d))) / size)
-
-        this.#scrollToPage(page, 'snap').then(() => {
-            const dir = page <= 0 ? -1 : page >= pages - 1 ? 1 : null
-            if (dir) return this.#goTo({
-                index: this.#adjacentIndex(dir),
-                anchor: dir < 0 ? () => 1 : () => 0,
-            })
-        })
+    async #snapTouch(origin, direction) {
+        if (!this.#view || this.#locked) return
+        const page = origin + direction
+        const crossesSection = direction !== 0 && (page <= 0 || page >= this.pages - 1)
+        const index = crossesSection ? this.#adjacentIndex(direction) : undefined
+        this.#locked = true
+        try {
+            await this.#scrollToPage(crossesSection && index == null ? origin : page, 'snap')
+            if (this.#view && crossesSection && index != null)
+                await this.#goTo({ index, anchor: direction < 0 ? () => 1 : () => 0 })
+        } finally {
+            this.#locked = false
+        }
+    }
+    #touchIsZoomed() {
+        return Math.abs((globalThis.visualViewport?.scale ?? 1) - 1) > 0.01
     }
     #onTouchStart(e) {
-        const touch = e.changedTouches[0]
+        const previous = this.#touchState
+        this.#touchState = null
+        if (e.touches.length !== 1) {
+            if (previous?.dragging) void this.#snapTouch(previous.page, 0)
+            return
+        }
+        if (!this.#view || !this.#scrollBounds || this.scrolled || this.#locked || this.#touchIsZoomed()) return
+        const touch = e.touches[0]
         this.#touchState = {
-            x: touch?.screenX, y: touch?.screenY,
-            t: e.timeStamp,
-            vx: 0, xy: 0,
+            id: touch.identifier, page: this.page, time: e.timeStamp,
+            x: touch.screenX, y: touch.screenY,
+            lastX: touch.screenX, lastY: touch.screenY,
+            dragging: false,
         }
     }
     #onTouchMove(e) {
         const state = this.#touchState
-        if (state.pinched) return
-        state.pinched = globalThis.visualViewport.scale > 1
-        if (this.scrolled || state.pinched) return
-        if (e.touches.length > 1) {
-            if (this.#touchScrolled) e.preventDefault()
-            return
+        if (!state || e.touches.length !== 1 || this.#touchIsZoomed()) return
+        const touch = e.touches[0]
+        if (touch.identifier !== state.id) return
+        const x = touch.screenX, y = touch.screenY
+        if (!state.dragging) {
+            const dx = Math.abs(x - state.x), dy = Math.abs(y - state.y)
+            const [along, across] = this.#vertical ? [dy, dx] : [dx, dy]
+            if (across > 10 && across > along) this.#touchState = null
+            if (along <= 10 || along <= across) return
+            state.dragging = true
         }
         e.preventDefault()
-        const touch = e.changedTouches[0]
-        const x = touch.screenX, y = touch.screenY
-        const dx = state.x - x, dy = state.y - y
-        const dt = e.timeStamp - state.t
-        state.x = x
-        state.y = y
-        state.t = e.timeStamp
-        state.vx = dx / dt
-        state.vy = dy / dt
-        this.#touchScrolled = true
-        this.scrollBy(dx, dy)
+        this.scrollBy(state.lastX - x, state.lastY - y)
+        state.lastX = x
+        state.lastY = y
     }
-    #onTouchEnd() {
-        this.#touchScrolled = false
-        if (this.scrolled) return
+    #onTouchEnd(e) {
+        const state = this.#touchState
+        if (!state) return
+        if (e.type === 'touchcancel') {
+            this.#touchState = null
+            if (state.dragging) void this.#snapTouch(state.page, 0)
+            return
+        }
+        const touch = Array.from(e.changedTouches).find(touch => touch.identifier === state.id)
+        if (!touch) return
+        this.#touchState = null
+        if (!state.dragging) return
 
-        // XXX: Firefox seems to report scale as 1... sometimes...?
-        // at this point I'm basically throwing `requestAnimationFrame` at
-        // anything that doesn't work
-        requestAnimationFrame(() => {
-            if (globalThis.visualViewport.scale === 1)
-                this.snap(this.#touchState.vx, this.#touchState.vy)
-        })
+        const distance = this.#vertical ? state.y - touch.screenY : state.x - touch.screenX
+        const travel = Math.abs(distance)
+        const duration = Math.max(1, e.timeStamp - state.time)
+        // Decide using the whole gesture, including slow drags with little release velocity.
+        const threshold = Math.min(56, Math.max(36, this.size * 0.12))
+        const flick = travel >= 20 && travel / duration >= 0.35
+        const direction = !this.#touchIsZoomed() && (travel >= threshold || flick)
+            ? Math.sign(this.#rtl ? -distance : distance) : 0
+        void this.#snapTouch(state.page, direction)
     }
     // allows one to process rects as if they were LTR and horizontal
     #getRectMapper() {
