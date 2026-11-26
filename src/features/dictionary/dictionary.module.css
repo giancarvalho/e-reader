@@ -5,13 +5,13 @@
 }
 
 .language, .partOfSpeech, .links {
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
   font: var(--font-label) var(--font-ui);
   color: var(--color-muted);
 }
 
 .definitions {
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -39,13 +39,11 @@
 
 .pack {
   padding: var(--space-16);
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
   border: var(--focus-ring) solid var(--color-surface);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
   border-radius: var(--radius-control);
 }
 
-/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7) */
+/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7b) */
 .pack h2 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
-.packProgress { display: flex; align-items: center; gap: var(--space-8); }
-.packProgress progress { min-inline-size: 0; inline-size: 100%; accent-color: var(--color-accent-text); }

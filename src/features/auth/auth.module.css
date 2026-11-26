@@ -3,10 +3,10 @@
 .section {
   display: grid;
   gap: var(--space-8);
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
   border-block-start: var(--focus-ring) solid var(--color-surface);
   padding-block-start: var(--space-16);
 }
 
-/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7) */
+/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7b) */
 .section h2 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }

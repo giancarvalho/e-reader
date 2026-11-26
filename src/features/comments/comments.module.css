@@ -6,7 +6,7 @@
 }
 
 .list {
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
   list-style: none;
   margin: 0;
   padding: 0;

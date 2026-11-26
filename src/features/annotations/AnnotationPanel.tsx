@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { IconButton } from "@/design-system/components/IconButton";
+import { Swatch } from "@/design-system/components/Swatch";
 import { Notice } from "@/design-system/components/Notice";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
@@ -45,7 +46,7 @@ export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
       <Text>{annotation.quote_text}</Text>
       <Text tone="muted">{annotations.shared}</Text>
       {noteOnly ? <div className={styles.selectedColor}>
-        <span className={styles.swatch} data-color={color} aria-hidden="true" />
+        <Swatch tone={color} />
         <Text>{annotations.colors[color]}</Text>
       </div> : <AnnotationColors color={color} disabled={busy} onSelect={setColor} />}
       <TextArea label={annotations.note} value={note} onChange={event => setNote(event.target.value)} maxLength={4000} />

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Notice } from "@/design-system/components/Notice";
+import { Progress } from "@/design-system/components/Progress";
 import { Page } from "@/design-system/components/Page";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
@@ -169,10 +170,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
     <div className={featured ? styles.featured : styles.book}>
       <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover}
         coverHref={stored ? readerHref : undefined} status={stored ? shelf.available : undefined}>
-        {progress !== undefined && <div className={styles.progress}>
-          <progress aria-label={shelf.progress} value={progress} max={1} />
-          <span>{formatPercent(progress)}</span>
-        </div>}
+        {progress !== undefined && <Progress label={shelf.progress} value={progress} valueText={formatPercent(progress)} />}
         {!offline && stored === false && <>
           <Button loading={busy} onClick={() => download(true)}>{shelf.read}</Button>
           <Button variant="quiet" disabled={busy} onClick={() => download(false)}>{shelf.download}</Button>

@@ -19,10 +19,12 @@ tester.run("no-live-region-role", plugin.rules["no-live-region-role"], {
 });
 
 tester.run("no-raw-controls", plugin.rules["no-raw-controls"], {
-  valid: ["<Button />", "<a href=\"/\" />", "<Progress />"],
+  valid: ["<Button />", "<a href=\"/\" />", "<Progress />", "<input type=\"hidden\" name=\"codigo\" />"],
   invalid: [
     { code: "<button />", errors: 1 },
     { code: "<input />", errors: 1 },
+    { code: "<input type=\"color\" />", errors: 1 },
+    { code: "<input type=\"text\" />", errors: 1 },
     { code: "<textarea />", errors: 1 },
     { code: "<dialog />", errors: 1 },
     { code: "<progress value={1} />", errors: 1 },
