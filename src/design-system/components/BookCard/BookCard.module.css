@@ -10,3 +10,13 @@
   gap: var(--space-8);
   overflow-wrap: anywhere;
 }
+
+.cover {
+  color: var(--color-accent-text);
+  text-underline-offset: var(--focus-ring);
+}
+
+.cover:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
+}

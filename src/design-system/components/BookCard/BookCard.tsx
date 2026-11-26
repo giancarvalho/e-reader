@@ -17,7 +17,7 @@ export function BookCard({ title, author, cover, coverHref, status, children }: 
   const image = <BookCover src={cover} title={title} />;
   return (
     <article className={styles.card}>
-      {coverHref ? <a href={coverHref} aria-label={title}>{image}</a> : image}
+      {coverHref ? <a className={styles.cover} href={coverHref} aria-label={title}>{image}</a> : image}
       <div className={styles.details}>
         <Heading as="h3">{title}</Heading>
         {author && <Text tone="muted">{author}</Text>}
