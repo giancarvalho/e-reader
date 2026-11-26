@@ -37,6 +37,10 @@ function languageRange(language: DictionaryLanguage) {
   return IDBKeyRange.bound([language], [language, "\uffff"]);
 }
 
+function revisionRange(language: DictionaryLanguage, revision: string) {
+  return IDBKeyRange.bound([language, revision], [language, revision, "\uffff"]);
+}
+
 export async function installedCatalog(language: DictionaryLanguage) {
   return (await openDictionary()).get("catalogs", language);
 }
@@ -46,8 +50,7 @@ export async function hasDownloadedShards(language: DictionaryLanguage) {
 }
 
 export async function savedPrefixes(language: DictionaryLanguage, revision: string) {
-  const keys = await (await openDictionary()).getAllKeys("completed",
-    IDBKeyRange.bound([language, revision], [language, revision, "\uffff"]));
+  const keys = await (await openDictionary()).getAllKeys("completed", revisionRange(language, revision));
   return new Set(keys.map(([, , prefix]) => prefix));
 }
 
@@ -91,11 +94,14 @@ async function removeShards(language: DictionaryLanguage, keep?: string) {
   const range = languageRange(language);
   const tx = db.transaction(["blocks", "completed", "catalogs"], "readwrite");
   if (keep) {
-    for (const name of ["blocks", "completed"] as const) {
-      const store = tx.objectStore(name);
-      const keys = await store.getAllKeys(range);
-      await Promise.all(keys.filter(([, revision]) => revision !== keep).map(key => store.delete(key)));
-    }
+    const completed = tx.objectStore("completed");
+    const revisions = new Set((await completed.getAllKeys(range)).map(([, revision]) => revision));
+    revisions.delete(keep);
+    const blocks = tx.objectStore("blocks");
+    await Promise.all([...revisions].flatMap(revision => {
+      const stale = revisionRange(language, revision);
+      return [blocks.delete(stale), completed.delete(stale)];
+    }));
   } else {
     await Promise.all([
       tx.objectStore("blocks").delete(range),

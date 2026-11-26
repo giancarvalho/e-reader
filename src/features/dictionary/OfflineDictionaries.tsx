@@ -95,7 +95,8 @@ export function OfflineDictionaries() {
     const downloading = busy?.language === language && busy.action === "download";
     return <section className={styles.pack} key={language}>
       <Heading as="h2">{label}</Heading>
-      {info?.installed && <Text tone="muted">{dictionary.installed}</Text>}
+      {info?.installed && (message?.language !== language || message.key !== "installed")
+        && <Text tone="muted">{dictionary.installed}</Text>}
       {downloading && progress && <div className={styles.packProgress}>
         <progress value={progress.done} max={progress.total} aria-label={label} />
         <Text tone="muted">{Math.floor(100 * progress.done / progress.total)}%</Text>
