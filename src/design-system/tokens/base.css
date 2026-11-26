@@ -46,6 +46,10 @@
   }
 }
 
+html {
+  background: var(--color-bg);
+}
+
 body {
   margin: 0;
   min-block-size: 100dvh;

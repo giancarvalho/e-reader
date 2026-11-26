@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/estante",
     scope: "/",
     display: "standalone",
-    background_color: "#FAF5EC",
-    theme_color: "#FAF5EC",
+    background_color: "#17130F",
+    theme_color: "#17130F",
     icons: [
       { src: "/icons/book-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/book-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

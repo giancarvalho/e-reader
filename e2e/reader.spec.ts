@@ -101,6 +101,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByRole("button", { name: "Aparência", exact: true }).click();
   await page.getByRole("button", { name: "Noite", exact: true }).click();
   await expect(page.locator("section[data-theme=night]")).toBeVisible();
+  await expect(page.locator('head meta[name="theme-color"]').first()).toHaveAttribute("content", "rgb(23, 19, 15)");
   await page.getByRole("button", { name: "Personalizado", exact: true }).click();
   await page.getByLabel("Cor de fundo").fill("#333333");
   await page.getByLabel("Cor do texto").fill("#333333");
@@ -126,6 +127,51 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     await expect(dictionary).toBeVisible();
     await page.mouse.click(1, 1);
     await expect(dictionary).toHaveCount(0);
+  }
+
+  if (test.info().project.name === "android-small") {
+    const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
+    if (!frame) throw new Error("Missing chapter frame");
+    const bounds = await (await frame.frameElement()).boundingBox();
+    if (!bounds) throw new Error("Missing chapter bounds");
+    const points = await frame.getByText("Segundo capítulo").evaluate(element => {
+      const range = element.ownerDocument.createRange();
+      const text = element.firstChild!;
+      return [[0, 7], [8, 16]].map(([start, end]) => {
+        range.setStart(text, start);
+        range.setEnd(text, end);
+        const { left, top, width, height } = range.getBoundingClientRect();
+        return { x: left + width / 2, y: top + height / 2 };
+      });
+    });
+    const [begin, word] = points.map(point => ({ x: point.x + bounds.x, y: point.y + bounds.y, id: 1 }));
+    const cdp = await context.newCDPSession(page);
+    const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    const pressSelection = () => frame.evaluate(() => document.getSelection()?.toString() ?? "");
+    const start = () => cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [word] });
+    const release = () => cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+
+    await start();
+    await page.waitForTimeout(1_000);
+    expect(await pressSelection()).toBe("");
+    await release();
+    await expect(dictionary).toHaveCount(0);
+
+    await start();
+    await expect.poll(pressSelection).toBe("capítulo");
+    await expect(dictionary).toHaveCount(0);
+    await release();
+    await expect(dictionary).toBeVisible();
+    await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
+    await expect.poll(pressSelection).toBe("");
+
+    await start();
+    await expect.poll(pressSelection).toBe("capítulo");
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [begin] });
+    await release();
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   }
 
   if (browserName === "webkit") return;
