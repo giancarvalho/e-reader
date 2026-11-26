@@ -5,6 +5,7 @@
 }
 
 .page {
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B2) */
   max-inline-size: var(--layout-width);
   margin-inline: auto;
   padding-block-start: max(var(--space-48), env(safe-area-inset-top));
@@ -16,11 +17,13 @@
   display: inline-grid;
   place-items: center start;
   justify-self: start;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B3) */
   min-block-size: var(--touch-target);
   color: var(--color-accent-text);
 }
 
 .page a:focus-visible {
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B3) */
   outline: var(--focus-ring) solid var(--color-accent-text);
 }
 

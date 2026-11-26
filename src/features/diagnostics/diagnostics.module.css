@@ -2,6 +2,7 @@
 .update {
   display: grid;
   gap: var(--space-16);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B2) */
   max-inline-size: var(--layout-width);
   margin-inline: auto;
   padding: var(--space-16);

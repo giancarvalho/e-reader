@@ -1,6 +1,7 @@
 .panel {
   display: grid;
   gap: var(--space-16);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B2) */
   max-inline-size: var(--layout-width);
   margin-inline: auto;
   padding-block-start: max(var(--space-48), env(safe-area-inset-top));
@@ -12,11 +13,13 @@
   display: inline-grid;
   place-items: center start;
   justify-self: start;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B3) */
   min-block-size: var(--touch-target);
   color: var(--color-accent-text);
 }
 
 .panel a:focus-visible {
+  /* stylelint-disable-next-line property-disallowed-list -- baseline(B3) */
   outline: var(--focus-ring) solid var(--color-accent-text);
 }
 
@@ -25,8 +28,10 @@
 .section {
   display: grid;
   gap: var(--space-8);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
   border-block-start: var(--focus-ring) solid var(--color-surface);
   padding-block-start: var(--space-16);
 }
 
+/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7) */
 .section h2 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
