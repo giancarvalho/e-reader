@@ -23,6 +23,7 @@ type Props = {
   onPreferences: (preferences: ReaderPreferences) => void;
   annotations: Annotation[];
   annotationTarget?: { cfi: string };
+  selectionReset: number;
   onSelection: (value: AnnotationSelection) => void;
   onAnnotation: (id: string) => void;
   onChapter: (index: number) => void;
@@ -32,7 +33,7 @@ type Props = {
 
 export function ReaderCanvas({
   title, annotationCount, onOpenAnnotations, file, initialCfi, preferences, onPosition, onPreferences, annotations, annotationTarget,
-  onSelection, onAnnotation, onChapter, onChapters, children,
+  onSelection, onAnnotation, onChapter, onChapters, selectionReset, children,
 }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>(null);
@@ -74,6 +75,7 @@ export function ReaderCanvas({
     let recording = false;
     let selectionTimer: number | undefined;
     let previousSelection = "";
+    let lastAnnotationTap = -Infinity;
 
     function turn(direction: "prev" | "next") {
       if (recording) void view?.[direction]().catch(() => setFailed(true));
@@ -99,9 +101,12 @@ export function ReaderCanvas({
       const bounds = frame?.getBoundingClientRect();
       if (!area || !bounds || !area.width) return;
       const fraction = (bounds.left + event.clientX - area.left) / area.width;
-      if (fraction < 0.22) turn("prev");
-      else if (fraction > 0.78) turn("next");
-      else setControls(value => !value);
+      queueMicrotask(() => {
+        if (cancelled || performance.now() - lastAnnotationTap < 50) return;
+        if (fraction < 0.22) turn("prev");
+        else if (fraction > 0.78) turn("next");
+        else setControls(value => !value);
+      });
     }
 
     window.addEventListener("keydown", readKey);
@@ -155,6 +160,7 @@ export function ReaderCanvas({
         draw(Overlayer.highlight, { color: annotation.color, opacity: 0.38 });
       });
       view.addEventListener("show-annotation", event => {
+        lastAnnotationTap = performance.now();
         reportAnnotation((event as CustomEvent<{ value: string }>).detail.value);
       });
       view.addEventListener("create-overlay", () => {
@@ -221,6 +227,10 @@ export function ReaderCanvas({
   useEffect(() => {
     if (ready && viewRef.current) void refresh(viewRef.current);
   }, [annotations, ready]);
+
+  useEffect(() => {
+    for (const { doc } of viewRef.current?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
+  }, [selectionReset]);
 
   useEffect(() => {
     if (annotationTarget && viewRef.current) void viewRef.current.goTo(annotationTarget.cfi).catch(() => setFailed(true));

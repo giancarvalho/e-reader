@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
-import { Heading } from "@/design-system/components/Heading";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -19,12 +18,12 @@ type Props = {
   selection?: AnnotationSelection;
   editing?: Annotation;
   cancel: () => void;
-  onLookup?: () => void;
+  preferredColor: AnnotationColor;
   onSave: (row: Annotation) => Promise<boolean>;
 };
 
-export function AnnotationPanel({ identity, selection, editing, cancel, onSave, onLookup }: Props) {
-  const [color, setColor] = useState<AnnotationColor>(editing?.color ?? "amber");
+export function AnnotationPanel({ identity, selection, editing, cancel, onSave, preferredColor }: Props) {
+  const [color, setColor] = useState<AnnotationColor>(editing?.color ?? preferredColor);
   const [note, setNote] = useState(editing?.note ?? "");
   const [busy, setBusy] = useState(false);
   const { annotations } = messages;
@@ -46,9 +45,8 @@ export function AnnotationPanel({ identity, selection, editing, cancel, onSave, 
 
   return (
     <section className={styles.panel} aria-label={editing ? annotations.edit : annotations.add}>
-      <Heading as="h2">{editing ? annotations.edit : annotations.add}</Heading>
       <Text>{quote}</Text>
-      {onLookup && <Button variant="quiet" onClick={onLookup}>{messages.dictionary.lookup}</Button>}
+      <Text tone="muted">{annotations.shared}</Text>
       <fieldset className={styles.colors}>
         <legend>{annotations.color}</legend>
         {colors.map(value => (
