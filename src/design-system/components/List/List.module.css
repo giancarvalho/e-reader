@@ -1,0 +1,18 @@
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  gap: var(--space-8);
+  min-inline-size: 0;
+  padding-block: var(--space-8);
+  overflow-wrap: anywhere;
+}
+
+.item[data-divided] {
+  border-block-start: var(--border-divider);
+}

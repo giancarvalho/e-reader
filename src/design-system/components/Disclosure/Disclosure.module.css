@@ -1,0 +1,12 @@
+.summary {
+  display: list-item;
+  min-block-size: var(--touch-target);
+  line-height: var(--touch-target);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.summary:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
+}

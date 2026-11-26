@@ -15,15 +15,6 @@
   min-inline-size: 0;
 }
 
-.title {
-  margin: 0;
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
-  font: var(--font-display) var(--font-reading);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
-  letter-spacing: var(--tracking-display);
-  text-wrap: balance;
-}
-
 .home { grid-template-rows: auto 1fr auto; }
 .credits { color: var(--color-muted); }
 

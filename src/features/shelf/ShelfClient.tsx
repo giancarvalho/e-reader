@@ -84,13 +84,13 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
       </Sheet>}
       {snapshot.books.length === 0 && <Text>{offline ? shelf.offlineEmpty : access.shelfEmpty}</Text>}
       {recent && <section className={styles.stack}>
-        <Heading as="h2">{shelf.resume}</Heading>{card(recent, true)}
+        <Heading as="h2" variant="section">{shelf.resume}</Heading>{card(recent, true)}
       </section>}
       {current && current !== recent && <section className={styles.stack}>
-        <Heading as="h2">{shelf.current}</Heading>{card(current, !recent)}
+        <Heading as="h2" variant="section">{shelf.current}</Heading>{card(current, !recent)}
       </section>}
       {remaining.length > 0 && <section className={styles.stack}>
-        <Heading as="h2">{shelf.collection}</Heading>
+        <Heading as="h2" variant="section">{shelf.collection}</Heading>
         <div className={styles.books}>{remaining.map(book => card(book))}</div>
       </section>}
     </>
@@ -167,8 +167,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
   }
 
   return (
-    <div className={featured ? styles.featured : styles.book}>
-      <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover}
+    <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover} featured={featured}
         coverHref={stored ? readerHref : undefined} status={stored ? shelf.available : undefined}>
         {progress !== undefined && <Progress label={shelf.progress} value={progress} valueText={formatPercent(progress)} />}
         {!offline && stored === false && <>
@@ -178,8 +177,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
         {stored && <LinkButton href={readerHref}>{action}</LinkButton>}
         {(notice || busy) && <Notice>{busy ? shelf.downloading : notice}</Notice>}
         {children}
-      </BookCard>
-    </div>
+    </BookCard>
   );
 }
 

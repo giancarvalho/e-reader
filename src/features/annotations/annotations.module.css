@@ -4,15 +4,6 @@
   overflow-wrap: anywhere;
 }
 
-.panel summary {
-  display: list-item;
-  line-height: var(--touch-target);
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
-  min-block-size: var(--touch-target);
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -25,14 +16,6 @@
 }
 
 .selectedColor { gap: var(--space-8); }
-
-.list {
-  display: grid;
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
 
 .filters, .itemActions { display: flex; align-items: center; }
 .filters { gap: var(--space-8); }
@@ -47,8 +30,6 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: var(--space-8);
-  border-block-start: var(--border-divider);
-  padding-block: var(--space-8);
 }
 
 .itemText button[data-variant="quiet"] {

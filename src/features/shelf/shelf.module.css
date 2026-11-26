@@ -17,17 +17,4 @@
   gap: var(--space-8);
 }
 
-/* stylelint-disable-next-line declaration-property-value-disallowed-list, property-disallowed-list -- baseline(B7b) */
-.stack h2, .stack h3 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
-/* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7b) */
-.featured h3 { font: var(--font-heading) var(--font-reading); }
-
-.featured, .book {
-  min-inline-size: 0;
-  padding: var(--space-12);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7b) */
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-}
-
 .books { display: grid; gap: var(--space-12); }
