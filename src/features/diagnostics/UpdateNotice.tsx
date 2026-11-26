@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Page } from "@/design-system/components/Page";
 import { StatusBanner } from "@/design-system/components/StatusBanner";
 import { messages } from "@/lib/messages/pt-br";
-import styles from "./diagnostics.module.css";
 
 export function UpdateNotice() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
@@ -50,7 +50,7 @@ export function UpdateNotice() {
 
   if (!waiting) return null;
   return (
-    <div className={styles.update}>
+    <Page as="div" variant="banner">
       <StatusBanner action={<Button loading={applying} onClick={() => {
         requested.current = true;
         setApplying(true);
@@ -58,6 +58,6 @@ export function UpdateNotice() {
       }}>{diagnostics.update}</Button>}>
         {diagnostics.updateAvailable}
       </StatusBanner>
-    </div>
+    </Page>
   );
 }

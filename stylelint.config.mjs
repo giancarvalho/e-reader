@@ -2,25 +2,27 @@
 // Feature and route CSS only arranges them. Violations that predate a rule are
 // recorded in the file with "stylelint-disable <rule> -- baseline(<task>)";
 // an unused disable is an error, so the baseline can only shrink.
-const featureOnly = {
-  "property-disallowed-list": [
-    [
-      // Component identity: focus, shape and elevation come from the design system.
-      "/^outline/", "/radius/", "box-shadow", "list-style",
-      // Typography comes from Text and Heading.
-      "font-family", "font-weight", "font-size", "letter-spacing",
+function featureOnly({ columnWidth = false } = {}) {
+  return {
+    "property-disallowed-list": [
+      [
+        // Component identity: focus, shape and elevation come from the design system.
+        "/^outline/", "/radius/", "box-shadow", "list-style",
+        // Typography comes from Text and Heading.
+        "font-family", "font-weight", "font-size", "letter-spacing",
+      ],
+      { message: "Use a design-system component or token for \"%s\" instead of styling it here (AGENTS.md, rules 3 and 4)." },
     ],
-    { message: "Use a design-system component or token for \"%s\" instead of styling it here (AGENTS.md, rules 3 and 4)." },
-  ],
-  "declaration-property-value-disallowed-list": [
-    {
-      "/^(min|max)-(inline|block)-size$/": ["/--touch-target/", "/--layout-width/"],
-      "/^(border|border-.*)$/": ["/var\\(--focus-ring\\)/"],
-      font: ["/var\\(--font-/"],
-    },
-    { message: "Touch targets, page width, borders and fonts belong to design-system components (Button, Page, Section, Text, Heading)." },
-  ],
-};
+    "declaration-property-value-disallowed-list": [
+      {
+        "/^(min|max)-(inline|block)-size$/": columnWidth ? ["/--touch-target/"] : ["/--touch-target/", "/--layout-width/"],
+        "/^(border|border-.*)$/": ["/var\\(--focus-ring\\)/"],
+        font: ["/var\\(--font-/"],
+      },
+      { message: "Touch targets, page width, borders and fonts belong to design-system components (Button, Page, Section, Text, Heading)." },
+    ],
+  };
+}
 
 const config = {
   reportNeedlessDisables: true,
@@ -45,7 +47,13 @@ const config = {
     },
     {
       files: ["src/features/**/*.css", "src/app/**/*.css"],
-      rules: featureOnly,
+      rules: featureOnly(),
+    },
+    {
+      // The reader's fixed viewport and toolbars span the screen but must line up
+      // with the same centered column as every Page, so they may read --layout-width.
+      files: ["src/features/reader/**/*.css"],
+      rules: featureOnly({ columnWidth: true }),
     },
   ],
 };

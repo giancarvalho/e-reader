@@ -1,6 +1,7 @@
 import { Avatar } from "@/design-system/components/Avatar";
 import { redirect } from "next/navigation";
 import { Link } from "@/design-system/components/Link";
+import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -22,7 +23,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
   const photo = stringValue(metadata.avatar_url) ?? stringValue(metadata.picture);
 
   return (
-    <main className={styles.panel}>
+    <Page variant="intro">
       <Heading>{auth.accountTitle}</Heading>
       {name && <section className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></section>}
       <Link href="/convite" client>{auth.continue}</Link>
@@ -40,7 +41,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
         {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
         <SignOutForm />
       </section>
-    </main>
+    </Page>
   );
 }
 

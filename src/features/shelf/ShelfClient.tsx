@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
 import { BookCard } from "@/design-system/components/BookCard";
+import { Page } from "@/design-system/components/Page";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
 import { Sheet } from "@/design-system/components/Sheet";
@@ -224,10 +225,10 @@ export function OfflineShelf() {
   }, []);
 
   return (
-    <main className={styles.page}>
+    <Page>
       {snapshot === undefined
         ? <div role="status"><Text>{messages.shelf.loading}</Text></div>
         : <ShelfClient snapshot={snapshot ?? { userId: "", books: [] }} offline />}
-    </main>
+    </Page>
   );
 }

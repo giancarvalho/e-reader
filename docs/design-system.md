@@ -13,6 +13,7 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | Componente | Use para | Observações |
 |---|---|---|
 | `Button` | Qualquer ação clicável. Variantes `primary`, `secondary`, `quiet`, `icon`; estados `disabled` e `loading` | `icon` exige `aria-label`. Alvo de toque de 44 px já incluído |
+| `Page` | A coluna centralizada de uma tela, com largura máxima e área segura do iPhone. `variant` `default`, `intro` (mais espaço acima, para formulários e conta) ou `banner` (faixa compacta); `as` `main`, `div`, `header` ou `section` | Toda tela nova começa nela. Não repita largura, `margin-inline: auto` nem `env(safe-area-inset-*)` em CSS de feature |
 | `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
 | `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
 | `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
@@ -38,7 +39,7 @@ O `npm run lint:css` bloqueia, fora de `src/design-system`:
 - cores literais (`#fff`, `rgb()`), `px`, `rem`, `em`;
 - `outline*`, `border-radius`, `box-shadow`, `list-style`;
 - `font-family`, `font-weight`, `font-size`, `letter-spacing` e o atalho `font` com tokens de fonte;
-- `min-*-size` com `--touch-target` ou `--layout-width`, e bordas com `--focus-ring`.
+- `min-*-size` com `--touch-target` ou `--layout-width`, e bordas com `--focus-ring`. Exceção permanente e restrita: o cromo fixo do leitor (`src/features/reader`) pode usar `--layout-width` para acompanhar a coluna.
 
 Se você precisa de algo disso, o componente certo não existe ainda: crie-o no
 design system.

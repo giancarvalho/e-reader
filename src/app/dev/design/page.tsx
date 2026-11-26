@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Avatar } from "@/design-system/components/Avatar";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
+import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
@@ -18,7 +19,7 @@ export default function DesignCatalog() {
   const { catalog } = messages;
 
   return (
-    <main className={styles.catalog}>
+    <Page>
       <Heading>{catalog.title}</Heading>
       {(["day", "night"] as const).map((theme) => (
         <section className={styles.panel} data-theme={theme} key={theme}>
@@ -52,6 +53,6 @@ export default function DesignCatalog() {
           <Text tone="muted"><Link href="#" variant="inline" tone="muted">{catalog.link}</Link></Text>
         </section>
       ))}
-    </main>
+    </Page>
   );
 }

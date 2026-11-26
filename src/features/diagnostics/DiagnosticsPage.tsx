@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "@/design-system/components/Link";
+import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { observeDiagnostics, readDiagnostics } from "@/lib/diagnostics";
@@ -39,7 +40,7 @@ export function DiagnosticsPage() {
     dateStyle: "short", timeStyle: "short",
   }).format(new Date(value));
   return (
-    <main className={styles.page}>
+    <Page>
       <Heading>{diagnostics.title}</Heading>
       <dl className={styles.summary}>
         <dt>{diagnostics.version}</dt><dd>{version}</dd>
@@ -61,6 +62,6 @@ export function DiagnosticsPage() {
         </li>)}
       </ul> : <Text>{diagnostics.empty}</Text>}
       <Link href="/estante">{messages.reader.shelf}</Link>
-    </main>
+    </Page>
   );
 }
