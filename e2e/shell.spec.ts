@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test("starts the installed app at the reading shelf", async ({ request }) => {
+  const manifest = await request.get("/manifest.webmanifest");
+  expect(manifest.ok()).toBe(true);
+  expect(await manifest.json()).toMatchObject({ id: "/", start_url: "/estante" });
+});
+
 test("shows the reading shell in both system themes", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");

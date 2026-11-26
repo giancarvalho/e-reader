@@ -127,6 +127,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-8);
+  box-sizing: border-box;
   inline-size: fit-content;
   max-inline-size: calc(100% - 2 * var(--space-8));
   margin-inline: auto;
@@ -135,3 +136,5 @@
   border-radius: var(--radius-control);
   background: var(--color-bg);
 }
+
+.selectionMenu button { padding-inline: var(--space-8); }

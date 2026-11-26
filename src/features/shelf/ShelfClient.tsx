@@ -43,7 +43,9 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
     return () => { active = false; };
   }, [offline, snapshot]);
 
-  const recent = snapshot.books.find(book => book.id === last?.hash && book.group_id === last.group);
+  const recent = last?.user === snapshot.userId
+    ? snapshot.books.find(book => book.id === last.hash && book.group_id === last.group)
+    : undefined;
   const current = snapshot.books.find(book => book.is_current);
   const remaining = snapshot.books.filter(book => book !== current && book !== recent);
   const card = (book: ShelfBook, featured = false) => (
