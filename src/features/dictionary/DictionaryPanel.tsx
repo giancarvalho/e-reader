@@ -47,7 +47,7 @@ export function DictionaryPanel({ word, language, close }: Props) {
           </Button>
         </div>}
         {Array.isArray(state) && state.length === 0 && <Text>{dictionary.empty}</Text>}
-        {displayed.map((entry, entryIndex) => (
+        {displayed.map(entry => (
           <section className={styles.panel} key={entry.word}>
             {entry.word !== word && <Heading as="h3">{entry.word}</Heading>}
             <ol className={styles.definitions} role="list">
@@ -63,8 +63,6 @@ export function DictionaryPanel({ word, language, close }: Props) {
             <div className={styles.links}>
               <a href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</a>
               <a href={origin + encodeURIComponent(entry.word) + "?action=history"} target="_blank" rel="noreferrer">{dictionary.history}</a>
-              {entryIndex === displayed.length - 1 &&
-                <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">{dictionary.license}</a>}
             </div>
           </section>
         ))}
