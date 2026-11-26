@@ -16,6 +16,9 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `Page` | A coluna centralizada de uma tela, com largura máxima e área segura do iPhone. `variant` `default`, `intro` (mais espaço acima, para formulários e conta) ou `banner` (faixa compacta); `as` `main`, `div`, `header` ou `section` | Toda tela nova começa nela. Não repita largura, `margin-inline: auto` nem `env(safe-area-inset-*)` em CSS de feature |
 | `Icon` | Ícone decorativo (`close`, `reply`, `trash`, `conversation`, `more`, `send`); herda a cor do texto e fica oculto para leitores de tela | Para ícone clicável, use `IconButton`. Ícone novo entra em `Icon.tsx` |
 | `IconButton` | Botão só com ícone. `icon` e `label` obrigatórios (o rótulo é o nome acessível); repassa `aria-expanded`, `type`, `disabled`, `loading` | Substitui o caractere `×` e qualquer `<Button variant="icon">` com SVG solto |
+| `Progress` | Barra de progresso com nome acessível e, opcionalmente, o valor ao lado (`valueText`, que nunca quebra de linha) | Substitui `<progress>` cru |
+| `Swatch` | Amostra de uma cor de grifo (`tone`: `amber`, `green`, `blue`, `pink`); `selected` desenha o anel | Decorativo: o botão que a contém dá o nome |
+| `ColorField` | Seletor de cor com rótulo | Substitui `<input type="color">` |
 | `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
 | `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
 | `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
@@ -52,15 +55,14 @@ design system.
 O `npm run lint` bloqueia, fora de `src/design-system`:
 
 - `role="status"` e `role="alert"` à mão (use `Notice`);
-- `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus;
+- `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus (um `<input type="hidden">` é permitido);
 - `navigator.onLine` e `addEventListener("online" | "offline")` (use `src/lib/online`: `useOnline`, `useOnReconnect`, `isOnline`, `onReconnect`, `onDisconnect`);
 - `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`: `formatPercent`, `formatDateTime`; formatadores novos entram lá);
 - importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`, com a interface) ou `@/features/<nome>/server` (o `server.ts`, só para código de servidor, como rotas e callbacks, sem carregar a interface);
 - arquivos com mais de 300 linhas.
 
-`Progress` ainda não existe: é a tarefa B7 do plano. Até lá, ao precisar dele, crie-o
-seguindo a regra 3 em vez de repetir o padrão na feature; o lint vai apontar
-quem ainda usa o padrão antigo pela linha de base.
+Se o componente de que você precisa não existe, crie-o seguindo a regra 3 em vez de
+repetir o padrão na feature; o lint aponta quem ainda usa o padrão antigo pela linha de base.
 
 ## Capturas visuais
 

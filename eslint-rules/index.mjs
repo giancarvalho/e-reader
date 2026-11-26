@@ -21,8 +21,11 @@ export const rules = {
     "Do not set role=\"status\" or role=\"alert\" by hand. Use the design-system Notice so announcements share one structure and typography.",
   ),
   "no-raw-controls": selectorRule(
-    ["JSXOpeningElement[name.type='JSXIdentifier'][name.name=/^(button|input|textarea|dialog|progress)$/]"],
-    "Do not render raw <button>, <input>, <textarea>, <dialog> or <progress>. Use the matching design-system component (Button, TextField, TextArea, Sheet, Progress).",
+    [
+      "JSXOpeningElement[name.type='JSXIdentifier'][name.name=/^(button|textarea|dialog|progress)$/]",
+      "JSXOpeningElement[name.type='JSXIdentifier'][name.name='input']:not(:has(JSXAttribute[name.name='type'][value.value=/^(hidden)$/]))",
+    ],
+    "Do not render raw <button>, <input>, <textarea>, <dialog> or <progress>. Use the matching design-system component (Button, TextField, ColorField, TextArea, Sheet, Progress). A hidden <input> is allowed.",
   ),
   "no-raw-connectivity": selectorRule(
     [

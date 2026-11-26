@@ -50,6 +50,11 @@ const config = {
       rules: featureOnly(),
     },
     {
+      // The developer-only component catalog is a scratch surface and may style itself freely.
+      files: ["src/app/dev/**/*.css"],
+      rules: { "property-disallowed-list": null, "declaration-property-value-disallowed-list": null },
+    },
+    {
       // The reader's fixed viewport and toolbars span the screen but must line up
       // with the same centered column as every Page, so they may read --layout-width.
       files: ["src/features/reader/**/*.css"],

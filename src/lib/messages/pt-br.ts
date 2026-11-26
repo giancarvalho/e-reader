@@ -202,6 +202,8 @@ export const messages = {
     night: "Noite",
     body: "Texto da interface",
     link: "Link de exemplo",
+    progress: "Progresso de exemplo",
+    color: "Cor de exemplo",
     close: "Fechar",
     reply: "Responder",
     remove: "Apagar",

@@ -3,14 +3,17 @@ import { Avatar } from "@/design-system/components/Avatar";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
 import { Notice } from "@/design-system/components/Notice";
+import { ColorField } from "@/design-system/components/ColorField";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { IconButton } from "@/design-system/components/IconButton";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
 import { Text } from "@/design-system/components/Text";
+import { Swatch } from "@/design-system/components/Swatch";
 import { TextArea } from "@/design-system/components/TextArea";
 import { TextField } from "@/design-system/components/TextField";
+import { Progress } from "@/design-system/components/Progress";
 import { StatusBanner } from "@/design-system/components/StatusBanner";
 import { messages } from "@/lib/messages/pt-br";
 import { SheetExample } from "./SheetExample";
@@ -60,6 +63,11 @@ export default function DesignCatalog() {
             <LinkButton href="#" variant="secondary">{catalog.secondary}</LinkButton>
             <LinkButton href="#" variant="quiet">{catalog.quiet}</LinkButton>
           </div>
+          <Progress label={catalog.progress} value={0.4} valueText="40%" />
+          <div className={styles.actions}>
+            {(["amber", "green", "blue", "pink"] as const).map(tone => <Swatch key={tone} tone={tone} selected={tone === "green"} />)}
+          </div>
+          <ColorField label={catalog.color} value="#b5532f" onChange={() => undefined} />
           <Link href="#">{catalog.link}</Link>
           <Text>{catalog.body} <Link href="#" variant="inline">{catalog.link}</Link></Text>
           <Text tone="muted"><Link href="#" variant="inline" tone="muted">{catalog.link}</Link></Text>

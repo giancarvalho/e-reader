@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
+import { ColorField } from "@/design-system/components/ColorField";
 import { Link } from "@/design-system/components/Link";
 import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
@@ -485,10 +486,10 @@ function Appearance({ preferences, change }: {
         </div>
       </fieldset>
       {theme === "custom" && <>
-        <label>{reader.background} <input type="color" value={preferences.background}
-          onChange={event => change({ ...preferences, background: event.target.value })} /></label>
-        <label>{reader.ink} <input type="color" value={preferences.ink}
-          onChange={event => change({ ...preferences, ink: event.target.value })} /></label>
+        <ColorField label={reader.background} value={preferences.background}
+          onChange={event => change({ ...preferences, background: event.target.value })} />
+        <ColorField label={reader.ink} value={preferences.ink}
+          onChange={event => change({ ...preferences, ink: event.target.value })} />
         {contrastRatio(preferences.background, preferences.ink) < 4.5 && <Text>{reader.lowContrast}</Text>}
       </>}
     </div>

@@ -5,9 +5,7 @@
   padding: var(--space-16);
   color: var(--color-ink);
   background: var(--color-bg);
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B7) */
   border: var(--focus-ring) solid var(--color-muted);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B7) */
   border-radius: var(--radius-control);
 }
 
