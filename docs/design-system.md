@@ -19,6 +19,8 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `Progress` | Barra de progresso com nome acessível e, opcionalmente, o valor ao lado (`valueText`, que nunca quebra de linha) | Substitui `<progress>` cru |
 | `Swatch` | Amostra de uma cor de grifo (`tone`: `amber`, `green`, `blue`, `pink`); `selected` desenha o anel | Decorativo: o botão que a contém dá o nome |
 | `ColorField` | Seletor de cor com rótulo | Substitui `<input type="color">` |
+| `Popover` | Painel não modal ancorado a um ponto da tela (`anchor`). Mantém-se dentro da área visível, acima do teclado virtual; recebe o foco ao abrir e o devolve ao fechar; fecha com Esc ou ao tocar fora | `label` é o nome acessível. Use para qualquer painel flutuante novo em vez de reimplementar posição e foco |
+| `ActionBar` | Barra curta de ações fixada embaixo do ancestral posicionado, acima do rodapé (`--action-bar-offset`), que quebra em mais linhas em tela estreita | `label` é o nome do grupo |
 | `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
 | `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
 | `Heading`, `Text` | Títulos e texto. `Heading` tem `variant` `page` (padrão), `section` (grupo dentro da tela) e `display` (título grande da home). `Text` tem `variant` `body`, `reading` e `label` (legenda pequena) e `tone` `default` ou `muted` | Não defina `font-*` em CSS de feature |

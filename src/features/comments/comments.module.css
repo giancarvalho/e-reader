@@ -22,25 +22,6 @@
   overscroll-behavior: contain;
 }
 
-.bubble {
-  position: fixed;
-  z-index: 40;
-  display: flex;
-  box-sizing: border-box;
-  /* stylelint-disable-next-line unit-disallowed-list -- baseline(B9) */
-  inline-size: min(calc(100% - 2 * var(--space-12)), 22rem);
-  overflow: auto;
-  overscroll-behavior: contain;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  border: var(--border-divider);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B9) */
-  border-radius: var(--radius-surface);
-  padding: var(--space-8) var(--space-12) var(--space-12);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B9) */
-  box-shadow: var(--shadow-floating);
-}
-
 .toolbar {
   display: flex;
   justify-content: flex-end;

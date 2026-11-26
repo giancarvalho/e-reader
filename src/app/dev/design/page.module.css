@@ -14,3 +14,9 @@
   flex-wrap: wrap;
   gap: var(--space-8);
 }
+
+.dock {
+  position: relative;
+  min-block-size: calc(var(--touch-target) * 3);
+  --action-bar-offset: var(--space-8);
+}

@@ -1,0 +1,15 @@
+.popover {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  box-sizing: border-box;
+  inline-size: min(calc(100% - 2 * var(--space-12)), 22rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border: var(--border-divider);
+  border-radius: var(--radius-surface);
+  padding: var(--space-8) var(--space-12) var(--space-12);
+  box-shadow: var(--shadow-floating);
+}
