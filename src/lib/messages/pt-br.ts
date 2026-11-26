@@ -5,7 +5,7 @@ export const messages = {
     subtitle: "Um livro. Muitas leituras.",
     enter: "Entrar",
     credits: "Créditos e licenças",
-    creditsDictionary: "As definições em português e inglês foram extraídas e adaptadas dos Wikcionários, incluindo seleção e formatação. As contribuições e o histórico estão vinculados em cada verbete. As definições adaptadas são distribuídas sob CC BY-SA 4.0.",
+    creditsDictionary: "As definições em português e inglês foram extraídas e adaptadas dos Wikcionários, incluindo seleção e formatação. O link para o verbete original dá acesso ao histórico e às contribuições. As definições adaptadas são distribuídas sob CC BY-SA 4.0.",
     wiktionaryPortuguese: "Wikcionário em português",
     wiktionaryEnglish: "Wikcionário em inglês",
     foliateLicense: "Foliate JS · Licença MIT",
@@ -188,7 +188,6 @@ export const messages = {
     inText: "No texto:",
     source: "Extraído e adaptado pelo Wiktextract, via Kaikki.",
     wiktionary: "Wikcionário",
-    history: "Histórico e autores",
     license: "CC BY-SA 4.0",
     close: "Fechar dicionário",
     pos: {

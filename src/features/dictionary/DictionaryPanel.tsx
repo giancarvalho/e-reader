@@ -62,7 +62,6 @@ export function DictionaryPanel({ word, language, close }: Props) {
             </ol>
             <div className={styles.links}>
               <a href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</a>
-              <a href={origin + encodeURIComponent(entry.word) + "?action=history"} target="_blank" rel="noreferrer">{dictionary.history}</a>
             </div>
           </section>
         ))}
