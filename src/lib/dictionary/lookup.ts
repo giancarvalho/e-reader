@@ -1,10 +1,11 @@
 import { normalizeWord, wordPrefix } from "./words.mjs";
 
-export type DictionaryLanguage = "pt" | "en";
-export type Definition = { text: string; pos: string };
-export type DictionaryEntry = { definitions: Definition[]; lemmas: string[] };
-export type DictionaryShard = Record<string, DictionaryEntry>;
-type Match = { word: string; definitions: Definition[] };
+import { fetchDictionaryCatalog, fetchDictionaryShard, type DictionaryCatalog, type DictionaryEntry,
+  type DictionaryLanguage, type DictionaryShard } from "./catalog";
+import { installedCatalog, readOfflineEntry } from "./offline-store";
+
+export type { Definition, DictionaryEntry, DictionaryLanguage, DictionaryShard } from "./catalog";
+type Match = { word: string; definitions: DictionaryEntry["definitions"] };
 
 export function detectDictionaryLanguage(language?: string | null, sample = ""): DictionaryLanguage {
   const primary = language?.toLowerCase().split(/[-_]/)[0];
@@ -26,9 +27,18 @@ export function dictionaryWord(selection: string) {
 }
 
 export async function findDefinitions(word: string, load: (prefix: string) => Promise<DictionaryShard>): Promise<Match[]> {
+  const shards = new Map<string, Promise<DictionaryShard>>();
+  return resolveDefinitions(word, async candidate => {
+    const prefix = wordPrefix(candidate);
+    if (!shards.has(prefix)) shards.set(prefix, load(prefix));
+    const shard = await shards.get(prefix)!;
+    return Object.hasOwn(shard, candidate) ? shard[candidate] : undefined;
+  });
+}
+
+async function resolveDefinitions(word: string, read: (candidate: string) => Promise<DictionaryEntry | undefined>): Promise<Match[]> {
   const queue = [word];
   const visited = new Set<string>();
-  const shards = new Map<string, Promise<DictionaryShard>>();
   const matches: Match[] = [];
   let failure: unknown;
 
@@ -36,17 +46,14 @@ export async function findDefinitions(word: string, load: (prefix: string) => Pr
     const candidate = queue[i];
     if (visited.has(candidate)) continue;
     visited.add(candidate);
-    const prefix = wordPrefix(candidate);
-    if (!shards.has(prefix)) shards.set(prefix, load(prefix));
-    let shard: DictionaryShard;
+    let entry: DictionaryEntry | undefined;
     try {
-      shard = await shards.get(prefix)!;
+      entry = await read(candidate);
     } catch (error) {
       failure = error;
       if (i === 0 && word.includes("-")) queue.push(word.split("-")[0]);
       continue;
     }
-    const entry = Object.hasOwn(shard, candidate) ? shard[candidate] : undefined;
     if (entry?.definitions.length) matches.push({ word: candidate, definitions: entry.definitions });
     if (entry) queue.push(...entry.lemmas);
     if (i === 0 && word.includes("-")) queue.push(word.split("-")[0]);
@@ -55,19 +62,37 @@ export async function findDefinitions(word: string, load: (prefix: string) => Pr
   return matches;
 }
 
-export async function lookupDictionary(language: DictionaryLanguage, word: string) {
-  const root = `/dict/${language}`;
-  const response = await fetch(`${root}/manifest.json`);
-  if (!response.ok) throw new Error("Dictionary manifest unavailable");
-  const manifest = await response.json() as { sha256?: string; prefixes?: string[] };
-  if (!manifest.sha256 || !/^[a-f0-9]{64}$/.test(manifest.sha256) || !Array.isArray(manifest.prefixes)) {
-    throw new Error("Invalid dictionary manifest");
-  }
+const onlineCatalogs = new Map<DictionaryLanguage, { expires: number; value: Promise<DictionaryCatalog> }>();
+const onlineShards = new Map<string, Promise<DictionaryShard>>();
 
-  return findDefinitions(word, async prefix => {
-    if (!manifest.prefixes?.includes(prefix)) return {};
-    const shard = await fetch(`${root}/${prefix}.json?v=${manifest.sha256}`);
-    if (!shard.ok) throw new Error("Dictionary prefix unavailable");
-    return shard.json() as Promise<DictionaryShard>;
-  });
+function onlineCatalog(language: DictionaryLanguage) {
+  const cached = onlineCatalogs.get(language);
+  if (cached && cached.expires > Date.now()) return cached.value;
+  const value = fetchDictionaryCatalog(language);
+  onlineCatalogs.set(language, { value, expires: Date.now() + 60_000 });
+  value.catch(() => { if (onlineCatalogs.get(language)?.value === value) onlineCatalogs.delete(language); });
+  return value;
+}
+
+function onlineShard(language: DictionaryLanguage, revision: string, prefix: string) {
+  const key = `${language}:${revision}:${prefix}`;
+  let value = onlineShards.get(key);
+  if (!value) {
+    value = fetchDictionaryShard(language, revision, prefix);
+    value.catch(() => { if (onlineShards.get(key) === value) onlineShards.delete(key); });
+    if (onlineShards.size >= 4) onlineShards.delete(onlineShards.keys().next().value!);
+  }
+  onlineShards.delete(key);
+  onlineShards.set(key, value);
+  return value;
+}
+
+export async function lookupDictionary(language: DictionaryLanguage, word: string) {
+  const local = await installedCatalog(language).catch(() => undefined);
+  if (local) return resolveDefinitions(word, candidate => readOfflineEntry(language, local, candidate));
+
+  const catalog = await onlineCatalog(language);
+  return findDefinitions(word, async prefix => catalog.prefixes.includes(prefix)
+    ? onlineShard(language, catalog.sha256, prefix)
+    : {});
 }

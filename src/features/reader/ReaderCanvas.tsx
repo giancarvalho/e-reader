@@ -132,7 +132,7 @@ export function ReaderCanvas({
               if (!cancelled && pointerId === undefined && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
                 reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
               }
-            }, 300);
+            }, 180);
           }
         } catch {
           // A selection can disappear while the paginator changes chapters.
@@ -217,7 +217,7 @@ export function ReaderCanvas({
       applyMotion();
       reducedMotion.addEventListener("change", applyMotion);
       // A sandboxed iframe can omit selectionchange events in WebKit.
-      selectionTimer = window.setInterval(inspectSelection, 350);
+      selectionTimer = window.setInterval(inspectSelection, 200);
       setToc(book.toc ?? []);
       applied.current = appearance.current;
       view.renderer.setStyles(readerStyles(applied.current));

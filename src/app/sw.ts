@@ -21,6 +21,7 @@ const worker = new Serwist({
     },
     {
       matcher: ({ request, sameOrigin, url }) => sameOrigin && request.method === "GET"
+        && !url.searchParams.has("pack")
         && /^\/dict\/(pt|en)\/([a-z]{1,2}|other)\.json$/.test(url.pathname),
       handler: new CacheFirst({
         cacheName: "dictionary-shards-v1",
