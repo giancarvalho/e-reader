@@ -12,16 +12,16 @@ type PopoverProps = {
   onClose: () => void;
   /** Where the panel points to, in viewport coordinates. Without it the panel docks at the bottom. */
   anchor?: () => Anchor | undefined;
+  variant?: "panel" | "toolbar";
   children: ReactNode;
 };
 
 /**
  * A non-modal panel that floats next to what it belongs to. It keeps itself
- * inside the visible area (above the on-screen keyboard), takes focus when it
- * opens and gives it back when it closes, and closes on Escape or on a press
- * outside it.
+ * inside the visible area above the on-screen keyboard and closes on Escape
+ * or outside presses. Toolbars preserve focus on the underlying selection.
  */
-export function Popover({ label, onClose, anchor, children }: PopoverProps) {
+export function Popover({ label, onClose, anchor, variant = "panel", children }: PopoverProps) {
   const panel = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   useEffect(() => { close.current = onClose; });
@@ -39,8 +39,11 @@ export function Popover({ label, onClose, anchor, children }: PopoverProps) {
       node.style.left = Math.max(left + inset, Math.min((position?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
       const below = (position?.bottom ?? top + height) + inset;
       const above = (position?.top ?? top + height) - box.height - inset;
+      const fitsAbove = above >= top + inset;
+      const fitsBelow = below + box.height <= top + height - inset;
+      const preferAbove = variant === "toolbar" && fitsAbove;
       const panelTop = Math.max(top + inset, Math.min(
-        below + box.height <= top + height ? below : above,
+        !preferAbove && fitsBelow ? below : above,
         top + height - box.height - inset,
       ));
       node.style.top = `${panelTop}px`;
@@ -56,9 +59,10 @@ export function Popover({ label, onClose, anchor, children }: PopoverProps) {
     observer.observe(node);
     const stopObserving = observeViewport(place);
     return () => { observer.disconnect(); stopObserving(); };
-  }, [anchor]);
+  }, [anchor, variant]);
 
   useEffect(() => {
+    if (variant === "toolbar") return;
     const node = panel.current;
     const previous = document.activeElement;
     node?.focus({ preventScroll: true });
@@ -68,7 +72,7 @@ export function Popover({ label, onClose, anchor, children }: PopoverProps) {
         previous.focus({ preventScroll: true });
       }
     };
-  }, []);
+  }, [variant]);
 
   useEffect(() => {
     function outside(event: PointerEvent) { if (!panel.current?.contains(event.target as Node)) close.current(); }
@@ -82,7 +86,9 @@ export function Popover({ label, onClose, anchor, children }: PopoverProps) {
   }, []);
 
   return (
-    <div ref={panel} className={styles.popover} tabIndex={-1} role="dialog" aria-label={label}>
+    <div ref={panel} className={styles.popover} data-variant={variant} tabIndex={variant === "panel" ? -1 : undefined}
+      role={variant === "toolbar" ? "group" : "dialog"} aria-label={label}
+      onMouseDown={variant === "toolbar" ? event => event.preventDefault() : undefined}>
       {children}
     </div>
   );

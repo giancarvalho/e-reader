@@ -6,10 +6,12 @@ import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
 import type { Annotation } from "@/lib/sync/annotations";
 import type { TocEntry } from "@/vendor/foliate/epub";
 import type { View } from "@/vendor/foliate/view";
-import { annotationAnchor, drawAnnotation, drawing, textRange, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
+import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, textRange, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
 import { bindWordPress, pressInProgress } from "./word-press";
+
+export type ReaderSelection = AnnotationSelection & { anchor: () => ReturnType<typeof annotationAnchor> };
 
 type Options = {
   file: Blob;
@@ -20,7 +22,7 @@ type Options = {
   annotationTarget?: { cfi: string };
   selectionReset: number;
   onPosition: (position: ReadingPosition) => void;
-  onSelection: (value: AnnotationSelection) => void;
+  onSelection: (value?: ReaderSelection) => void;
   onAnnotation: (id: string, anchor?: () => { x: number; top: number; bottom: number } | undefined) => void;
   onDismissAnnotation: () => boolean;
   onChapter: (index: number) => void;
@@ -39,6 +41,7 @@ export function useReaderView({
 }: Options) {
   const mount = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>(null);
+  const clearReaderSelection = useRef<(removeRanges: boolean) => void>(null);
   const lastCfi = useRef(initialCfi);
   const [location, setLocation] = useState({ fraction: 0, chapter: undefined as string | undefined, href: undefined as string | undefined });
   const [toc, setToc] = useState<TocEntry[]>([]);
@@ -84,6 +87,7 @@ export function useReaderView({
     let pointerId: number | undefined;
     let words: AbortController | undefined;
     let previousSelection = "";
+    let selectionShown = false;
     let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
     const overlaysReceiveTaps = new WeakSet<Document>();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -96,6 +100,11 @@ export function useReaderView({
     }
 
     function readKey(event: KeyboardEvent) {
+      if (event.key === "Escape" && selectionShown) {
+        event.preventDefault();
+        clearSelection(true);
+        return;
+      }
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
         || (event.target as Element | null)?.closest?.("button, a, input, textarea, select, dialog, [role=dialog], [contenteditable]")
         || (view?.renderer?.getContents().some(({ doc }) => Boolean(doc.getSelection()?.toString())))) return;
@@ -117,6 +126,7 @@ export function useReaderView({
         if (cancelled || currentTap.annotationHit || event.button !== 0) return;
         if (dismissAnnotation() || event.defaultPrevented || event.detail > 1 || interactive ||
           doc.getSelection()?.toString() || !area?.width || !bounds) return;
+        if (selectionShown) return;
         const fraction = (bounds.left + event.clientX - area.left) / area.width;
         if (fraction < 0.22) turn("prev");
         else if (fraction > 0.78) turn("next");
@@ -129,18 +139,21 @@ export function useReaderView({
     function inspectSelection() {
       if (!view?.renderer || pointerId !== undefined || document.visibilityState !== "visible") return;
       for (const { doc, index } of view.renderer.getContents()) {
-        if (pressInProgress(doc)) continue;
+        if (pressInProgress(doc)) return;
         const selected = doc.getSelection();
         const quote = selected?.toString().trim().slice(0, 4000);
         if (!quote || !selected?.rangeCount) continue;
         try {
-          const cfi = view.getCFI(index, textRange(doc, selected.getRangeAt(0)));
+          const range = textRange(doc, selected.getRangeAt(0));
+          const cfi = view.getCFI(index, range);
           if (cfi.length <= 4096 && cfi !== previousSelection) {
             previousSelection = cfi;
             window.clearTimeout(selectionSettle);
             selectionSettle = window.setTimeout(() => {
               if (!cancelled && pointerId === undefined && !pressInProgress(doc) && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
-                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
+                selectionShown = true;
+                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000),
+                  anchor: () => annotationAnchor(content, range, { wholeRange: true }) });
               }
             }, 180);
           }
@@ -149,13 +162,23 @@ export function useReaderView({
         }
         return;
       }
+      clearSelection();
+    }
+
+    function clearSelection(removeRanges = false) {
       previousSelection = "";
       window.clearTimeout(selectionSettle);
+      if (selectionShown) reportSelection();
+      selectionShown = false;
+      if (removeRanges) {
+        for (const { doc } of view?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
+      }
     }
+    clearReaderSelection.current = clearSelection;
     lastCfi.current = initialCfi;
 
     function openAnnotation(id: string, range?: Range, point?: { x: number; y: number }) {
-      reportAnnotation(id, () => annotationAnchor(content, range, point));
+      reportAnnotation(id, () => annotationAnchor(content, range, { point }));
     }
 
     async function open() {
@@ -175,14 +198,7 @@ export function useReaderView({
       view.addEventListener("load", event => {
         if (cancelled) return;
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
-        // Some browsers suppress events in a script-disabled EPUB iframe.
-        let receivesEvents = false;
-        const eventType = "foliate-input-probe";
-        const probe = () => { receivesEvents = true; };
-        doc.addEventListener(eventType, probe, { once: true });
-        doc.documentElement.dispatchEvent(new Event(eventType, { bubbles: true }));
-        doc.removeEventListener(eventType, probe);
-        if (!receivesEvents) overlaysReceiveTaps.add(doc);
+        if (!chapterReceivesEvents(doc)) overlaysReceiveTaps.add(doc);
         pointerId = undefined;
         words?.abort();
         words = new AbortController();
@@ -247,6 +263,7 @@ export function useReaderView({
         // The paginator can snap to the same page after an ordinary touch.
         if (reason === "navigation" || reason === "page" || (reason === "snap" && readingPositionChanged)) {
           dismissAnnotation();
+          if (selectionShown) clearSelection(true);
         }
       });
       applyMotion();
@@ -272,6 +289,7 @@ export function useReaderView({
     });
     return () => {
       cancelled = true;
+      clearReaderSelection.current = null;
       window.removeEventListener("keydown", readKey);
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
@@ -299,7 +317,7 @@ export function useReaderView({
   }, [annotations, commentCounts, ready]);
 
   useEffect(() => {
-    for (const { doc } of viewRef.current?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
+    clearReaderSelection.current?.(true);
   }, [selectionReset]);
 
   useEffect(() => {

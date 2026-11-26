@@ -28,6 +28,21 @@ it("gives focus back to where it came from when it closes", () => {
   opener.remove();
 });
 
+it("keeps focus in place while opening and clicking a selection action", async () => {
+  const action = vi.fn();
+  render(<button>Leitor</button>);
+  const reader = screen.getByRole("button", { name: "Leitor" });
+  reader.focus();
+  render(<Popover variant="toolbar" label="Ações do trecho" onClose={() => undefined}>
+    <button onClick={action}>Definir</button>
+  </Popover>);
+  const group = screen.getByRole("group", { name: "Ações do trecho" });
+  expect(document.activeElement).toBe(reader);
+  await userEvent.click(group.querySelector("button")!);
+  expect(action).toHaveBeenCalledOnce();
+  expect(document.activeElement).toBe(reader);
+});
+
 it("closes on Escape", async () => {
   const onClose = vi.fn();
   render(<Popover label="Comentários" onClose={onClose}><p>Texto</p></Popover>);
