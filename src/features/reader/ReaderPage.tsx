@@ -128,7 +128,6 @@ export function ReaderPage() {
         <a href="/estante">{reader.shelf}</a>
         <Heading>{reader.title}</Heading>
       </header>}
-      {reading === undefined && <Text>{reader.loading}</Text>}
       {reading === null && <Text>{reader.missing}</Text>}
       {reading && <ReadingWorkspace title={reading.book.title}
         identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}

@@ -28,3 +28,17 @@
   align-items: start;
   gap: var(--space-8);
 }
+
+.dialog[data-variant="compact"] {
+  margin-block-end: calc(env(safe-area-inset-bottom) + var(--sheet-bottom, 0px));
+  border: 0;
+  border-start-start-radius: var(--space-16);
+  border-start-end-radius: var(--space-16);
+}
+
+.dialog[data-variant="compact"] h2 {
+  font-size: var(--space-24);
+  align-self: center;
+}
+
+.dialog[data-variant="compact"] .header { align-items: center; }

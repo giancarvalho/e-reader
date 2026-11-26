@@ -11,8 +11,9 @@ function isBackdrop(event: MouseEvent<HTMLDialogElement>) {
   return event.clientX < left || event.clientX >= right || event.clientY < top || event.clientY >= bottom;
 }
 
-export function Sheet({ title, closeLabel, onClose, children }: {
+export function Sheet({ title, closeLabel, onClose, children, variant }: {
   title: string;
+  variant?: "compact";
   closeLabel?: string;
   onClose: () => void;
   children: ReactNode;
@@ -42,7 +43,7 @@ export function Sheet({ title, closeLabel, onClose, children }: {
   }, []);
 
   return (
-    <dialog ref={dialog} aria-labelledby={headingId} className={styles.dialog}
+    <dialog ref={dialog} aria-labelledby={headingId} className={styles.dialog} data-variant={variant}
       onPointerDown={event => { pressedBackdrop.current = event.button === 0 && isBackdrop(event); }}
       onClick={event => {
         const shouldClose = pressedBackdrop.current && isBackdrop(event);

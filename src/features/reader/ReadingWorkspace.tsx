@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AnnotationColors, AnnotationList, AnnotationPanel, useAnnotations, type AnnotationSelection } from "@/features/annotations";
 import { DictionaryPanel } from "@/features/dictionary";
 import { CommentThread, useComments } from "@/features/comments";
@@ -29,7 +29,7 @@ type Props = {
 };
 
 export function ReadingWorkspace({ title, identity, language, file, cfi, preferences, onPosition, onPreferences }: Props) {
-  const { rows, status, save, retry } = useAnnotations(identity);
+  const { rows, save } = useAnnotations(identity);
   const comments = useComments(identity);
   const [selectionReset, resetSelection] = useState(0);
   const [anchor, setAnchor] = useState<() => { x: number; top: number; bottom: number } | undefined>();
@@ -115,13 +115,6 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
     }
   }
 
-  let announcement: ReactNode;
-  if (status === "error") {
-    announcement = <><Text>{annotations.syncError}</Text><Button variant="quiet" onClick={() => void retry()}>{annotations.retry}</Button></>;
-  } else if (status === "offline" || status === "syncing") {
-    announcement = <Text>{annotations[status]}</Text>;
-  }
-
   return (
     <>
       <ReaderCanvas title={title} annotationCount={rows.length} onOpenAnnotations={() => setListOpen(true)} file={file} initialCfi={cfi} preferences={preferences}
@@ -156,14 +149,13 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
         </div>}
         {lookup && <DictionaryPanel key={lookup.word} word={lookup.word} language={lookup.language}
           close={cancel} />}
-        {listOpen && <Sheet title={annotations.list} closeLabel={messages.reader.closePanel} onClose={() => setListOpen(false)}>
-          <div role="status">{announcement}</div>
+        {listOpen && <Sheet variant="compact" title={annotations.list} closeLabel={messages.reader.closePanel} onClose={() => setListOpen(false)}>
           <AnnotationList rows={rows} userId={identity.user} chapters={chapters} currentChapter={currentChapter}
           onGo={row => { setListOpen(false); setTarget({ cfi: row.cfi }); }} onEdit={row => { setListOpen(false); edit(row); }}
           commentCounts={counts} onThread={row => { setListOpen(false); setAnchor(undefined); openThread(row.id); }} />
         </Sheet>}
         {thread && <CommentThread key={thread.id} identity={identity} annotation={thread} rows={comments.rows}
-          status={comments.status} save={comments.save} retry={comments.retry} anchor={anchor}
+          save={comments.save} anchor={anchor}
           edit={thread.author_id === identity.user ? () => { openThread(undefined); edit(thread); } : undefined} close={() => openThread(undefined)} />}
       </ReaderCanvas>
     </>

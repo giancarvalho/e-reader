@@ -1,36 +1,47 @@
-.panel,
-.definitions {
+.lookup, .panel, .definitions {
   display: grid;
   gap: var(--space-8);
   overflow-wrap: anywhere;
 }
 
-.definitions { padding-inline-start: var(--space-24); }
+.language, .partOfSpeech, .links {
+  font: var(--font-label) var(--font-ui);
+  color: var(--color-muted);
+}
+
+.definitions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.definition {
+  display: grid;
+  gap: var(--space-8);
+  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
+  padding-block-start: var(--space-12);
+}
 
 .links {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-8);
+  column-gap: var(--space-16);
 }
 
 .links a {
   display: inline-flex;
   align-items: center;
   min-block-size: var(--touch-target);
-  color: var(--color-accent-text);
+  color: inherit;
+  text-underline-offset: var(--focus-ring);
 }
 
-.attribution {
-  border-block-start: var(--focus-ring) solid var(--color-surface);
-  padding-block-start: var(--space-8);
+.links a:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
 }
 
-.attribution a {
-  display: inline-flex;
-  align-items: center;
-  color: var(--color-accent-text);
-  min-block-size: var(--touch-target);
-}
+.more { justify-self: start; }
 
 .page, .pack {
   display: grid;

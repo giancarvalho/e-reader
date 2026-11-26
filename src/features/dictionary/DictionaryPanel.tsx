@@ -18,7 +18,6 @@ export function DictionaryPanel({ word, language, close }: Props) {
   const [state, setState] = useState<Result | "offline" | "error">();
   const { dictionary } = messages;
 
-
   useEffect(() => {
     let active = true;
     void lookupDictionary(language, word).then(result => {
@@ -37,12 +36,12 @@ export function DictionaryPanel({ word, language, close }: Props) {
   const canExpand = results.length > 1 || (results[0]?.definitions.length ?? 0) > 2;
 
   return (
-    <Sheet title={word} closeLabel={dictionary.close} onClose={close}>
-        <Text tone="muted">{dictionary.languages[language]}</Text>
-        {isError && <a className={styles.manage} href="/dicionarios">{dictionary.offlineTitle}</a>}
-        {state === undefined && <div role="status"><Text>{dictionary.loading}</Text></div>}
+    <Sheet variant="compact" title={word} closeLabel={dictionary.close} onClose={close}>
+      <div className={styles.lookup}>
+        <span className={styles.language}>{dictionary.languages[language]}</span>
         {isError && <div role="status">
           <Text>{dictionary[state]}</Text>
+          <a className={styles.manage} href="/dicionarios">{dictionary.offlineTitle}</a>
           <Button variant="quiet" onClick={() => { setState(undefined); setAttempt(value => value + 1); }}>
             {dictionary.retry}
           </Button>
@@ -51,27 +50,25 @@ export function DictionaryPanel({ word, language, close }: Props) {
         {displayed.map(entry => (
           <section className={styles.panel} key={entry.word}>
             {entry.word !== word && <Heading as="h3">{entry.word}</Heading>}
-            <ol className={styles.definitions}>
+            <ol className={styles.definitions} role="list">
               {(expanded ? entry.definitions : entry.definitions.slice(0, 2)).map(({ text, pos }, index) => (
-                <li key={index}>
+                <li className={styles.definition} key={index}>
                   {Object.hasOwn(dictionary.pos, pos) && (
-                    <Text tone="muted">{dictionary.pos[pos as keyof typeof dictionary.pos]}</Text>
+                    <span className={styles.partOfSpeech}>{dictionary.pos[pos as keyof typeof dictionary.pos]}</span>
                   )}
-                  <p lang={language}>{text}</p>
+                  <Text variant="reading"><span lang={language}>{text}</span></Text>
                 </li>
               ))}
             </ol>
             <div className={styles.links}>
               <a href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</a>
-              <a href={origin + encodeURIComponent(entry.word) + "?action=history"} target="_blank" rel="noreferrer">{dictionary.history}</a>
             </div>
           </section>
         ))}
-        {results.length > 0 && <footer className={styles.attribution}>
-          <Text tone="muted">{dictionary.adapted}</Text>
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">{dictionary.license}</a>
-        </footer>}
-        {canExpand && !expanded && <Button variant="quiet" onClick={() => setExpanded(true)}>{dictionary.more}</Button>}
+        {canExpand && !expanded && <div className={styles.more}>
+          <Button variant="quiet" onClick={() => setExpanded(true)}>{dictionary.more}</Button>
+        </div>}
+      </div>
     </Sheet>
   );
 }

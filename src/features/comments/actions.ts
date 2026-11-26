@@ -3,22 +3,10 @@
 import type { ReaderIdentity } from "@/lib/books/local";
 import { getVerifiedReaderClient } from "@/lib/supabase/server";
 import type { AnnotationCursor, RemoteRow } from "@/lib/sync/annotations";
+import { withProfiles } from "@/lib/sync/with-profiles";
 import type { Comment } from "./types";
 
 const fields = "id,annotation_id,group_id,book_id,author_id,text,created_at,updated_at,deleted_at";
-
-type Client = NonNullable<Awaited<ReturnType<typeof getVerifiedReaderClient>>>;
-
-async function withProfiles(client: Client, rows: RemoteRow<Comment>[]) {
-  if (!rows.length) return rows;
-  const authors = [...new Set(rows.map(row => row.author_id))];
-  const result = await client.from("profiles").select("id,display_name,avatar_url").in("id", authors);
-  const profiles = new Map(result.data?.map(profile => [profile.id, profile]) ?? []);
-  return rows.map(row => {
-    const profile = profiles.get(row.author_id);
-    return { ...row, name: profile?.display_name ?? null, avatar: profile?.avatar_url ?? null };
-  });
-}
 
 export async function pushComment(identity: ReaderIdentity, row: Comment): Promise<RemoteRow<Comment> | null> {
   if (row.author_id !== identity.user || row.group_id !== identity.group || row.book_id !== identity.hash) return null;
