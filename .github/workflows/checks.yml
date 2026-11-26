@@ -71,3 +71,17 @@ jobs:
       - run: npm run test:e2e
         env:
           TEST_DICTIONARY: fixture
+      # Visual baselines must come from this runner (Linux, the project's
+      # Chromium). Missing ones are written here; see docs/design-system.md.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-snapshots
+          path: e2e/visual.spec.ts-snapshots
+          if-no-files-found: ignore
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results
+          if-no-files-found: ignore
