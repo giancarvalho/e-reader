@@ -138,6 +138,7 @@ export const messages = {
     you: "Você",
     member: "Membro do grupo",
     remove: "Apagar comentário",
+    replyAction: "Responder",
     reply: "Escreva uma resposta",
     send: "Enviar resposta",
     close: "Fechar comentários",

@@ -242,7 +242,8 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
   await expect(page.getByText("Leitura sem rede")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Comentários (0)" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Comentários do grifo" })).toBeVisible();
+  await expect(page.getByText("Comentários (0)")).toHaveCount(0);
   const overlayCount = (selector: string) => page.locator("foliate-view").evaluate((element, query) => {
     const view = element as HTMLElement & { renderer: { getContents: () => { overlayer?: { element: SVGElement } }[] } };
     return view.renderer.getContents().reduce((total, { overlayer }) =>
@@ -275,6 +276,10 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(thread).toBeVisible();
   await expect(thread.getByText("Segundo capítulo")).toHaveCount(0);
   const reply = thread.getByRole("textbox", { name: "Escreva uma resposta" });
+  await expect(thread.getByText("Você", { exact: true })).toBeVisible();
+  await expect(reply).toHaveCount(0);
+  await thread.getByRole("button", { name: "Responder", exact: true }).click();
+  await expect(reply).toBeFocused();
   await reply.fill("Resposta offline");
   const reducedHeight = await page.evaluate(() => {
     const viewport = window.visualViewport!;
@@ -308,6 +313,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect.poll(markers).toBe(0);
   await thread.getByRole("button", { name: "Fechar comentários" }).click();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
+  await page.getByRole("button", { name: "Opções do grifo" }).click();
   await page.getByRole("button", { name: "Editar grifo" }).click();
   await expect(blue).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Apagar grifo" }).click();

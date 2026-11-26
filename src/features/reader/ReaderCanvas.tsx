@@ -388,7 +388,6 @@ export function ReaderCanvas({
   const controlLabel = controls ? reader.hideControls : reader.showControls;
   return (
     <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
-      {!ready && !failed && <div className={styles.state} role="status"><Text>{reader.loading}</Text></div>}
       {failed && <div className={styles.state} role="alert"><Text>{reader.failed}</Text>
         <a href="/estante">{reader.shelf}</a></div>}
       <div ref={mount} className={styles.viewport} />

@@ -40,7 +40,6 @@ export function DictionaryPanel({ word, language, close }: Props) {
     <Sheet title={word} closeLabel={dictionary.close} onClose={close}>
         <Text tone="muted">{dictionary.languages[language]}</Text>
         {isError && <a className={styles.manage} href="/dicionarios">{dictionary.offlineTitle}</a>}
-        {state === undefined && <div role="status"><Text>{dictionary.loading}</Text></div>}
         {isError && <div role="status">
           <Text>{dictionary[state]}</Text>
           <Button variant="quiet" onClick={() => { setState(undefined); setAttempt(value => value + 1); }}>

@@ -3,11 +3,12 @@ import styles from "../fields.module.css";
 
 type TextAreaProps = Omit<ComponentProps<"textarea">, "className"> & {
   label: string;
+  hideLabel?: boolean;
   error?: string;
 };
 
 export function TextArea({
-  label, error, id, "aria-describedby": describedBy, "aria-invalid": invalid, ...props
+  label, hideLabel, error, id, "aria-describedby": describedBy, "aria-invalid": invalid, ...props
 }: TextAreaProps) {
   const generatedId = useId();
   const fieldId = id ?? generatedId;
@@ -15,7 +16,7 @@ export function TextArea({
 
   return (
     <div className={styles.field}>
-      <label htmlFor={fieldId}>{label}</label>
+      <label className={hideLabel ? styles.visuallyHidden : undefined} htmlFor={fieldId}>{label}</label>
       <textarea
         {...props}
         id={fieldId}

@@ -7,6 +7,7 @@ import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import type { Annotation } from "@/lib/sync/annotations";
 import { AnnotationColors } from "./AnnotationColors";
+import { AnnotationIcon } from "./AnnotationIcon";
 import styles from "./annotations.module.css";
 
 export type AnnotationSelection = { cfi: string; quote: string; sample?: string };
@@ -50,7 +51,7 @@ export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
       {failed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
       <div className={styles.actions}>
         <Button loading={busy} onClick={() => void submit()}>{noteOnly ? annotations.saveNote : annotations.save}</Button>
-        {!noteOnly && <Button variant="quiet" disabled={busy} onClick={() => void submit(true)}>{annotations.remove}</Button>}
+        {!noteOnly && <Button variant="icon" aria-label={annotations.remove} disabled={busy} onClick={() => void submit(true)}><AnnotationIcon name="trash" /></Button>}
         <Button variant="quiet" disabled={busy} onClick={cancel}>{annotations.cancel}</Button>
       </div>
     </section>

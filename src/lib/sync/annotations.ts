@@ -9,6 +9,8 @@ export type Annotation = {
   color: AnnotationColor;
   quote_text: string;
   note: string | null;
+  name?: string | null;
+  avatar?: string | null;
   deleted_at: string | null;
 };
 
