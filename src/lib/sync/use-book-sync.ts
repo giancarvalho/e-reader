@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isOnline, onDisconnect, onReconnect } from "../online";
 import { recordDiagnostic } from "../diagnostics";
 import type { ReaderIdentity } from "../books/local";
 import { createBookSyncStore } from "./annotation-store";
@@ -24,7 +25,7 @@ export function useBookSync<Row extends SyncRow>(
   const retryAfter = useRef(0);
 
   const sync = useCallback(async () => {
-    if (!navigator.onLine) {
+    if (!isOnline()) {
       setStatus("offline");
       return;
     }
@@ -53,8 +54,8 @@ export function useBookSync<Row extends SyncRow>(
       } catch {
         delay.current = Math.min(delay.current ? delay.current * 2 : 2_000, 60_000);
         retryAfter.current = Date.now() + delay.current;
-        setStatus(navigator.onLine ? "error" : "offline");
-        if (navigator.onLine) recordDiagnostic(system, "error");
+        setStatus(isOnline() ? "error" : "offline");
+        if (isOnline()) recordDiagnostic(system, "error");
       } finally {
         await store.list().then(setRows).catch(() => setStatus("error"));
       }
@@ -77,13 +78,13 @@ export function useBookSync<Row extends SyncRow>(
     };
     reconnect();
     const timer = window.setInterval(check, 10_000);
-    window.addEventListener("online", reconnect);
-    window.addEventListener("offline", disconnect);
+    const stopReconnect = onReconnect(reconnect);
+    const stopDisconnect = onDisconnect(disconnect);
     document.addEventListener("visibilitychange", check);
     return () => {
       window.clearInterval(timer);
-      window.removeEventListener("online", reconnect);
-      window.removeEventListener("offline", disconnect);
+      stopReconnect();
+      stopDisconnect();
       document.removeEventListener("visibilitychange", check);
     };
   }, [store, sync]);

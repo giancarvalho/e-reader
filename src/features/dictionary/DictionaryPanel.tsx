@@ -8,6 +8,7 @@ import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { lookupDictionary, type DictionaryLanguage } from "@/lib/dictionary/lookup";
+import { isOnline } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./dictionary.module.css";
 
@@ -25,7 +26,7 @@ export function DictionaryPanel({ word, language, close }: Props) {
     void lookupDictionary(language, word).then(result => {
       if (active) setState(result);
     }).catch(() => {
-      if (active) setState(navigator.onLine ? "error" : "offline");
+      if (active) setState(isOnline() ? "error" : "offline");
     });
     return () => { active = false; };
   }, [attempt, language, word]);

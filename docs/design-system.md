@@ -51,13 +51,12 @@ O `npm run lint` bloqueia, fora de `src/design-system`:
 
 - `role="status"` e `role="alert"` à mão (use `Notice`);
 - `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus;
-- `navigator.onLine` e `addEventListener("online" | "offline")` (use os hooks de `src/lib/online`);
-- `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`);
+- `navigator.onLine` e `addEventListener("online" | "offline")` (use `src/lib/online`: `useOnline`, `useOnReconnect`, `isOnline`, `onReconnect`, `onDisconnect`);
+- `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`: `formatPercent`, `formatDateTime`; formatadores novos entram lá);
 - importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`);
 - arquivos com mais de 300 linhas.
 
-`Progress`, `src/lib/online` e `src/lib/format` ainda não existem: são
-as tarefas B5 e B7 do plano. Até lá, ao precisar de um deles, crie-o
+`Progress` ainda não existe: é a tarefa B7 do plano. Até lá, ao precisar dele, crie-o
 seguindo a regra 3 em vez de repetir o padrão na feature; o lint vai apontar
 quem ainda usa o padrão antigo pela linha de base.
 
