@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: messages.title,
     description: messages.description,
     lang: "pt-BR",
-    start_url: "/",
+    start_url: "/estante",
     scope: "/",
     display: "standalone",
     background_color: "#FAF5EC",

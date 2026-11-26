@@ -17,7 +17,7 @@ beforeEach(() => {
 
 function invitation() {
   const form = new FormData();
-  form.set("code", "ABCDEFGH234567AB");
+  form.set("code", "abcd efgh\n234567ab");
   return form;
 }
 

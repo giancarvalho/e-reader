@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   hosted: vi.fn(),
 }));
 
-vi.mock("next/headers", () => ({ cookies: async () => ({ set: mocks.set }) }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ set: mocks.set, get: () => undefined }) }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/lib/supabase/server", () => ({
   getRequestAuth: async () => ({

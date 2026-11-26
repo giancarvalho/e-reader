@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import { isAuthSessionMissingError } from "@supabase/supabase-js";
+import { signInPath } from "../../lib/access/invite";
 import { getRequestAuth } from "@/lib/supabase/server";
 
-export async function getGroupAccess() {
+export async function getGroupAccess(invite?: string) {
   const auth = await getRequestAuth();
-  if (!auth) redirect("/entrar");
+  if (!auth) redirect(signInPath(undefined, invite));
 
   const { data, error } = await auth.client.auth.getUser();
   if (isAuthSessionMissingError(error) || error?.status === 401 || (!data.user && !error)) {
-    redirect("/entrar");
+    redirect(signInPath(undefined, invite));
   }
   if (error || !data.user) return { status: "unavailable" } as const;
 
@@ -22,7 +23,7 @@ export async function getGroupAccess() {
     .maybeSingle();
 
   if (membership.error) return { status: "unavailable" } as const;
-  if (!membership.data) return { status: "invite_required" } as const;
+  if (!membership.data) return { status: "invite_required", client: auth.client } as const;
 
   return {
     status: "member",

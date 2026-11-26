@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import manifest from "../src/app/manifest";
 
 describe("PWA manifest", () => {
-  it("launches the root shell in standalone mode", () => {
-    expect(manifest()).toMatchObject({ start_url: "/", scope: "/", display: "standalone" });
+  it("launches the shelf in standalone mode", () => {
+    expect(manifest()).toMatchObject({ id: "/", start_url: "/estante", scope: "/", display: "standalone" });
   });
 
   it("ships install icons at the declared sizes", () => {

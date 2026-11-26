@@ -20,6 +20,21 @@ test("starts Google authentication directly from the home page", async ({ page, 
   expect(documentPaths).not.toContain("/convite");
 });
 
+test("carries an invite through the Google start without sending its code to Google", async ({ page, context, baseURL }) => {
+  const code = "ABCDEFGH234567AB";
+  const google = "https://accounts.google.com/o/oauth2/v2/auth";
+  await page.route(`${google}?*`, route => route.fulfill({ body: "Google OAuth test page" }));
+  await page.goto(`/convite?codigo=${code}`);
+  await expect(page).toHaveURL(`/entrar?codigo=${code}`);
+  const [authorization] = await Promise.all([
+    page.waitForRequest(request => request.url().startsWith(`${google}?`)),
+    page.getByRole("button", { name: "Entrar com Google" }).click(),
+  ]);
+  expect(authorization.url()).not.toContain(code);
+  const cookies = await context.cookies(`${baseURL}/auth/google/callback`);
+  expect(cookies.find(cookie => cookie.name === "shared_margins_invite")).toMatchObject({ value: code, httpOnly: true });
+});
+
 for (const path of ["/conta", "/convite", "/estante"]) {
   test(`routes unauthenticated readers from ${path} to sign-in`, async ({ page }) => {
     await page.goto(path);
