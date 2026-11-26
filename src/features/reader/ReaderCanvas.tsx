@@ -82,12 +82,14 @@ export function ReaderCanvas({
     let destroy: (() => void) | undefined;
     const content = mount.current;
     let recording = false;
+    let readingPositionChanged = false;
     let selectionTimer: number | undefined;
     let selectionSettle: number | undefined;
     let pointerId: number | undefined;
     let words: AbortController | undefined;
     let previousSelection = "";
     let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
+    const overlaysReceiveTaps = new WeakSet<Document>();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     function applyMotion() {
       view?.renderer?.toggleAttribute("animated", !reducedMotion.matches);
@@ -156,6 +158,27 @@ export function ReaderCanvas({
     }
     lastCfi.current = initialCfi;
 
+    function openAnnotation(id: string, range?: Range, point?: { x: number; y: number }) {
+      reportAnnotation(id, () => {
+        const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
+        const bounds = frame?.getBoundingClientRect();
+        const area = content?.getBoundingClientRect();
+        if (!range || !bounds || !area) return;
+        const visible = Array.from(range.getClientRects()).map(rect => ({
+          left: Math.max(area.left, bounds.left, bounds.left + rect.left),
+          right: Math.min(area.right, bounds.right, bounds.left + rect.right),
+          top: Math.max(area.top, bounds.top, bounds.top + rect.top),
+          bottom: Math.min(area.bottom, bounds.bottom, bounds.top + rect.bottom),
+        })).filter(rect => rect.right > rect.left && rect.bottom > rect.top);
+        const line = point && visible.find(rect => {
+          const x = bounds.left + point.x;
+          const y = bounds.top + point.y;
+          return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+        }) || visible[0];
+        if (line) return { x: (line.left + line.right) / 2, top: line.top, bottom: line.bottom };
+      });
+    }
+
     async function open() {
       const [{ View }, { openEpub }, { Overlayer }] = await Promise.all([
         import("@/vendor/foliate/view"), import("./epub-book"), import("@/vendor/foliate/overlayer"),
@@ -173,6 +196,14 @@ export function ReaderCanvas({
       view.addEventListener("load", event => {
         if (cancelled) return;
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
+        // Some browsers suppress events in a script-disabled EPUB iframe.
+        let receivesEvents = false;
+        const eventType = "foliate-input-probe";
+        const probe = () => { receivesEvents = true; };
+        doc.addEventListener(eventType, probe, { once: true });
+        doc.documentElement.dispatchEvent(new Event(eventType, { bubbles: true }));
+        doc.removeEventListener(eventType, probe);
+        if (!receivesEvents) overlaysReceiveTaps.add(doc);
         pointerId = undefined;
         words?.abort();
         words = new AbortController();
@@ -200,8 +231,9 @@ export function ReaderCanvas({
         doc.addEventListener("click", readTap, true);
       });
       view.addEventListener("draw-annotation", event => {
-        const { annotation, draw, range } = (event as CustomEvent<{
+        const { annotation, doc, draw, range } = (event as CustomEvent<{
           annotation: DrawnAnnotation;
+          doc: Document;
           range: Range;
           draw: (method: typeof Overlayer.highlight, options: { color: string; opacity: number }) => void;
         }>).detail;
@@ -212,46 +244,39 @@ export function ReaderCanvas({
         }
         draw((rects, options) => {
           const group = Overlayer.highlight(rects, options);
-          if (annotation.hasComments && rects.length) {
-            const rect = Array.from(rects).reverse().find(fragment => fragment.width > 0 && fragment.height > 0);
-            if (!rect) return group;
+          let overlay = group;
+          const lastRect = annotation.hasComments
+            ? Array.from(rects).reverse().find(fragment => fragment.width > 0 && fragment.height > 0)
+            : undefined;
+          if (lastRect) {
             const mark = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const x = Math.max(rect.left, rect.right - 10);
-            const y = Math.max(rect.top, rect.bottom - 9);
+            const x = Math.max(lastRect.left, lastRect.right - 10);
+            const y = Math.max(lastRect.top, lastRect.bottom - 9);
             mark.setAttribute("data-comment-marker", "");
             mark.setAttribute("d", `M${x} ${y} h9 v6 h-4 l-3 3 v-3 h-2 Z`);
             mark.setAttribute("fill", "var(--color-bg)");
             mark.setAttribute("stroke", "var(--color-ink)");
             mark.setAttribute("stroke-width", "1");
-            const wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            wrapper.append(group, mark);
-            return wrapper;
+            overlay = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            overlay.append(group, mark);
           }
-          return group;
+          if (overlaysReceiveTaps.has(doc)) {
+            overlay.style.pointerEvents = "all";
+            overlay.style.cursor = "pointer";
+            overlay.addEventListener("click", event => {
+              const frame = doc.defaultView?.frameElement?.getBoundingClientRect();
+              const point = frame && { x: event.clientX - frame.left, y: event.clientY - frame.top };
+              openAnnotation(annotation.id, range, point);
+            });
+          }
+          return overlay;
         }, { color: annotation.color, opacity: 0.38 });
       });
       view.addEventListener("show-annotation", event => {
         if (tap) tap.annotationHit = true;
         const { value, range } = (event as CustomEvent<{ value: string; range?: Range }>).detail;
         const point = tap && { x: tap.event.clientX, y: tap.event.clientY };
-        reportAnnotation(value, () => {
-          const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
-          const bounds = frame?.getBoundingClientRect();
-          const area = content?.getBoundingClientRect();
-          if (!range || !bounds || !area) return;
-          const visible = Array.from(range.getClientRects()).map(rect => ({
-            left: Math.max(area.left, bounds.left, bounds.left + rect.left),
-            right: Math.min(area.right, bounds.right, bounds.left + rect.right),
-            top: Math.max(area.top, bounds.top, bounds.top + rect.top),
-            bottom: Math.min(area.bottom, bounds.bottom, bounds.top + rect.bottom),
-          })).filter(rect => rect.right > rect.left && rect.bottom > rect.top);
-          const line = point && visible.find(rect => {
-            const x = bounds.left + point.x;
-            const y = bounds.top + point.y;
-            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-          }) || visible[0];
-          if (line) return { x: (line.left + line.right) / 2, top: line.top, bottom: line.bottom };
-        });
+        openAnnotation(value, range, point);
       });
       view.addEventListener("create-overlay", () => {
         if (view) queueMicrotask(() => { if (viewRef.current === view && view) void refresh(view); });
@@ -261,6 +286,7 @@ export function ReaderCanvas({
           index: number; tocItem?: TocEntry;
         }>).detail;
         reportChapter(index);
+        readingPositionChanged = Boolean(cfi && cfi !== lastCfi.current);
         if (cfi && Number.isFinite(fraction)) {
           setLocation({ fraction, chapter: tocItem?.label, href: tocItem?.href });
           if (recording && cfi !== lastCfi.current) onPosition({ cfi, fraction });
@@ -278,7 +304,10 @@ export function ReaderCanvas({
       viewRef.current = view;
       view.renderer.addEventListener("relocate", event => {
         const { reason } = (event as CustomEvent<{ reason: string }>).detail;
-        if (reason !== "anchor") dismissAnnotation();
+        // The paginator can snap to the same page after an ordinary touch.
+        if (reason === "navigation" || reason === "page" || (reason === "snap" && readingPositionChanged)) {
+          dismissAnnotation();
+        }
       });
       applyMotion();
       reducedMotion.addEventListener("change", applyMotion);

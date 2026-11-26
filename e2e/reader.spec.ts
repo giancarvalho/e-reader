@@ -174,12 +174,12 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   }
 
-  if (browserName === "webkit") return;
   let dictionaryRequests = 0;
   page.on("request", request => {
     if (new URL(request.url()).pathname.startsWith("/dict/")) dictionaryRequests++;
   });
-  await context.setOffline(true);
+  // Offline PWA behavior on iOS requires an installed app on a real device.
+  if (browserName !== "webkit") await context.setOffline(true);
   await page.reload();
   await expect(page.locator("section[data-theme=custom]")).toBeVisible();
   await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
@@ -190,7 +190,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
-    expect(dictionaryRequests).toBe(0);
+    if (browserName !== "webkit") expect(dictionaryRequests).toBe(0);
   }
   const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
   if (!visibleFrame) throw new Error("Missing reading frame");
@@ -223,8 +223,6 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
   await expect(page.getByText("Leitura sem rede")).toBeVisible();
   await expect(page.getByRole("button", { name: "Comentários (0)" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Ocultar controles de leitura" }).click();
   const overlayCount = (selector: string) => page.locator("foliate-view").evaluate((element, query) => {
     const view = element as HTMLElement & { renderer: { getContents: () => { overlayer?: { element: SVGElement } }[] } };
     return view.renderer.getContents().reduce((total, { overlayer }) =>
@@ -233,6 +231,12 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   const markers = () => overlayCount("[data-comment-marker]");
   await expect.poll(() => overlayCount("g > rect")).toBeGreaterThan(0);
   await expect.poll(markers).toBe(0);
+  const readingPosition = () => page.locator("foliate-view").evaluate(element =>
+    (element as HTMLElement & { lastLocation: { cfi: string } }).lastLocation.cfi);
+  const before = await readingPosition();
+
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Ocultar controles de leitura" }).click();
   const chapterFrame = page.frames().find(frame => frame.url().startsWith("blob:"))!;
   const frameBox = await (await chapterFrame.frameElement()).boundingBox();
   if (!frameBox) throw new Error("Missing chapter bounds");
@@ -242,10 +246,11 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const { left, top, width, height } = range.getClientRects()[0]!;
     return { x: left + width / 2, y: top + height / 2 };
   });
-  const readingPosition = () => page.locator("foliate-view").evaluate(element =>
-    (element as HTMLElement & { lastLocation: { cfi: string } }).lastLocation.cfi);
-  const before = await readingPosition();
-  await page.mouse.click(frameBox.x + point.x, frameBox.y + point.y);
+  if (test.info().project.name === "desktop") {
+    await page.mouse.click(frameBox.x + point.x, frameBox.y + point.y);
+  } else {
+    await page.touchscreen.tap(frameBox.x + point.x, frameBox.y + point.y);
+  }
   const thread = page.getByRole("dialog", { name: "Comentários do grifo" });
   await expect(thread).toBeVisible();
   await expect(thread.getByText("Segundo capítulo")).toHaveCount(0);
@@ -270,8 +275,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await thread.getByRole("button", { name: "Enviar resposta" }).click();
   await expect(thread.getByText("Resposta offline")).toBeVisible();
   await expect.poll(markers).toBe(1);
-  await page.keyboard.press("Escape");
+  await page.mouse.click(2, 2);
   await expect(thread).toHaveCount(0);
+  expect(await readingPosition()).toBe(before);
   await page.reload();
   await controls();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
