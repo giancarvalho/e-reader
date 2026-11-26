@@ -7,9 +7,9 @@ import { messages } from "@/lib/messages/pt-br";
 import { joinGroup } from "./actions";
 import styles from "./access.module.css";
 
-export function InviteForm() {
+export function InviteForm({ initialCode }: { initialCode?: string }) {
   const [state, action, pending] = useActionState(joinGroup, {});
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode ?? "");
   const { access } = messages;
   const error = state.error ? access.errors[state.error] : undefined;
 
@@ -23,7 +23,7 @@ export function InviteForm() {
         autoCapitalize="characters"
         autoComplete="off"
         spellCheck={false}
-        maxLength={64}
+        maxLength={128}
         error={state.error === "invalid_code" ? error : undefined}
         required
       />

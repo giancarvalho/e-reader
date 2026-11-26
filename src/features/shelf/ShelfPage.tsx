@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getGroupAccess } from "@/features/access";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
+import { normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
 import type { ShelfBook } from "@/lib/books/local";
 import { ShelfClient } from "./ShelfClient";
@@ -18,6 +19,12 @@ export async function ShelfPage() {
     .returns<ShelfBook[]>();
   if (error) return <ShelfUnavailable />;
 
+  const [group, invite] = await Promise.all([
+    access.client.from("groups").select("name").eq("id", access.groupId).maybeSingle(),
+    access.organizer
+      ? access.client.from("group_invites").select("code").eq("group_id", access.groupId).maybeSingle()
+      : null,
+  ]);
   const books = data ?? [];
   const paths = books.flatMap(book => book.cover_path ? [book.cover_path] : []);
   const links = paths.length
@@ -32,7 +39,8 @@ export async function ShelfPage() {
 
   return (
     <main className={styles.page}>
-      <ShelfClient snapshot={{ userId: access.userId, books }} covers={covers} organizer={access.organizer} />
+      <ShelfClient snapshot={{ userId: access.userId, books }} covers={covers} organizer={access.organizer}
+        groupName={group.data?.name} inviteCode={normalizeInviteCode(invite?.data?.code)} />
     </main>
   );
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { normalizeInviteCode } from "../../lib/access/invite";
 import { getRequestAuth } from "@/lib/supabase/server";
 import type { InviteState } from "./state";
 
@@ -8,8 +9,9 @@ export async function joinGroup(_previous: InviteState, form: FormData): Promise
   const auth = await getRequestAuth(true);
   if (!auth) redirect("/entrar");
 
-  const code = form.get("code");
-  if (typeof code !== "string" || code.length > 128) return { error: "invalid_code" };
+  const value = form.get("code");
+  const code = typeof value === "string" ? normalizeInviteCode(value) : undefined;
+  if (!code) return { error: "invalid_code" };
 
   const { data, error } = await auth.client.rpc("join_group", { code }).single<{ status: string }>();
   if (error?.code === "42501" || error?.code === "PGRST301") redirect("/entrar");

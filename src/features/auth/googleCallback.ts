@@ -1,9 +1,11 @@
+import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthConfig } from "../../lib/supabase/config";
 import { createAuthClient } from "@/lib/supabase/server";
 import { decodeGoogleFlow, exchangeGoogleCode, getGoogleConfig, googleFlowCookie, googleFlowPath } from "./google";
 
 export async function finishDirectGoogleSignIn(request: NextRequest) {
+  const invite = normalizeInviteCode(request.cookies.get(pendingInviteCookie)?.value);
   const params = request.nextUrl.searchParams;
   const flow = decodeGoogleFlow(request.cookies.get(googleFlowCookie)?.value);
   const auth = getAuthConfig(process.env);
@@ -13,7 +15,7 @@ export async function finishDirectGoogleSignIn(request: NextRequest) {
   const response = new NextResponse(null, {
     status: 303,
     headers: {
-      Location: "/entrar?status=failed",
+      Location: signInPath("failed", invite),
       "Cache-Control": "private, no-store",
       "Referrer-Policy": "no-referrer",
     },
@@ -30,7 +32,7 @@ export async function finishDirectGoogleSignIn(request: NextRequest) {
           },
         });
         const { error } = await client.auth.signInWithIdToken(credentials);
-        if (!error) response.headers.set("Location", "/convite");
+        if (!error) response.headers.set("Location", invitePath(invite));
       }
     } catch {
       // Network failures and malformed provider responses return to the sign-in page.
@@ -40,5 +42,6 @@ export async function finishDirectGoogleSignIn(request: NextRequest) {
   response.cookies.set(googleFlowCookie, "", {
     path: googleFlowPath, maxAge: 0, httpOnly: true, sameSite: "lax", secure: auth?.secure,
   });
+  if (invite) response.cookies.set(pendingInviteCookie, "", { ...pendingInviteOptions, maxAge: 0, secure: auth?.secure });
   return response;
 }

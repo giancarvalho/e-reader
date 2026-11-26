@@ -17,6 +17,7 @@ import { maxEpubBytes } from "@/lib/epub/inspect";
 import { messages } from "@/lib/messages/pt-br";
 import { editShelf, getBookDownload } from "./actions";
 import styles from "./shelf.module.css";
+import { CopyInvite } from "./CopyInvite";
 import { UploadBook } from "./UploadBook";
 
 type ShelfProps = {
@@ -24,9 +25,11 @@ type ShelfProps = {
   covers?: Record<string, string>;
   organizer?: boolean;
   offline?: boolean;
+  groupName?: string;
+  inviteCode?: string;
 };
 
-export function ShelfClient({ snapshot, covers, organizer = false, offline = false }: ShelfProps) {
+export function ShelfClient({ snapshot, covers, organizer = false, offline = false, groupName, inviteCode }: ShelfProps) {
   const [last, setLast] = useState<ReaderIdentity>();
   const [adding, setAdding] = useState(false);
   const [managing, setManaging] = useState(false);
@@ -55,12 +58,14 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
       <header className={styles.header}>
         <div>
           <Heading>{access.shelfTitle}</Heading>
+          {groupName && <Text tone="muted">{groupName}</Text>}
           {offline && <Text tone="muted">{shelf.offline}</Text>}
         </div>
         {!offline && <a href="/conta">{access.account}</a>}
       </header>
       {organizer && <div className={styles.actions}>
         <Button variant="secondary" onClick={() => setAdding(true)}>{shelf.add}</Button>
+        {inviteCode && <CopyInvite code={inviteCode} />}
         {snapshot.books.length > 0 && <Button variant="quiet" aria-pressed={managing} onClick={() => setManaging(value => !value)}>
           {managing ? shelf.finishManage : shelf.manage}
         </Button>}

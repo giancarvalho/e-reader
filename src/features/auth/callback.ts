@@ -1,18 +1,22 @@
+import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestAuth } from "@/lib/supabase/server";
 
 export async function finishGoogleSignIn(request: NextRequest) {
   const auth = await getRequestAuth(true);
   const code = request.nextUrl.searchParams.get("code");
-  let path = "/entrar?status=failed";
+  const invite = normalizeInviteCode(request.cookies.get(pendingInviteCookie)?.value);
+  let path = signInPath("failed", invite);
 
   if (auth && code) {
     const { error } = await auth.client.auth.exchangeCodeForSession(code);
-    if (!error) path = "/convite";
+    if (!error) path = invitePath(invite);
   }
 
-  return new NextResponse(null, {
+  const response = new NextResponse(null, {
     status: 303,
-    headers: { Location: path, "Cache-Control": "private, no-store" },
+    headers: { Location: path, "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" },
   });
+  if (invite) response.cookies.set(pendingInviteCookie, "", { ...pendingInviteOptions, maxAge: 0, secure: auth?.config.secure });
+  return response;
 }

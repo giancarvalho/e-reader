@@ -24,11 +24,21 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
   return (
     <main className={styles.panel}>
       <Heading>{auth.accountTitle}</Heading>
-      {name && <><Avatar name={name} src={photo} /><Text>{name}</Text></>}
+      {name && <section className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></section>}
       <Link href="/convite">{auth.continue}</Link>
-      {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
-      <Link href="/diagnostico">{messages.diagnostics.title}</Link>
-      <SignOutForm />
+      <section className={styles.section}>
+        <Heading as="h2">{auth.storage}</Heading>
+        <a href="/estante-offline">{messages.shelf.offline}</a>
+      </section>
+      <section className={styles.section}>
+        <Heading as="h2">{auth.help}</Heading>
+        <Link href="/diagnostico">{messages.diagnostics.title}</Link>
+      </section>
+      <section className={styles.section}>
+        <Text tone="muted">{auth.signOutEffect}</Text>
+        {status === "signout_failed" && <Text>{auth.signOutFailed}</Text>}
+        <SignOutForm />
+      </section>
     </main>
   );
 }

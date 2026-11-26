@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import { getRequestAuth } from "@/lib/supabase/server";
 import { getGoogleSignInDestination } from "./googleStart";
 
-export async function signInWithGoogle() {
-  redirect(await getGoogleSignInDestination());
+export async function signInWithGoogle(form?: FormData) {
+  const invite = form?.get("codigo");
+  redirect(await getGoogleSignInDestination(typeof invite === "string" ? invite : undefined));
 }
 
 export async function signOut() {

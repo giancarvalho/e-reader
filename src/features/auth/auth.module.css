@@ -19,3 +19,14 @@
 .panel a:focus-visible {
   outline: var(--focus-ring) solid var(--color-accent-text);
 }
+
+.profile { display: flex; align-items: center; gap: var(--space-12); }
+
+.section {
+  display: grid;
+  gap: var(--space-8);
+  border-block-start: var(--focus-ring) solid var(--color-surface);
+  padding-block-start: var(--space-16);
+}
+
+.section h2 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }

@@ -32,7 +32,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function callback(stateMatches = true) {
+function callback(stateMatches = true, invite?: string) {
   const flow = newGoogleFlow();
   const url = new URL("https://margins.example/auth/google/callback");
   url.searchParams.set("code", "test-code");
@@ -40,7 +40,7 @@ function callback(stateMatches = true) {
   url.searchParams.set("next", "https://other.example");
   return {
     flow,
-    request: new NextRequest(url, { headers: { Cookie: `${googleFlowCookie}=${encodeGoogleFlow(flow)}` } }),
+    request: new NextRequest(url, { headers: { Cookie: `${googleFlowCookie}=${encodeGoogleFlow(flow)}${invite ? `; shared_margins_invite=${invite}` : ""}` } }),
   };
 }
 
@@ -72,4 +72,13 @@ it("returns to sign-in if the Google token endpoint is unavailable", async () =>
   const response = await finishDirectGoogleSignIn(callback().request);
   expect(response.headers.get("location")).toBe("/entrar?status=failed");
   expect(signInWithIdToken).not.toHaveBeenCalled();
+});
+
+
+it("restores a pending invite after a successful Google callback", async () => {
+  const invite = "ABCDEFGH234567AB";
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ id_token: "id", access_token: "access" })));
+  const response = await finishDirectGoogleSignIn(callback(true, invite).request);
+  expect(response.headers.get("location")).toBe(`/convite?codigo=${invite}`);
+  expect(response.cookies.get("shared_margins_invite")?.maxAge).toBe(0);
 });
