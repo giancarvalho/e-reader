@@ -141,6 +141,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByText("CC BY-SA 4.0", { exact: true })).toHaveCount(0);
     await expect(dictionary.getByRole("link", { name: "Wikcionário", exact: true })).toHaveAttribute("href", "https://pt.wiktionary.org/wiki/cap%C3%ADtulo");
@@ -184,6 +187,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     await expect.poll(pressSelection).toBe("capítulo");
     await expect(dictionary).toHaveCount(0);
     await release();
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
     await expect.poll(pressSelection).toBe("");
@@ -211,6 +217,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
     if (browserName !== "webkit") expect(dictionaryRequests).toBe(0);

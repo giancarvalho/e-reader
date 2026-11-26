@@ -258,7 +258,7 @@ O leitor usa o foliate-js, vendorizado em `src/vendor/foliate/` (só EPUB). O sp
 
 - Entrada: o arquivo do livro, a posição inicial (CFI) e as preferências. Saídas: eventos de posição (`relocate`), de seleção e de toque em grifo. O `Reader` não conhece Supabase nem sync; fala com o resto só por props e callbacks.
 - Grifos são ancorados por CFI e desenhados como retângulos translúcidos na camada do foliate. Quem tem comentários mostra um ícone discreto de balão ao lado do grifo, sem cartão de nota aberto.
-- Barra de seleção: 4 cores de grifo, botão “Nota” e botão de dicionário. Não há seletor de idioma.
+- Barra de seleção: 4 cores de grifo, botão “Nota” e, quando a seleção é uma única palavra, botão “Definir”. Selecionar uma palavra nunca abre o dicionário sozinho; só o botão abre. Não há seletor de idioma.
 - Toque nas bordas troca de página e toque no centro mostra ou esconde as barras (fade, sem deslocar o texto). As coordenadas do toque são convertidas para a tela, porque o conteúdo fica num iframe largo.
 
 **Preferências de leitura** (guardadas por pessoa, no aparelho e no servidor)
