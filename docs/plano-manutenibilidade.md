@@ -1,6 +1,6 @@
 # Plano de manutenibilidade: duplicação, consistência visual e regras para agentes
 
-Estado: proposta, aguardando aprovação. Origem: análise de duplicação e de
+Estado: executado. As trilhas A e B foram concluídas (veja a seção 7). Origem: análise de duplicação e de
 consistência de design feita sobre a `main` após o PR #38.
 
 ## 1. Diagnóstico da causa
@@ -112,3 +112,30 @@ Fora do escopo desta trilha por ganho baixo: fábrica para `pushAnnotation`/`pus
 2. Incluir as capturas visuais (A6) ou aceitar o risco de regressão sem elas.
 3. Rigor inicial: `error` com linha de base (recomendado) ou `warn` por uma sprint.
 4. Quando executar: antes da próxima sprint de produto, ou intercalado.
+
+## 7. Resultado
+
+Trilha A (guarda-corpos) e trilha B (migração) concluídas, uma PR por tarefa.
+
+| Tarefa | Resultado |
+|---|---|
+| A1 a A5, A7 | ESLint com regras do projeto e supressões por contagem, Stylelint, `jscpd`, teste de contrato do design system, `AGENTS.md`, template de PR e `docs/design-system.md` |
+| A6 | 24 capturas (320 e 390 px, Dia e Noite) mais 4 da folha do dicionário, com limite absoluto de 50 pixels |
+| B1 | Tokens `--border-divider`, `--shadow-floating`, `--radius-surface`; teste de paridade dos temas |
+| B2 | `Page` |
+| B3 | `Link` e `LinkButton` |
+| B4 | `Notice` |
+| B5 | `src/lib/online` e `src/lib/format` |
+| B6 | `Icon`, `IconButton` e entradas `index.ts`/`server.ts` por feature |
+| B7 | `Progress`, `Swatch`, `ColorField`, `Section`, `List`, `Disclosure` e variantes de `Heading` e `Text` |
+| B8 | `src/design-system/viewport.ts` |
+| B9 | `Popover` e `ActionBar` |
+| B10 | `ReaderCanvas` dividido (555 para 96 linhas); linha de base zerada |
+
+Medidas ao fim: duplicação 2,13% para 0,43%; supressões do ESLint 60 para 0; comentários de CSS na linha de base 68 para 0; nenhum arquivo acima de 300 linhas.
+
+Exceções permanentes e documentadas (não são linha de base): largura da coluna no cromo do leitor, `reader-chrome.module.css` (barras do leitor), o botão de progresso do leitor e o catálogo `/dev/design`.
+
+Achados visuais em 320 px: o valor do progresso que quebrava ("40 %") e o título sublinhado na capa-placeholder foram corrigidos. A barra de seleção do leitor continua em duas linhas a 320 e 390 px por decisão: 4 cores e 3 botões de 44 px não cabem numa linha, e redesenhá-la é uma decisão de produto.
+
+Pendente fora do código: aceitação em aparelho real do fluxo "Definir", do teclado virtual (folhas e balão de comentário) e dos gestos de seleção no Android e no iOS.

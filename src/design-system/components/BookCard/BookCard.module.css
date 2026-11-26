@@ -15,9 +15,9 @@
   overflow-wrap: anywhere;
 }
 
+/* The whole cover is the link, so its placeholder title must not read as an underlined text link. */
 .cover {
-  color: var(--color-accent-text);
-  text-underline-offset: var(--focus-ring);
+  text-decoration: none;
 }
 
 .cover:focus-visible {
