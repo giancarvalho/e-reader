@@ -4,63 +4,53 @@ import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
-import type { ReaderIdentity } from "@/lib/books/local";
 import { messages } from "@/lib/messages/pt-br";
-import type { Annotation, AnnotationColor } from "@/lib/sync/annotations";
+import type { Annotation } from "@/lib/sync/annotations";
+import { AnnotationColors } from "./AnnotationColors";
 import styles from "./annotations.module.css";
 
 export type AnnotationSelection = { cfi: string; quote: string; sample?: string };
 
-const colors: AnnotationColor[] = ["amber", "green", "blue", "pink"];
-
-type Props = {
-  identity: ReaderIdentity;
-  selection?: AnnotationSelection;
-  editing?: Annotation;
+export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
+  annotation: Annotation;
+  noteOnly: boolean;
   cancel: () => void;
-  preferredColor: AnnotationColor;
   onSave: (row: Annotation) => Promise<boolean>;
-};
-
-export function AnnotationPanel({ identity, selection, editing, cancel, onSave, preferredColor }: Props) {
-  const [color, setColor] = useState<AnnotationColor>(editing?.color ?? preferredColor);
-  const [note, setNote] = useState(editing?.note ?? "");
+}) {
+  const [color, setColor] = useState(annotation.color);
+  const [note, setNote] = useState(annotation.note ?? "");
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
   const { annotations } = messages;
-  const quote = editing?.quote_text ?? selection?.quote;
-  const cfi = editing?.cfi ?? selection?.cfi;
+  const label = noteOnly ? annotations.addNote : annotations.edit;
 
   async function submit(deleted = false) {
-    if (!quote || !cfi || busy) return;
+    if (busy) return;
     setBusy(true);
+    setFailed(false);
     const saved = await onSave({
-      id: editing?.id ?? crypto.randomUUID(),
-      group_id: identity.group, book_id: identity.hash, author_id: identity.user,
-      cfi, quote_text: quote, color, note: note.trim() || null,
-      deleted_at: deleted ? new Date().toISOString() : null,
+      ...annotation, color, note: note.trim() || null, deleted_at: deleted ? new Date().toISOString() : null,
     });
-    setBusy(false);
     if (saved) cancel();
+    else {
+      setBusy(false);
+      setFailed(true);
+    }
   }
 
   return (
-    <section className={styles.panel} aria-label={editing ? annotations.edit : annotations.add}>
-      <Text>{quote}</Text>
+    <section className={styles.panel} aria-label={label}>
+      <Text>{annotation.quote_text}</Text>
       <Text tone="muted">{annotations.shared}</Text>
-      <fieldset className={styles.colors}>
-        <legend>{annotations.color}</legend>
-        {colors.map(value => (
-          <label key={value} className={styles.swatch} data-color={value}>
-            <input type="radio" name="annotation-color" checked={color === value}
-              onChange={() => setColor(value)} />
-            {annotations.colors[value]}
-          </label>
-        ))}
-      </fieldset>
+      {noteOnly ? <div className={styles.selectedColor}>
+        <span className={styles.swatch} data-color={color} aria-hidden="true" />
+        <Text>{annotations.colors[color]}</Text>
+      </div> : <AnnotationColors color={color} disabled={busy} onSelect={setColor} />}
       <TextArea label={annotations.note} value={note} onChange={event => setNote(event.target.value)} maxLength={4000} />
+      {failed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
       <div className={styles.actions}>
-        <Button loading={busy} onClick={() => void submit()}>{annotations.save}</Button>
-        {editing && <Button variant="quiet" disabled={busy} onClick={() => void submit(true)}>{annotations.remove}</Button>}
+        <Button loading={busy} onClick={() => void submit()}>{noteOnly ? annotations.saveNote : annotations.save}</Button>
+        {!noteOnly && <Button variant="quiet" disabled={busy} onClick={() => void submit(true)}>{annotations.remove}</Button>}
         <Button variant="quiet" disabled={busy} onClick={cancel}>{annotations.cancel}</Button>
       </div>
     </section>

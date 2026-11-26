@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from "react";
 import { Heading } from "../Heading";
 import { Button } from "../Button";
 import styles from "./Sheet.module.css";
+
+function isBackdrop(event: MouseEvent<HTMLDialogElement>) {
+  if (event.target !== event.currentTarget) return false;
+  const { top, right, bottom, left } = event.currentTarget.getBoundingClientRect();
+  return event.clientX < left || event.clientX >= right || event.clientY < top || event.clientY >= bottom;
+}
 
 export function Sheet({ title, closeLabel, onClose, children }: {
   title: string;
@@ -12,6 +18,7 @@ export function Sheet({ title, closeLabel, onClose, children }: {
   children: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const pressedBackdrop = useRef(false);
   const headingId = useId();
 
   useEffect(() => {
@@ -35,10 +42,17 @@ export function Sheet({ title, closeLabel, onClose, children }: {
   }, []);
 
   return (
-    <dialog ref={dialog} aria-labelledby={headingId} className={styles.dialog} onCancel={event => {
-      event.preventDefault();
-      onClose();
-    }}>
+    <dialog ref={dialog} aria-labelledby={headingId} className={styles.dialog}
+      onPointerDown={event => { pressedBackdrop.current = event.button === 0 && isBackdrop(event); }}
+      onClick={event => {
+        const shouldClose = pressedBackdrop.current && isBackdrop(event);
+        pressedBackdrop.current = false;
+        if (shouldClose) onClose();
+      }}
+      onCancel={event => {
+        event.preventDefault();
+        onClose();
+      }}>
       <div className={styles.content}>
         <div className={styles.header}>
           <div id={headingId}><Heading as="h2">{title}</Heading></div>

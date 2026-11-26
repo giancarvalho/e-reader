@@ -61,6 +61,12 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   const closePanel = () => page.getByRole("button", { name: "Fechar painel", exact: true }).click();
   await expect(page.getByRole("button", { name: "Mostrar controles de leitura" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Próxima página" })).toHaveCount(0);
+  const animated = () => page.locator("foliate-view").evaluate(element =>
+    (element as HTMLElement & { renderer: HTMLElement }).renderer.hasAttribute("animated"));
+  await expect.poll(animated).toBe(true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect.poll(animated).toBe(false);
+  await page.emulateMedia({ reducedMotion: "no-preference" });
   const viewportHeight = await page.locator("foliate-view").evaluate(element => element.clientHeight);
   await controls();
   await expect(page.getByRole("button", { name: "Próxima página" })).toBeVisible();
@@ -106,11 +112,13 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
-    await page.getByRole("button", { name: "Definir" }).click();
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByRole("link", { name: "CC BY-SA 4.0" })).toBeVisible();
-    await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
+    await dictionary.getByRole("heading", { name: "capítulo", exact: true }).click();
+    await expect(dictionary).toBeVisible();
+    await page.mouse.click(1, 1);
+    await expect(dictionary).toHaveCount(0);
   }
 
   if (browserName === "webkit") return;
@@ -122,30 +130,35 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
-    await page.getByRole("button", { name: "Definir" }).click();
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
   }
   const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
   if (!visibleFrame) throw new Error("Missing reading frame");
-  await visibleFrame.getByText("Segundo capítulo").evaluate(element => {
+  const selectPhrase = () => visibleFrame.getByText("Segundo capítulo").evaluate(element => {
     const selection = element.ownerDocument.getSelection();
     const range = element.ownerDocument.createRange();
     range.selectNodeContents(element);
     selection?.removeAllRanges();
     selection?.addRange(range);
   });
-  await page.getByRole("button", { name: "Grifar", exact: true }).click();
-  await page.getByRole("button", { name: "Desfazer", exact: true }).click();
-  await expect(page.getByText("Grifo salvo neste aparelho.")).toHaveCount(0);
-  await visibleFrame.getByText("Segundo capítulo").evaluate(selectChapterWord);
-  await page.getByRole("button", { name: "Adicionar nota", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Novo grifo" })).toBeVisible();
-  await page.getByLabel("Verde", { exact: true }).check();
-  await page.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
-  await page.getByRole("button", { name: "Salvar grifo" }).click();
-  await expect(page.getByRole("heading", { name: "Novo grifo" })).toHaveCount(0);
+  await selectPhrase();
+  const green = page.getByRole("button", { name: "Verde", exact: true });
+  const blue = page.getByRole("button", { name: "Azul", exact: true });
+  const note = page.getByRole("button", { name: "Adicionar nota", exact: true });
+  await expect(note).toBeDisabled();
+  await green.click();
+  await expect(green).toHaveAttribute("aria-pressed", "true");
+  await blue.click();
+  await expect(blue).toHaveAttribute("aria-pressed", "true");
+  await expect(green).toHaveAttribute("aria-pressed", "false");
+  await note.click();
+  const notePanel = page.getByRole("dialog", { name: "Adicionar nota" });
+  await expect(notePanel.getByText("Azul", { exact: true })).toBeVisible();
+  await notePanel.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
+  await notePanel.getByRole("button", { name: "Salvar nota" }).click();
+  await expect(notePanel).toHaveCount(0);
   await page.reload();
   await controls();
   await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
@@ -167,6 +180,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(thread.getByText("Resposta offline")).toHaveCount(0);
   await thread.getByRole("button", { name: "Fechar comentários" }).click();
   await page.getByRole("button", { name: "Editar grifo" }).click();
+  await expect(blue).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Apagar grifo" }).click();
   await expect(page.getByText("Grifos (0)", { exact: true })).toBeVisible();
 });

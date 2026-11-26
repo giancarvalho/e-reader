@@ -74,8 +74,14 @@ export function ReaderCanvas({
     const content = mount.current;
     let recording = false;
     let selectionTimer: number | undefined;
+    let selectionSettle: number | undefined;
+    let pointerId: number | undefined;
     let previousSelection = "";
     let lastAnnotationTap = -Infinity;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    function applyMotion() {
+      view?.renderer?.toggleAttribute("animated", !reducedMotion.matches);
+    }
 
     function turn(direction: "prev" | "next") {
       if (recording) void view?.[direction]().catch(() => setFailed(true));
@@ -112,7 +118,7 @@ export function ReaderCanvas({
     window.addEventListener("keydown", readKey);
 
     function inspectSelection() {
-      if (!view?.renderer || document.visibilityState !== "visible") return;
+      if (!view?.renderer || pointerId !== undefined || document.visibilityState !== "visible") return;
       for (const { doc, index } of view.renderer.getContents()) {
         const selected = doc.getSelection();
         const quote = selected?.toString().trim().slice(0, 4000);
@@ -121,7 +127,12 @@ export function ReaderCanvas({
           const cfi = view.getCFI(index, selected.getRangeAt(0));
           if (cfi.length <= 4096 && cfi !== previousSelection) {
             previousSelection = cfi;
-            reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
+            window.clearTimeout(selectionSettle);
+            selectionSettle = window.setTimeout(() => {
+              if (!cancelled && pointerId === undefined && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
+                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000) });
+              }
+            }, 300);
           }
         } catch {
           // A selection can disappear while the paginator changes chapters.
@@ -129,6 +140,7 @@ export function ReaderCanvas({
         return;
       }
       previousSelection = "";
+      window.clearTimeout(selectionSettle);
     }
     lastCfi.current = initialCfi;
 
@@ -148,6 +160,22 @@ export function ReaderCanvas({
       view.addEventListener("external-link", event => event.preventDefault());
       view.addEventListener("load", event => {
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
+        pointerId = undefined;
+        doc.addEventListener("pointerdown", event => {
+          pointerId = event.pointerId;
+          previousSelection = "";
+          window.clearTimeout(selectionSettle);
+        });
+        const endPointer = (event: PointerEvent) => {
+          if (pointerId !== event.pointerId) return;
+          pointerId = undefined;
+          inspectSelection();
+        };
+        doc.addEventListener("pointerup", endPointer);
+        doc.addEventListener("pointercancel", endPointer);
+        doc.addEventListener("pointerout", event => {
+          if (!event.relatedTarget) endPointer(event);
+        });
         doc.addEventListener("selectionchange", inspectSelection);
         doc.addEventListener("keydown", readKey);
         doc.addEventListener("click", readTap);
@@ -186,6 +214,8 @@ export function ReaderCanvas({
         return;
       }
       viewRef.current = view;
+      applyMotion();
+      reducedMotion.addEventListener("change", applyMotion);
       // A sandboxed iframe can omit selectionchange events in WebKit.
       selectionTimer = window.setInterval(inspectSelection, 350);
       setToc(book.toc ?? []);
@@ -198,6 +228,7 @@ export function ReaderCanvas({
 
     void open().catch(() => {
       window.clearInterval(selectionTimer);
+      window.clearTimeout(selectionSettle);
       view?.close();
       view?.remove();
       destroy?.();
@@ -206,7 +237,9 @@ export function ReaderCanvas({
     return () => {
       cancelled = true;
       window.removeEventListener("keydown", readKey);
+      reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
+      window.clearTimeout(selectionSettle);
       view?.close();
       view?.remove();
       destroy?.();

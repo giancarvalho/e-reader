@@ -1,7 +1,7 @@
 import type { EPUB } from "./epub";
 
 export class View extends HTMLElement {
-  renderer: {
+  renderer: HTMLElement & {
     setStyles(css: string): void;
     getContents(): { doc: Document; index: number }[];
   };

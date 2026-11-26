@@ -98,9 +98,7 @@ export const messages = {
     progressFailed: "Não foi possível salvar o estado da leitura neste aparelho.",
   },
   annotations: {
-    add: "Novo grifo",
     selection: "Ações do trecho selecionado",
-    quick: "Grifar",
     addNote: "Adicionar nota",
     saved: "Grifo salvo neste aparelho.",
     undo: "Desfazer",
@@ -113,6 +111,8 @@ export const messages = {
     remove: "Apagar grifo",
     cancel: "Cancelar",
     save: "Salvar grifo",
+    saveNote: "Salvar nota",
+    saveFailed: "Não foi possível salvar a alteração. Tente novamente.",
     note: "Nota opcional",
     color: "Cor do grifo",
     colors: { amber: "Âmbar", green: "Verde", blue: "Azul", pink: "Rosa" },
@@ -156,7 +156,6 @@ export const messages = {
     states: { ok: "Funcionando", error: "Falha" },
   },
   dictionary: {
-    lookup: "Definir",
     more: "Ver mais definições",
     languages: { pt: "Português", en: "Inglês" },
     loading: "Buscando definições…",
