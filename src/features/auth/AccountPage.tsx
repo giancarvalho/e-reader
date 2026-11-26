@@ -1,6 +1,6 @@
 import { Avatar } from "@/design-system/components/Avatar";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Link } from "@/design-system/components/Link";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -25,15 +25,15 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
     <main className={styles.panel}>
       <Heading>{auth.accountTitle}</Heading>
       {name && <section className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></section>}
-      <Link href="/convite">{auth.continue}</Link>
+      <Link href="/convite" client>{auth.continue}</Link>
       <section className={styles.section}>
         <Heading as="h2">{auth.storage}</Heading>
-        <a href="/estante-offline">{messages.shelf.offline}</a>
-        <a href="/dicionarios">{messages.dictionary.offlineTitle}</a>
+        <Link href="/estante-offline">{messages.shelf.offline}</Link>
+        <Link href="/dicionarios">{messages.dictionary.offlineTitle}</Link>
       </section>
       <section className={styles.section}>
         <Heading as="h2">{auth.help}</Heading>
-        <Link href="/diagnostico">{messages.diagnostics.title}</Link>
+        <Link href="/diagnostico" client>{messages.diagnostics.title}</Link>
       </section>
       <section className={styles.section}>
         <Text tone="muted">{auth.signOutEffect}</Text>

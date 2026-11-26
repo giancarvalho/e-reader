@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
+import { Link } from "@/design-system/components/Link";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { lookupDictionary, type DictionaryLanguage } from "@/lib/dictionary/lookup";
@@ -41,7 +42,7 @@ export function DictionaryPanel({ word, language, close }: Props) {
         <span className={styles.language}>{dictionary.languages[language]}</span>
         {isError && <div role="status">
           <Text>{dictionary[state]}</Text>
-          <a className={styles.manage} href="/dicionarios">{dictionary.offlineTitle}</a>
+          <Link href="/dicionarios">{dictionary.offlineTitle}</Link>
           <Button variant="quiet" onClick={() => { setState(undefined); setAttempt(value => value + 1); }}>
             {dictionary.retry}
           </Button>
@@ -61,7 +62,7 @@ export function DictionaryPanel({ word, language, close }: Props) {
               ))}
             </ol>
             <div className={styles.links}>
-              <a href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</a>
+              <Link tone="muted" href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</Link>
             </div>
           </section>
         ))}

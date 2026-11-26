@@ -3,6 +3,8 @@ import { Avatar } from "@/design-system/components/Avatar";
 import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
+import { Link } from "@/design-system/components/Link";
+import { LinkButton } from "@/design-system/components/LinkButton";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import { TextField } from "@/design-system/components/TextField";
@@ -40,6 +42,14 @@ export default function DesignCatalog() {
             <Button disabled>{catalog.disabled}</Button>
             <Button loading>{catalog.loading}</Button>
           </div>
+          <div className={styles.actions}>
+            <LinkButton href="#">{catalog.primary}</LinkButton>
+            <LinkButton href="#" variant="secondary">{catalog.secondary}</LinkButton>
+            <LinkButton href="#" variant="quiet">{catalog.quiet}</LinkButton>
+          </div>
+          <Link href="#">{catalog.link}</Link>
+          <Text>{catalog.body} <Link href="#" variant="inline">{catalog.link}</Link></Text>
+          <Text tone="muted"><Link href="#" variant="inline" tone="muted">{catalog.link}</Link></Text>
         </section>
       ))}
     </main>

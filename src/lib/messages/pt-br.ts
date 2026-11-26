@@ -201,6 +201,7 @@ export const messages = {
     day: "Dia",
     night: "Noite",
     body: "Texto da interface",
+    link: "Link de exemplo",
     reading: "Texto de leitura",
     showSheet: "Abrir painel",
     primary: "Primário",

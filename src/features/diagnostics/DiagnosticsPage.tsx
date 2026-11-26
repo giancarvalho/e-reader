@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "@/design-system/components/Link";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { observeDiagnostics, readDiagnostics } from "@/lib/diagnostics";
@@ -59,7 +60,7 @@ export function DiagnosticsPage() {
           {diagnostics.systems[entry.system]} · {time(entry.time)}
         </li>)}
       </ul> : <Text>{diagnostics.empty}</Text>}
-      <a href="/estante">{messages.reader.shelf}</a>
+      <Link href="/estante">{messages.reader.shelf}</Link>
     </main>
   );
 }

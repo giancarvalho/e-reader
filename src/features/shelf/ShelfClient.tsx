@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
 import { BookCard } from "@/design-system/components/BookCard";
+import { Link } from "@/design-system/components/Link";
+import { LinkButton } from "@/design-system/components/LinkButton";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
@@ -63,7 +65,7 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
           {groupName && <Text tone="muted">{groupName}</Text>}
           {offline && <Text tone="muted">{shelf.offline}</Text>}
         </div>
-        {!offline && <a href="/conta">{access.account}</a>}
+        {!offline && <Link href="/conta">{access.account}</Link>}
       </header>
       {organizer && <div className={styles.actions}>
         <Button variant="secondary" onClick={() => setAdding(true)}>{shelf.add}</Button>
@@ -172,7 +174,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
           <Button loading={busy} onClick={() => download(true)}>{shelf.read}</Button>
           <Button variant="quiet" disabled={busy} onClick={() => download(false)}>{shelf.download}</Button>
         </>}
-        {stored && <a className={styles.read} href={readerHref}>{action}</a>}
+        {stored && <LinkButton href={readerHref}>{action}</LinkButton>}
         {(notice || busy) && <div role="status">{busy ? shelf.downloading : notice}</div>}
         {children}
       </BookCard>
