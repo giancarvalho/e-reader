@@ -32,8 +32,8 @@
 .dialog[data-variant="compact"] {
   margin-block-end: calc(env(safe-area-inset-bottom) + var(--sheet-bottom, 0px));
   border: 0;
-  border-start-start-radius: var(--space-16);
-  border-start-end-radius: var(--space-16);
+  border-start-start-radius: var(--radius-surface);
+  border-start-end-radius: var(--radius-surface);
 }
 
 .dialog[data-variant="compact"] h2 {
