@@ -56,8 +56,8 @@ O `npm run lint` bloqueia, fora de `src/design-system`:
 - importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`);
 - arquivos com mais de 300 linhas.
 
-`Notice`, `Progress`, `src/lib/online` e `src/lib/format` ainda não existem: são
-as tarefas B4, B5 e B7 do plano. Até lá, ao precisar de um deles, crie-o
+`Progress`, `src/lib/online` e `src/lib/format` ainda não existem: são
+as tarefas B5 e B7 do plano. Até lá, ao precisar de um deles, crie-o
 seguindo a regra 3 em vez de repetir o padrão na feature; o lint vai apontar
 quem ainda usa o padrão antigo pela linha de base.
 
