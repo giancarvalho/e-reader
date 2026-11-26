@@ -11,34 +11,37 @@
   cursor: pointer;
 }
 
-.colors,
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-8);
 }
 
-.colors {
-  border: 0;
-  padding: 0;
-  margin: 0;
+.colors, .selectedColor {
+  display: flex;
+  align-items: center;
 }
 
+.selectedColor { gap: var(--space-8); }
+
 .swatch {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  min-block-size: var(--touch-target);
+  box-sizing: border-box;
+  inline-size: var(--space-24);
+  block-size: var(--space-24);
+  border: var(--focus-ring) solid var(--color-muted);
+  border-radius: var(--radius-round);
+  background: var(--swatch);
+}
+
+.colors button[aria-pressed="true"] .swatch {
+  outline: var(--focus-ring) solid var(--color-ink);
+  outline-offset: var(--focus-ring);
 }
 
 .swatch[data-color="amber"] { --swatch: var(--color-amber); }
 .swatch[data-color="green"] { --swatch: var(--highlight-green); }
 .swatch[data-color="blue"] { --swatch: var(--highlight-blue); }
 .swatch[data-color="pink"] { --swatch: var(--highlight-pink); }
-
-.swatch input {
-  accent-color: var(--swatch);
-}
 
 .list {
   display: grid;
