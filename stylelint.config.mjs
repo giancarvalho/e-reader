@@ -60,6 +60,11 @@ const config = {
       files: ["src/features/reader/**/*.css"],
       rules: featureOnly({ columnWidth: true }),
     },
+    {
+      // The reader toolbars carry their own borders, type and touch targets; see the header of the file.
+      files: ["src/features/reader/reader-chrome.module.css"],
+      rules: { "property-disallowed-list": [["/radius/", "box-shadow", "list-style", "font-family", "font-weight", "font-size", "letter-spacing"]], "declaration-property-value-disallowed-list": null },
+    },
   ],
 };
 

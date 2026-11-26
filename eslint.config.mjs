@@ -54,6 +54,11 @@ export default defineConfig([
     },
   },
   {
+    // The progress strip is a full-width chip, not a general-purpose button.
+    files: ["src/features/reader/ReaderToolbars.tsx"],
+    rules: { "project/no-raw-controls": "off" },
+  },
+  {
     // The shared formatters are the one place that constructs Intl objects.
     files: ["src/lib/format/**"],
     rules: { "no-restricted-properties": "off" },
@@ -63,11 +68,6 @@ export default defineConfig([
     ignores: ["src/lib/online/**", "src/**/*.test.{ts,tsx}", "src/vendor/**"],
     plugins: { project },
     rules: { "project/no-raw-connectivity": "error" },
-  },
-  {
-    // Size ceiling for a file that predates max-lines. Lower it as it shrinks.
-    files: ["src/features/reader/ReaderCanvas.tsx"],
-    rules: { "max-lines": ["error", { max: 520, skipBlankLines: true, skipComments: true }] },
   },
   globalIgnores(["src/vendor/**", ".next/**", "next-env.d.ts", "public/sw.js"]),
 ]);
