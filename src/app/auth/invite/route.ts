@@ -2,7 +2,7 @@ import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestAuth } from "@/lib/supabase/server";
 import { normalizeInviteCode, pendingInviteCookie, pendingInviteOptions } from "../../../lib/access/invite";
-import { redeemInvite } from "../../../features/access/redeemInvite";
+import { redeemInvite } from "@/features/access/server";
 
 export async function POST(request: NextRequest) {
   const headers = { "Cache-Control": "private, no-store" };

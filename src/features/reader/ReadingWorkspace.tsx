@@ -6,6 +6,7 @@ import { DictionaryPanel } from "@/features/dictionary";
 import { CommentThread, useComments } from "@/features/comments";
 import { Button } from "@/design-system/components/Button";
 import { Notice } from "@/design-system/components/Notice";
+import { IconButton } from "@/design-system/components/IconButton";
 import { Sheet } from "@/design-system/components/Sheet";
 import { detectDictionaryLanguage, dictionaryWord, type DictionaryLanguage } from "@/lib/dictionary/lookup";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -137,7 +138,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
             onClick={() => { if (selectedHighlight) edit(selectedHighlight, true); }}>{annotations.addNote}</Button>
           {definable && <Button variant="quiet" disabled={quickBusy} onClick={define}>{annotations.define}</Button>}
           {activeChange && <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>}
-          <Button variant="icon" onClick={cancel} aria-label={annotations.cancel}>×</Button>
+          <IconButton icon="close" label={annotations.cancel} onClick={cancel} />
           {colorFailed && <Notice live="alert">{annotations.saveFailed}</Notice>}
         </div>}
         {editing && <Sheet title={editing.noteOnly ? annotations.addNote : annotations.edit}
@@ -148,7 +149,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
         {change && !selection && !editing && !lookup && <div className={styles.savedNotice}>
           <Notice>{colorFailed ? annotations.saveFailed : annotations.saved}</Notice>
           <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>
-          <Button variant="icon" onClick={() => setChange(undefined)} aria-label={messages.reader.closePanel}>×</Button>
+          <IconButton icon="close" label={messages.reader.closePanel} onClick={() => setChange(undefined)} />
         </div>}
         {lookup && <DictionaryPanel key={lookup.word} word={lookup.word} language={lookup.language}
           close={cancel} />}

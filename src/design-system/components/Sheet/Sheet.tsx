@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from "react";
 import { Heading } from "../Heading";
-import { Button } from "../Button";
+import { IconButton } from "../IconButton";
 import styles from "./Sheet.module.css";
 
 function isBackdrop(event: MouseEvent<HTMLDialogElement>) {
@@ -57,7 +57,7 @@ export function Sheet({ title, closeLabel, onClose, children, variant }: {
       <div className={styles.content}>
         <div className={styles.header}>
           <div id={headingId}><Heading as="h2">{title}</Heading></div>
-          {closeLabel && <Button variant="icon" aria-label={closeLabel} onClick={onClose}>×</Button>}
+          {closeLabel && <IconButton icon="close" label={closeLabel} onClick={onClose} />}
         </div>
         {children}
       </div>

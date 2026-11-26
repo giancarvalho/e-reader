@@ -5,7 +5,8 @@ import typescript from "eslint-config-next/typescript";
 import project from "./eslint-rules/index.mjs";
 
 // Each feature is reachable from other features and from routes only through
-// its index.ts. Internals stay private so features can change independently.
+// its index.ts (UI) or server.ts (server-only). Internals stay private so
+// features can change independently.
 const features = readdirSync("./src/features", { withFileTypes: true })
   .filter(entry => entry.isDirectory()).map(entry => entry.name);
 const featureZones = features.map(name => ({
@@ -14,8 +15,8 @@ const featureZones = features.map(name => ({
     ...features.filter(other => other !== name).map(other => `./src/features/${other}`),
   ],
   from: `./src/features/${name}`,
-  except: ["./index.ts"],
-  message: `Import ${name} through "@/features/${name}" only.`,
+  except: ["./index.ts", "./server.ts"],
+  message: `Import ${name} through "@/features/${name}" (UI) or "@/features/${name}/server" (server-only) only.`,
 }));
 
 // Violations that predate a rule are counted per file and rule in

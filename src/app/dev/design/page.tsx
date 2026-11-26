@@ -5,6 +5,7 @@ import { Button } from "@/design-system/components/Button";
 import { Notice } from "@/design-system/components/Notice";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
+import { IconButton } from "@/design-system/components/IconButton";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
 import { Text } from "@/design-system/components/Text";
@@ -45,6 +46,14 @@ export default function DesignCatalog() {
             <Button variant="icon" aria-label={catalog.add}><span aria-hidden="true">+</span></Button>
             <Button disabled>{catalog.disabled}</Button>
             <Button loading>{catalog.loading}</Button>
+          </div>
+          <div className={styles.actions}>
+            <IconButton icon="close" label={catalog.close} />
+            <IconButton icon="reply" label={catalog.reply} />
+            <IconButton icon="trash" label={catalog.remove} />
+            <IconButton icon="conversation" label={catalog.conversation} />
+            <IconButton icon="more" label={catalog.more} aria-expanded={true} />
+            <IconButton icon="send" label={catalog.send} disabled />
           </div>
           <div className={styles.actions}>
             <LinkButton href="#">{catalog.primary}</LinkButton>
