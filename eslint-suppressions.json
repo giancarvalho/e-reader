@@ -1,8 +1,5 @@
 {
   "src/app/EnterLink.tsx": {
-    "project/no-live-region-role": {
-      "count": 2
-    },
     "project/no-raw-connectivity": {
       "count": 5
     }
@@ -22,28 +19,8 @@
       "count": 1
     }
   },
-  "src/features/access/AccessPages.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
-    }
-  },
-  "src/features/access/InviteForm.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
-    }
-  },
-  "src/features/annotations/AnnotationPanel.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
-    }
-  },
   "src/features/auth/SignInPage.tsx": {
     "project/no-raw-controls": {
-      "count": 1
-    }
-  },
-  "src/features/auth/SignOutForm.tsx": {
-    "project/no-live-region-role": {
       "count": 1
     }
   },
@@ -61,9 +38,6 @@
     "import/no-restricted-paths": {
       "count": 2
     },
-    "project/no-live-region-role": {
-      "count": 1
-    },
     "project/no-raw-connectivity": {
       "count": 3
     }
@@ -77,17 +51,11 @@
     }
   },
   "src/features/dictionary/DictionaryPanel.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
-    },
     "project/no-raw-connectivity": {
       "count": 1
     }
   },
   "src/features/dictionary/OfflineDictionaries.tsx": {
-    "project/no-live-region-role": {
-      "count": 2
-    },
     "project/no-raw-controls": {
       "count": 1
     }
@@ -96,44 +64,20 @@
     "no-restricted-properties": {
       "count": 1
     },
-    "project/no-live-region-role": {
-      "count": 1
-    },
     "project/no-raw-controls": {
       "count": 3
     }
   },
   "src/features/reader/ReaderPage.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
-    },
     "project/no-raw-connectivity": {
       "count": 4
-    }
-  },
-  "src/features/reader/ReadingWorkspace.tsx": {
-    "project/no-live-region-role": {
-      "count": 2
-    }
-  },
-  "src/features/shelf/CopyInvite.tsx": {
-    "project/no-live-region-role": {
-      "count": 1
     }
   },
   "src/features/shelf/ShelfClient.tsx": {
     "no-restricted-properties": {
       "count": 1
     },
-    "project/no-live-region-role": {
-      "count": 2
-    },
     "project/no-raw-controls": {
-      "count": 1
-    }
-  },
-  "src/features/shelf/UploadBook.tsx": {
-    "project/no-live-region-role": {
       "count": 1
     }
   },

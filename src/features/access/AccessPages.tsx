@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { Link } from "@/design-system/components/Link";
+import { Notice } from "@/design-system/components/Notice";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
@@ -22,7 +23,7 @@ export async function InvitePage({ searchParams }: { searchParams: Promise<{ cod
   return (
     <Page variant="intro">
       <Heading>{access.inviteTitle}</Heading>
-      {error && result.status !== "unavailable" && <div role="status"><Text>{access.errors[error]}</Text></div>}
+      {error && result.status !== "unavailable" && <Notice>{access.errors[error]}</Notice>}
       {result.status === "unavailable"
         ? <Text>{access.errors.unavailable}</Text>
         : <><Text>{typeof group === "string" ? `${access.invitedTo} ${group}` : access.inviteHint}</Text><InviteForm initialCode={code} /></>}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
 import { TextField } from "@/design-system/components/TextField";
 import { homeInvitePath } from "@/lib/access/invite";
@@ -26,7 +27,7 @@ export function CopyInvite({ code }: { code: string }) {
   return (
     <>
       <Button variant="quiet" onClick={() => void copy()}>{access.copyInvite}</Button>
-      {status && <span role="status">{status}</span>}
+      {status && <Notice>{status}</Notice>}
       {link && <Sheet title={access.copyInvite} closeLabel={reader.closePanel} onClose={() => setLink(undefined)}>
         <TextField label={access.inviteLink} readOnly value={link} onFocus={event => event.target.select()} />
       </Sheet>}

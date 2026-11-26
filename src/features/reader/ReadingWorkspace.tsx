@@ -5,8 +5,8 @@ import { AnnotationColors, AnnotationList, AnnotationPanel, useAnnotations, type
 import { DictionaryPanel } from "@/features/dictionary";
 import { CommentThread, useComments } from "@/features/comments";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
-import { Text } from "@/design-system/components/Text";
 import { detectDictionaryLanguage, dictionaryWord, type DictionaryLanguage } from "@/lib/dictionary/lookup";
 import type { ReaderIdentity } from "@/lib/books/local";
 import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
@@ -138,15 +138,15 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           {definable && <Button variant="quiet" disabled={quickBusy} onClick={define}>{annotations.define}</Button>}
           {activeChange && <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>}
           <Button variant="icon" onClick={cancel} aria-label={annotations.cancel}>×</Button>
-          {colorFailed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
+          {colorFailed && <Notice live="alert">{annotations.saveFailed}</Notice>}
         </div>}
         {editing && <Sheet title={editing.noteOnly ? annotations.addNote : annotations.edit}
           closeLabel={messages.reader.closePanel} onClose={cancel}>
           <AnnotationPanel key={editing.annotation.id} annotation={editing.annotation} noteOnly={editing.noteOnly}
             cancel={cancel} onSave={save} />
         </Sheet>}
-        {change && !selection && !editing && !lookup && <div className={styles.savedNotice} role="status">
-          <Text>{colorFailed ? annotations.saveFailed : annotations.saved}</Text>
+        {change && !selection && !editing && !lookup && <div className={styles.savedNotice}>
+          <Notice>{colorFailed ? annotations.saveFailed : annotations.saved}</Notice>
           <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>
           <Button variant="icon" onClick={() => setChange(undefined)} aria-label={messages.reader.closePanel}>×</Button>
         </div>}

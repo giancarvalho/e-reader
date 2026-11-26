@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -48,7 +49,7 @@ export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
         <Text>{annotations.colors[color]}</Text>
       </div> : <AnnotationColors color={color} disabled={busy} onSelect={setColor} />}
       <TextArea label={annotations.note} value={note} onChange={event => setNote(event.target.value)} maxLength={4000} />
-      {failed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
+      {failed && <Notice live="alert">{annotations.saveFailed}</Notice>}
       <div className={styles.actions}>
         <Button loading={busy} onClick={() => void submit()}>{noteOnly ? annotations.saveNote : annotations.save}</Button>
         {!noteOnly && <Button variant="icon" aria-label={annotations.remove} disabled={busy} onClick={() => void submit(true)}><AnnotationIcon name="trash" /></Button>}

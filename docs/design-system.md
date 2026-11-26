@@ -19,7 +19,8 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
 | `TextField`, `TextArea` | Campos com rótulo, erro e foco consistentes | Rótulo obrigatório; `hideLabel` só quando há placeholder claro |
 | `Sheet` | Painéis modais (dicionário, listas, ajustes). Variante `compact` | Já trata o teclado virtual e a área segura |
-| `StatusBanner` | Aviso persistente com ação opcional | Anuncia como `status` |
+| `Notice` | Mensagem curta que leitores de tela anunciam. `live` `status` (padrão, educado) ou `alert` (falhas); `announceOnly` para texto já visível em outro lugar | Nunca escreva `role="status"`/`role="alert"` à mão. A região fica no DOM mesmo vazia. Botões e links ficam fora dela |
+| `StatusBanner` | Aviso persistente com ação opcional | Compõe `Notice` |
 | `Avatar` | Foto ou iniciais de uma pessoa | |
 | `BookCard`, `BookCover` | Livro na estante | `BookCover` é composto por `BookCard` |
 
@@ -48,7 +49,7 @@ design system.
 
 O `npm run lint` bloqueia, fora de `src/design-system`:
 
-- `role="status"` e `role="alert"` à mão (use `Notice`; se ainda não existir, crie no design system);
+- `role="status"` e `role="alert"` à mão (use `Notice`);
 - `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus;
 - `navigator.onLine` e `addEventListener("online" | "offline")` (use os hooks de `src/lib/online`);
 - `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`);

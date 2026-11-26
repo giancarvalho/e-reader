@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Text } from "../Text";
+import { Notice } from "../Notice";
 import styles from "./StatusBanner.module.css";
 
 export function StatusBanner({ children, action, tone = "info" }: {
@@ -9,7 +9,7 @@ export function StatusBanner({ children, action, tone = "info" }: {
 }) {
   return (
     <aside className={styles.banner} data-tone={tone}>
-      <div role="status"><Text>{children}</Text></div>
+      <Notice>{children}</Notice>
       {action}
     </aside>
   );

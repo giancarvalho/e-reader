@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
+import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
 import type { DictionaryLanguage } from "@/lib/dictionary/catalog";
 import type { DictionaryDownloadMessage, DictionaryProgress } from "@/lib/dictionary/offline-download";
@@ -101,7 +102,7 @@ export function OfflineDictionaries() {
         <progress value={progress.done} max={progress.total} aria-label={label} />
         <Text tone="muted">{Math.floor(100 * progress.done / progress.total)}%</Text>
       </div>}
-      {downloading && !progress && <div role="status"><Text>{dictionary.preparing}</Text></div>}
+      {downloading && !progress && <Notice>{dictionary.preparing}</Notice>}
       <div className={styles.links}>
         {downloading
           ? <Button variant="secondary" disabled={pausing} onClick={() => {
@@ -114,7 +115,7 @@ export function OfflineDictionaries() {
         {(info?.installed || info?.partial) && <Button variant="quiet" disabled={Boolean(busy)}
           onClick={() => void remove(language)}>{dictionary.removePack}</Button>}
       </div>
-      {message?.language === language && <div role="status"><Text>{dictionary[message.key]}</Text></div>}
+      {message?.language === language && <Notice>{dictionary[message.key]}</Notice>}
     </section>;
   });
 }

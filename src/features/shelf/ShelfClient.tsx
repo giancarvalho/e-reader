@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
 import { BookCard } from "@/design-system/components/BookCard";
+import { Notice } from "@/design-system/components/Notice";
 import { Page } from "@/design-system/components/Page";
 import { Link } from "@/design-system/components/Link";
 import { LinkButton } from "@/design-system/components/LinkButton";
@@ -176,7 +177,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
           <Button variant="quiet" disabled={busy} onClick={() => download(false)}>{shelf.download}</Button>
         </>}
         {stored && <LinkButton href={readerHref}>{action}</LinkButton>}
-        {(notice || busy) && <div role="status">{busy ? shelf.downloading : notice}</div>}
+        {(notice || busy) && <Notice>{busy ? shelf.downloading : notice}</Notice>}
         {children}
       </BookCard>
     </div>
@@ -227,7 +228,7 @@ export function OfflineShelf() {
   return (
     <Page>
       {snapshot === undefined
-        ? <div role="status"><Text>{messages.shelf.loading}</Text></div>
+        ? <Notice>{messages.shelf.loading}</Notice>
         : <ShelfClient snapshot={snapshot ?? { userId: "", books: [] }} offline />}
     </Page>
   );
