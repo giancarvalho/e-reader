@@ -31,6 +31,12 @@ type Props = {
 export function ReadingWorkspace({ title, identity, language, file, cfi, preferences, onPosition, onPreferences }: Props) {
   const { rows, status, save, retry } = useAnnotations(identity);
   const comments = useComments(identity);
+  const [selectionReset, resetSelection] = useState(0);
+  const [noting, setNoting] = useState(false);
+  const [highlight, setHighlight] = useState<Annotation>();
+  const [lastSaved, setLastSaved] = useState<Annotation>();
+  const [lastColor, setLastColor] = useState<Annotation["color"]>("amber");
+  const [quickBusy, setQuickBusy] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [lookup, setLookup] = useState<{ word: string; language: DictionaryLanguage }>();
   const [threadId, openThread] = useState<string>();
@@ -47,13 +53,45 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
 
   function cancel() {
     setSelection(undefined);
+    setNoting(false);
     setEditing(undefined);
+    resetSelection(value => value + 1);
   }
 
   function edit(row: Annotation) {
     setSelection(undefined);
     setEditing(row);
   }
+
+  async function store(row: Annotation) {
+    const saved = await save(row);
+    if (saved && !row.deleted_at) setLastColor(row.color);
+    return saved;
+  }
+
+  async function quickHighlight() {
+    if (!selection || quickBusy) return;
+    setQuickBusy(true);
+    const row: Annotation = {
+      id: crypto.randomUUID(), group_id: identity.group, book_id: identity.hash, author_id: identity.user,
+      cfi: selection.cfi, quote_text: selection.quote, color: lastColor, note: null, deleted_at: null,
+    };
+    try {
+      if (await store(row)) {
+        cancel();
+        setLastSaved(row);
+      }
+    } finally {
+      setQuickBusy(false);
+    }
+  }
+
+  async function undo() {
+    if (!lastSaved) return;
+    if (await save({ ...lastSaved, deleted_at: new Date().toISOString() })) setLastSaved(undefined);
+  }
+
+  const define = word ? () => setLookup({ word, language: detectDictionaryLanguage(language, selection?.sample) }) : undefined;
 
   let announcement: ReactNode;
   if (status === "error") {
@@ -67,12 +105,41 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
       <ReaderCanvas title={title} annotationCount={rows.length} onOpenAnnotations={() => setListOpen(true)} file={file} initialCfi={cfi} preferences={preferences}
         onPosition={onPosition} onPreferences={onPreferences}
         annotations={rows} annotationTarget={target} onChapter={setCurrentChapter} onChapters={setChapters}
-        onSelection={value => { setEditing(undefined); setSelection(value); }}
-        onAnnotation={openThread}
+        selectionReset={selectionReset}
+        onSelection={value => {
+          setEditing(undefined);
+          setNoting(false);
+          setLastSaved(undefined);
+          setSelection(value);
+        }}
+        onAnnotation={id => setHighlight(rows.find(row => row.id === id))}
       >
-        {(selection || editing) && <div className={styles.selection}><AnnotationPanel key={editing?.id ?? selection?.cfi}
-          identity={identity} selection={selection} editing={editing} cancel={cancel} onSave={save}
-          onLookup={word ? () => setLookup({ word, language: detectDictionaryLanguage(language, selection?.sample) }) : undefined} /></div>}
+        {selection && !noting && <div className={styles.selectionMenu} role="group" aria-label={annotations.selection}>
+          <Button onClick={() => void quickHighlight()} loading={quickBusy}>{annotations.quick}</Button>
+          {define && <Button variant="quiet" onClick={define}>{messages.dictionary.lookup}</Button>}
+          <Button variant="quiet" onClick={() => setNoting(true)}>{annotations.addNote}</Button>
+          <Button variant="icon" onClick={cancel} aria-label={annotations.cancel}>×</Button>
+        </div>}
+        {((selection && noting) || editing) && <Sheet title={editing ? annotations.edit : annotations.add}
+          closeLabel={messages.reader.closePanel} onClose={cancel}>
+          <AnnotationPanel key={editing?.id ?? selection?.cfi} identity={identity} selection={selection}
+            editing={editing} preferredColor={lastColor} cancel={cancel} onSave={store} />
+        </Sheet>}
+        {lastSaved && !selection && !editing && <div className={styles.savedNotice} role="status">
+          <Text>{annotations.saved}</Text>
+          <Button variant="quiet" onClick={() => void undo()}>{annotations.undo}</Button>
+          <Button variant="icon" onClick={() => setLastSaved(undefined)} aria-label={messages.reader.closePanel}>×</Button>
+        </div>}
+        {highlight && <Sheet title={annotations.summary} closeLabel={messages.reader.closePanel} onClose={() => setHighlight(undefined)}>
+          <blockquote>{highlight.quote_text}</blockquote>
+          {highlight.note && <Text>{highlight.note}</Text>}
+          <Button variant="secondary" onClick={() => { openThread(highlight.id); setHighlight(undefined); }}>
+            {messages.comments.label} ({counts.get(highlight.id) ?? 0})
+          </Button>
+          {highlight.author_id === identity.user && <Button variant="quiet" onClick={() => { edit(highlight); setHighlight(undefined); }}>
+            {annotations.edit}
+          </Button>}
+        </Sheet>}
         {lookup && <DictionaryPanel key={lookup.word} word={lookup.word} language={lookup.language}
           close={() => setLookup(undefined)} />}
         {listOpen && <Sheet title={annotations.list} closeLabel={messages.reader.closePanel} onClose={() => setListOpen(false)}>

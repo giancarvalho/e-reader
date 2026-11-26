@@ -16,3 +16,6 @@
   align-items: center;
   gap: var(--space-8);
 }
+
+.thread { display: grid; gap: var(--space-12); }
+.replies { max-block-size: 32dvh; overflow: auto; overscroll-behavior: contain; }

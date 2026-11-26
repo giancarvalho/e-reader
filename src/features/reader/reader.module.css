@@ -115,17 +115,23 @@
 .toc { list-style: none; margin: 0; padding-inline-start: var(--space-12); }
 .toc button { text-align: start; }
 .state { position: absolute; inset-block-start: var(--space-24); inset-inline: var(--space-24); }
-.selection {
+.progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }
+
+.selectionMenu, .savedNotice {
   position: absolute;
-  inset-block-end: max(var(--space-8), env(safe-area-inset-bottom));
   inset-inline: var(--space-8);
-  max-inline-size: var(--layout-width);
-  max-block-size: 56dvh;
-  overflow: auto;
+  inset-block-end: calc(var(--touch-target) + env(safe-area-inset-bottom));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  inline-size: fit-content;
+  max-inline-size: calc(100% - 2 * var(--space-8));
   margin-inline: auto;
-  padding: var(--space-16);
-  border: var(--focus-ring) solid var(--color-muted);
+  padding: var(--space-8);
+  border: var(--focus-ring) solid var(--color-surface);
   border-radius: var(--radius-control);
   background: var(--color-bg);
 }
-.progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }

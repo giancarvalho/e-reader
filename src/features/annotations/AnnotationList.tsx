@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -20,8 +21,10 @@ type Props = {
 
 export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, onEdit, commentCounts, onThread }: Props) {
   const { annotations } = messages;
+  const [mine, setMine] = useState(false);
   const groups = new Map<number, Annotation[]>();
   for (const row of rows) {
+    if (mine && row.author_id !== userId) continue;
     const chapter = chapters[row.id]?.index ?? -1;
     const group = groups.get(chapter);
     if (group) group.push(row);
@@ -29,10 +32,12 @@ export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, o
   }
   return (
     <section className={styles.panel}>
-      <details>
-        <summary>{annotations.list} ({rows.length})</summary>
-        {rows.length === 0 && <Text>{annotations.empty}</Text>}
-        {[...groups.entries()].sort(([a], [b]) => a - b).map(([index, list]) => (
+      <div className={styles.actions} role="group" aria-label={annotations.filter}>
+        <Button variant={mine ? "secondary" : "primary"} aria-pressed={!mine} onClick={() => setMine(false)}>{annotations.group}</Button>
+        <Button variant={mine ? "primary" : "secondary"} aria-pressed={mine} onClick={() => setMine(true)}>{annotations.mine}</Button>
+      </div>
+        {groups.size === 0 && <Text>{annotations.empty}</Text>}
+        {[...groups.entries()].sort(([a], [b]) => a === currentChapter ? -1 : b === currentChapter ? 1 : a - b).map(([index, list]) => (
           <details key={index} open={index === currentChapter || undefined}>
             <summary>{chapters[list[0].id]?.label || annotations.unknownChapter} ({list.length})</summary>
             <ul className={styles.list}>
@@ -49,7 +54,6 @@ export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, o
             </ul>
           </details>
         ))}
-      </details>
     </section>
   );
 }

@@ -45,9 +45,11 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
   }
 
   return (
-    <Sheet title={comments.thread} onClose={close}>
+    <Sheet title={comments.thread} closeLabel={comments.close} onClose={close}>
+      <div className={styles.thread}>
         <Text>{annotation.quote_text}</Text>
         {annotation.note && <Text tone="muted">{annotation.note}</Text>}
+        <div className={styles.replies}>
         {thread.length === 0 && <Text>{comments.empty}</Text>}
         <ul className={styles.list}>
           {thread.map(row => {
@@ -64,6 +66,7 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
             );
           })}
         </ul>
+        </div>
         {status !== "idle" && <div role="status">
           <Text>{comments[status]}</Text>
           {status === "error" && <Button variant="quiet" onClick={() => void retry()}>{messages.annotations.retry}</Button>}
@@ -72,7 +75,7 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
           <TextArea label={comments.reply} value={reply} onChange={event => setReply(event.target.value)} maxLength={4000} required />
           <Button type="submit" loading={busy} disabled={!reply.trim()}>{comments.send}</Button>
         </form>
-        <Button variant="quiet" onClick={close}>{comments.close}</Button>
+      </div>
     </Sheet>
   );
 }

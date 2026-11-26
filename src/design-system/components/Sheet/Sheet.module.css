@@ -1,8 +1,8 @@
 .dialog {
   box-sizing: border-box;
   inline-size: min(calc(100% - var(--space-16)), var(--layout-width));
-  max-block-size: calc(100dvh - var(--space-16) - env(safe-area-inset-bottom));
-  margin: auto auto max(var(--space-8), env(safe-area-inset-bottom));
+  max-block-size: calc(min(100dvh, var(--sheet-viewport, 100dvh)) - var(--space-16) - env(safe-area-inset-bottom));
+  margin: auto auto calc(max(var(--space-8), env(safe-area-inset-bottom)) + var(--sheet-bottom, 0px));
   padding: var(--space-16);
   border: var(--focus-ring) solid var(--color-muted);
   border-radius: var(--radius-control);
@@ -19,6 +19,10 @@
 }
 
 .header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--color-bg);
   display: flex;
   justify-content: space-between;
   align-items: start;

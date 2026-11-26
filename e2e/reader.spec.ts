@@ -106,7 +106,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
-    await page.getByRole("button", { name: "Consultar dicionário" }).click();
+    await page.getByRole("button", { name: "Definir" }).click();
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByRole("link", { name: "CC BY-SA 4.0" })).toBeVisible();
@@ -122,7 +122,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const frame = page.frames().find(entry => entry.url().startsWith("blob:"));
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
-    await page.getByRole("button", { name: "Consultar dicionário" }).click();
+    await page.getByRole("button", { name: "Definir" }).click();
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
@@ -136,6 +136,11 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     selection?.removeAllRanges();
     selection?.addRange(range);
   });
+  await page.getByRole("button", { name: "Grifar", exact: true }).click();
+  await page.getByRole("button", { name: "Desfazer", exact: true }).click();
+  await expect(page.getByText("Grifo salvo neste aparelho.")).toHaveCount(0);
+  await visibleFrame.getByText("Segundo capítulo").evaluate(selectChapterWord);
+  await page.getByRole("button", { name: "Adicionar nota", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Novo grifo" })).toBeVisible();
   await page.getByLabel("Verde", { exact: true }).check();
   await page.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
@@ -145,7 +150,6 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await controls();
   await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
-  await page.getByRole("dialog", { name: "Grifos", exact: true }).locator("summary").first().click();
   await expect(page.getByText("Leitura sem rede")).toBeVisible();
   await page.getByRole("button", { name: "Comentários (0)" }).click();
   const thread = page.getByRole("dialog", { name: "Comentários do grifo" });
@@ -157,7 +161,6 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.reload();
   await controls();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
-  await page.getByRole("dialog", { name: "Grifos", exact: true }).locator("summary").first().click();
   await page.getByRole("button", { name: "Comentários (1)" }).click();
   await expect(thread.getByText("Resposta offline")).toBeVisible();
   await thread.getByRole("button", { name: "Apagar comentário" }).click();

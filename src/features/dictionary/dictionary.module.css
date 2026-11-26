@@ -19,3 +19,15 @@
   min-block-size: var(--touch-target);
   color: var(--color-accent-text);
 }
+
+.attribution {
+  border-block-start: var(--focus-ring) solid var(--color-surface);
+  padding-block-start: var(--space-8);
+}
+
+.attribution a {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-accent-text);
+  min-block-size: var(--touch-target);
+}
