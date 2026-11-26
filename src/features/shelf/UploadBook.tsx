@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { BookCard } from "@/design-system/components/BookCard";
 import { Button } from "@/design-system/components/Button";
 import { TextField } from "@/design-system/components/TextField";
 import { inspectEpub } from "@/lib/epub/inspect";
@@ -26,30 +27,50 @@ async function uploadFile(hash: string, blob: Blob, cover: boolean) {
 export function UploadBook() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [inspecting, setInspecting] = useState(false);
+  const [selected, setSelected] = useState<{ file: File; book: Awaited<ReturnType<typeof inspectEpub>> }>();
+  const [cover, setCover] = useState<string>();
+  const picking = useRef(0);
   const { shelf } = messages;
+
+  useEffect(() => {
+    if (cover) return () => URL.revokeObjectURL(cover);
+  }, [cover]);
+
+  async function choose(file: File | undefined) {
+    const request = ++picking.current;
+    setSelected(undefined);
+    setCover(undefined);
+    setNotice("");
+    setInspecting(Boolean(file));
+    if (!file) return;
+    const book = await inspectEpub(file).catch(() => null);
+    if (picking.current !== request) return;
+    if (book) {
+      setSelected({ file, book });
+      if (book.cover) setCover(URL.createObjectURL(book.cover));
+    } else setNotice(shelf.invalidEpub);
+    setInspecting(false);
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || !selected) return;
 
     const form = event.currentTarget;
-    const file = new FormData(form).get("epub");
-    if (!(file instanceof File) || !file.size) return;
+    const { file, book } = selected;
     setBusy(true);
     setNotice("");
 
     try {
-      const book = await inspectEpub(file).catch(() => null);
-      if (!book) {
-        setNotice(shelf.invalidEpub);
-        return;
-      }
       await uploadFile(book.hash, file.slice(0, file.size, "application/epub+zip"), false);
       if (book.cover) await uploadFile(book.hash, book.cover, true);
 
       const published = await publishBook({ ...book, cover: Boolean(book.cover) });
       if (!published) throw new Error("Publication failed");
       form.reset();
+      setSelected(undefined);
+      setCover(undefined);
       setNotice(shelf.published);
     } catch {
       setNotice(shelf.uploadFailed);
@@ -60,9 +81,11 @@ export function UploadBook() {
 
   return (
     <form className={styles.stack} onSubmit={onSubmit}>
-      <TextField label={shelf.file} name="epub" type="file" accept=".epub,application/epub+zip" required disabled={busy} />
-      <Button type="submit" loading={busy}>{shelf.publish}</Button>
-      <div role="status">{busy ? shelf.uploading : notice}</div>
+      <TextField label={shelf.file} name="epub" type="file" accept=".epub,application/epub+zip" required disabled={busy}
+        onChange={event => void choose(event.target.files?.[0])} />
+      {selected && <BookCard title={selected.book.title} author={selected.book.author} cover={cover} />}
+      <Button type="submit" loading={busy} disabled={!selected || inspecting}>{shelf.publish}</Button>
+      <div role="status">{busy ? shelf.uploading : inspecting ? shelf.inspecting : notice}</div>
     </form>
   );
 }

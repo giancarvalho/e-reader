@@ -8,14 +8,16 @@ type BookCardProps = {
   title: string;
   author?: string | null;
   cover?: string;
+  coverHref?: string;
   status?: string;
   children?: ReactNode;
 };
 
-export function BookCard({ title, author, cover, status, children }: BookCardProps) {
+export function BookCard({ title, author, cover, coverHref, status, children }: BookCardProps) {
+  const image = <BookCover src={cover} title={title} />;
   return (
     <article className={styles.card}>
-      <BookCover src={cover} title={title} />
+      {coverHref ? <a href={coverHref} aria-label={title}>{image}</a> : image}
       <div className={styles.details}>
         <Heading as="h3">{title}</Heading>
         {author && <Text tone="muted">{author}</Text>}

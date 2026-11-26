@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import {
-  applyReaderSync, readLocalBook, readLocalShelf, readReaderState,
+  applyReaderSync, readLocalBook, readLocalShelf, readReaderState, rememberOpenedBook,
   saveReaderPreferences, saveReadingPosition, type ReaderIdentity, type ShelfBook,
 } from "@/lib/books/local";
 import { recordDiagnostic } from "@/lib/diagnostics";
@@ -39,6 +39,7 @@ export function ReaderPage() {
       const user = activeShelf.userId;
       const identity = { user, group: book.group_id, hash: book.id };
       const [asset, state] = await Promise.all([readLocalBook(user, book), readReaderState(identity)]);
+      if (asset) void rememberOpenedBook(identity).catch(() => undefined);
       return asset ? {
         identity, book, file: asset.file, cfi: state.position?.value.cfi,
         preferences: state.preferences?.value ?? defaultPreferences,
