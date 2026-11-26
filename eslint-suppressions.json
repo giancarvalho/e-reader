@@ -19,7 +19,7 @@
   },
   "src/app/dicionarios/page.tsx": {
     "import/no-restricted-paths": {
-      "count": 2
+      "count": 1
     }
   },
   "src/features/access/AccessPages.tsx": {

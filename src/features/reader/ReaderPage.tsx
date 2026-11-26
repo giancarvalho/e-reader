@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
+import { Page } from "@/design-system/components/Page";
 import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
 import {
@@ -124,11 +125,11 @@ export function ReaderPage() {
 
   return (
     <main className={styles.page}>
-      {!reading && <header className={styles.header}>
+      {!reading && <Page as="header">
         {/* Use a document navigation so the service worker can provide the offline shelf. */}
         <Link href="/estante">{reader.shelf}</Link>
         <Heading>{reader.title}</Heading>
-      </header>}
+      </Page>}
       {reading === null && <Text>{reader.missing}</Text>}
       {reading && <ReadingWorkspace title={reading.book.title}
         identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}

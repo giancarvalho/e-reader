@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   use: { baseURL: "http://127.0.0.1:3000" },
-  expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: "disabled" } },
+  expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.002, animations: "disabled" } },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /visual\.spec\.ts/ },
     { name: "android-small", use: { ...devices["Pixel 7"], viewport: { width: 320, height: 568 } } },
