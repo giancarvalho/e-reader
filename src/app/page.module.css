@@ -49,3 +49,12 @@
 
 .credits { position: absolute; inset-block-end: max(var(--space-24), env(safe-area-inset-bottom)); color: var(--color-muted); }
 .credits a { color: inherit; }
+
+.theme { position: absolute; inset-block-start: max(var(--space-16), env(safe-area-inset-top)); inset-inline-end: max(var(--space-16), env(safe-area-inset-right)); }
+.theme [data-icon="sun"] { display: none; }
+:global(html[data-theme="night"]) .theme [data-icon="sun"] { display: inline; }
+:global(html[data-theme="night"]) .theme [data-icon="moon"] { display: none; }
+@media (prefers-color-scheme: dark) {
+  :global(html[data-theme="auto"]) .theme [data-icon="sun"] { display: inline; }
+  :global(html[data-theme="auto"]) .theme [data-icon="moon"] { display: none; }
+}

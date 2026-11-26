@@ -23,7 +23,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="pt-BR" data-theme="auto">
+    <html lang="pt-BR" data-theme="auto" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: `try { const t = localStorage.getItem("app-theme"); if (t === "day" || t === "night") document.documentElement.dataset.theme = t; } catch {}` }} /></head>
       <body><UpdateNotice />{children}</body>
     </html>
   );

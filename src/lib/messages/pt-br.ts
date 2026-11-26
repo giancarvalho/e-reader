@@ -5,6 +5,7 @@ export const messages = {
     subtitle: "Um livro. Muitas leituras.",
     enter: "Entrar",
     credits: "Créditos e licenças",
+    toggleTheme: "Alternar tema claro e escuro",
   },
   auth: {
     signInTitle: "Entre no leitor compartilhado",
