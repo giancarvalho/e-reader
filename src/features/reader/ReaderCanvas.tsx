@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@/design-system/components/Link";
 import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
-import type { AnnotationSelection } from "@/features/annotations";
 import { formatPercent } from "@/lib/format";
 import { messages } from "@/lib/messages/pt-br";
 import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
@@ -13,7 +12,7 @@ import { ReaderAppearance } from "./ReaderAppearance";
 import { TocList } from "./ReaderToc";
 import { ReaderBottomBar, ReaderTopBar } from "./ReaderToolbars";
 import styles from "./reader.module.css";
-import { useReaderView } from "./useReaderView";
+import { useReaderView, type ReaderSelection } from "./useReaderView";
 
 type Props = {
   title: string;
@@ -28,7 +27,7 @@ type Props = {
   commentCounts: Map<string, number>;
   annotationTarget?: { cfi: string };
   selectionReset: number;
-  onSelection: (value: AnnotationSelection) => void;
+  onSelection: (value?: ReaderSelection) => void;
   onAnnotation: (id: string, anchor?: () => { x: number; top: number; bottom: number } | undefined) => void;
   onDismissAnnotation: () => boolean;
   onChapter: (index: number) => void;

@@ -13,3 +13,7 @@
   padding: var(--space-8) var(--space-12) var(--space-12);
   box-shadow: var(--shadow-floating);
 }
+
+.popover[data-variant="toolbar"] {
+  inline-size: max-content;
+}

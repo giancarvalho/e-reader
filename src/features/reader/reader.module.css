@@ -32,3 +32,20 @@
 .state { position: absolute; inset-block-start: var(--space-24); inset-inline: var(--space-24); }
 .progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }
 
+.selectionMenu { display: grid; }
+
+.selectionColors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  border-block-end: var(--border-divider);
+  margin-block-end: var(--space-8);
+}
+
+.selectionMenu > button {
+  justify-content: start;
+  color: var(--color-ink);
+  text-align: start;
+}
+

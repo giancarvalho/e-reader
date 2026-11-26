@@ -3,6 +3,17 @@ import type { Overlayer as OverlayerType } from "@/vendor/foliate/overlayer";
 
 export type DrawnAnnotation = { id: string; value: string; color: string; hasComments: boolean; quote: string };
 
+/** Some browsers suppress events in a script-disabled EPUB iframe. */
+export function chapterReceivesEvents(doc: Document) {
+  let received = false;
+  const type = "foliate-input-probe";
+  const probe = () => { received = true; };
+  doc.addEventListener(type, probe, { once: true });
+  doc.documentElement.dispatchEvent(new Event(type, { bubbles: true }));
+  doc.removeEventListener(type, probe);
+  return received;
+}
+
 export function textRange(doc: Document, selection: Range) {
   const startIsText = selection.startContainer.nodeType === Node.TEXT_NODE;
   const endIsText = selection.endContainer.nodeType === Node.TEXT_NODE;
