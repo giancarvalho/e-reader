@@ -14,6 +14,8 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 |---|---|---|
 | `Button` | Qualquer ação clicável. Variantes `primary`, `secondary`, `quiet`, `icon`; estados `disabled` e `loading` | `icon` exige `aria-label`. Alvo de toque de 44 px já incluído |
 | `Page` | A coluna centralizada de uma tela, com largura máxima e área segura do iPhone. `variant` `default`, `intro` (mais espaço acima, para formulários e conta) ou `banner` (faixa compacta); `as` `main`, `div`, `header` ou `section` | Toda tela nova começa nela. Não repita largura, `margin-inline: auto` nem `env(safe-area-inset-*)` em CSS de feature |
+| `Icon` | Ícone decorativo (`close`, `reply`, `trash`, `conversation`, `more`, `send`); herda a cor do texto e fica oculto para leitores de tela | Para ícone clicável, use `IconButton`. Ícone novo entra em `Icon.tsx` |
+| `IconButton` | Botão só com ícone. `icon` e `label` obrigatórios (o rótulo é o nome acessível); repassa `aria-expanded`, `type`, `disabled`, `loading` | Substitui o caractere `×` e qualquer `<Button variant="icon">` com SVG solto |
 | `Link` | Link de texto. `variant` `standalone` (alvo de toque de 44 px) ou `inline` (dentro de texto); `tone` `accent` ou `muted` | Por padrão é navegação de documento (funciona offline pelo service worker); `client` usa a navegação do Next |
 | `LinkButton` | Ação que navega, com a aparência do `Button` (`primary`, `secondary`, `quiet`) | Use no lugar de `<a>` estilizado como botão |
 | `Heading`, `Text` | Títulos e texto. `Text` tem `variant` (`body`, `reading`) e `tone` (`default`, `muted`) | Não defina `font-*` em CSS de feature |
@@ -53,7 +55,7 @@ O `npm run lint` bloqueia, fora de `src/design-system`:
 - `<button>`, `<input>`, `<textarea>`, `<dialog>`, `<progress>` crus;
 - `navigator.onLine` e `addEventListener("online" | "offline")` (use `src/lib/online`: `useOnline`, `useOnReconnect`, `isOnline`, `onReconnect`, `onDisconnect`);
 - `Intl.NumberFormat` e `Intl.DateTimeFormat` (use `src/lib/format`: `formatPercent`, `formatDateTime`; formatadores novos entram lá);
-- importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`);
+- importar o interior de outra feature: só `@/features/<nome>` (o `index.ts`, com a interface) ou `@/features/<nome>/server` (o `server.ts`, só para código de servidor, como rotas e callbacks, sem carregar a interface);
 - arquivos com mais de 300 linhas.
 
 `Progress` ainda não existe: é a tarefa B7 do plano. Até lá, ao precisar dele, crie-o
@@ -72,7 +74,7 @@ outra máquina não servem. Alterou a aparência de propósito?
 2. Baixe o artefato `visual-snapshots` da execução (`gh run download <id> -n visual-snapshots -D e2e/visual.spec.ts-snapshots`).
 3. Revise as imagens, faça commit e envie de novo. Mudança visual sem motivo é regressão.
 
-Tolerância: 0,2% dos pixels (`playwright.config.ts`). Para telas que precisam de
+Tolerância: 50 pixels (um limite proporcional esconde mudanças pequenas, como um ícone de 18 px) (`playwright.config.ts`). Para telas que precisam de
 login, ainda não há captura; cubra com o catálogo `/dev/design`.
 
 ## Linha de base (exceções antigas)

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getGoogleSignInDestination } from "@/features/auth/googleStart";
+import { getGoogleSignInDestination } from "@/features/auth/server";
 
 export async function GET(request: NextRequest) {
   return new Response(null, {

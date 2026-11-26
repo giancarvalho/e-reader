@@ -1,37 +1,7 @@
 {
-  "src/app/auth/google/start/route.ts": {
-    "import/no-restricted-paths": {
-      "count": 1
-    }
-  },
-  "src/app/auth/invite/route.ts": {
-    "import/no-restricted-paths": {
-      "count": 1
-    }
-  },
-  "src/app/dicionarios/page.tsx": {
-    "import/no-restricted-paths": {
-      "count": 1
-    }
-  },
   "src/features/auth/SignInPage.tsx": {
     "project/no-raw-controls": {
       "count": 1
-    }
-  },
-  "src/features/auth/callback.ts": {
-    "import/no-restricted-paths": {
-      "count": 1
-    }
-  },
-  "src/features/auth/googleCallback.ts": {
-    "import/no-restricted-paths": {
-      "count": 1
-    }
-  },
-  "src/features/comments/CommentThread.tsx": {
-    "import/no-restricted-paths": {
-      "count": 2
     }
   },
   "src/features/dictionary/OfflineDictionaries.tsx": {

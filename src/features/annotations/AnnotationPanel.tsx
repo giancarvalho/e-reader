@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { IconButton } from "@/design-system/components/IconButton";
 import { Notice } from "@/design-system/components/Notice";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import type { Annotation } from "@/lib/sync/annotations";
 import { AnnotationColors } from "./AnnotationColors";
-import { AnnotationIcon } from "./AnnotationIcon";
 import styles from "./annotations.module.css";
 
 export type AnnotationSelection = { cfi: string; quote: string; sample?: string };
@@ -52,7 +52,7 @@ export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
       {failed && <Notice live="alert">{annotations.saveFailed}</Notice>}
       <div className={styles.actions}>
         <Button loading={busy} onClick={() => void submit()}>{noteOnly ? annotations.saveNote : annotations.save}</Button>
-        {!noteOnly && <Button variant="icon" aria-label={annotations.remove} disabled={busy} onClick={() => void submit(true)}><AnnotationIcon name="trash" /></Button>}
+        {!noteOnly && <IconButton icon="trash" label={annotations.remove} disabled={busy} onClick={() => void submit(true)} />}
         <Button variant="quiet" disabled={busy} onClick={cancel}>{annotations.cancel}</Button>
       </div>
     </section>

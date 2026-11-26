@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
-import { getNoteAuthor } from "@/features/annotations/actions";
-import { AnnotationIcon } from "@/features/annotations/AnnotationIcon";
+import { getNoteAuthor } from "@/features/annotations";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
+import { IconButton } from "@/design-system/components/IconButton";
 import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
@@ -139,17 +139,17 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
             <Avatar src={annotation.avatar ?? author?.avatar} name={noteAuthor} /><Text>{noteAuthor}</Text>
           </div>}
           <div className={styles.toolbar}>
-            <Button ref={replyButton} variant="icon" aria-label={comments.replyAction} aria-expanded={composing}
+            <IconButton ref={replyButton} icon="reply" label={comments.replyAction} aria-expanded={composing}
               onClick={() => {
                 if (composing) setComposing(false);
                 else {
                   flushSync(() => setComposing(true));
                   replyField.current?.focus({ preventScroll: true });
                 }
-              }}><AnnotationIcon name="reply" /></Button>
-            {edit && <Button variant="icon" aria-label={comments.options} aria-expanded={menu}
-              onClick={() => setMenu(value => !value)}><AnnotationIcon name="more" /></Button>}
-            <Button variant="icon" aria-label={comments.close} onClick={close}>×</Button>
+              }} />
+            {edit && <IconButton icon="more" label={comments.options} aria-expanded={menu}
+              onClick={() => setMenu(value => !value)} />}
+            <IconButton icon="close" label={comments.close} onClick={close} />
           </div>
         </div>
         {menu && edit && <div className={styles.menu}><Button variant="quiet" onClick={edit}>{messages.annotations.edit}</Button></div>}
@@ -163,10 +163,8 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
                 <li className={styles.panel} key={row.id}>
                   <div className={styles.header}>
                     <div className={styles.author}><Avatar src={row.avatar} name={name} /><Text>{name}</Text></div>
-                    {own && <Button variant="icon" aria-label={comments.remove}
-                      onClick={async () => setFailed(!await save({ ...row, deleted_at: new Date().toISOString() }))}>
-                      <AnnotationIcon name="trash" />
-                    </Button>}
+                    {own && <IconButton icon="trash" label={comments.remove}
+                      onClick={async () => setFailed(!await save({ ...row, deleted_at: new Date().toISOString() }))} />}
                   </div>
                   <Text>{row.text}</Text>
                 </li>
@@ -178,9 +176,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
         {composing && <form className={styles.composer} onSubmit={submit}>
           <TextArea ref={replyField} label={comments.reply} hideLabel value={reply}
             placeholder={comments.reply} onChange={event => setReply(event.target.value)} maxLength={4000} rows={1} required />
-          <Button variant="icon" aria-label={comments.send} type="submit" loading={busy} disabled={!reply.trim()}>
-            <AnnotationIcon name="send" />
-          </Button>
+          <IconButton icon="send" label={comments.send} type="submit" loading={busy} disabled={!reply.trim()} />
         </form>}
       </div>
     </div>
