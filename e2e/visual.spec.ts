@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { downloadPortugueseDictionary } from "./support/dictionary";
+import { hash } from "./support/epub";
 import { seedLibrary } from "./support/library";
 
 // Visual regression for the shared building blocks. Baselines are Linux
@@ -47,22 +49,38 @@ for (const theme of themes) {
 
     test("reader selection menu", async ({ page }) => {
       await open(page, theme);
-      const hash = await seedLibrary(page);
-      await page.goto(`/ler#${hash}`);
-      const frame = await chapterFrame(page, "Primeiro capítulo");
-      await frame.getByText("Primeiro capítulo").evaluate(element => {
-        const text = element.firstChild!;
-        const range = element.ownerDocument.createRange();
-        range.setStart(text, "Primeiro ".length);
-        range.setEnd(text, "Primeiro capítulo".length);
-        const selection = element.ownerDocument.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      });
+      await seedLibrary(page);
+      await openReaderWithWordSelected(page);
       await expect(page.getByRole("button", { name: "Definir", exact: true })).toBeVisible();
       await settled(page);
       await expect(page).toHaveScreenshot(`reader-selection-${theme}.png`);
     });
+
+    test("dictionary sheet", async ({ page }) => {
+      test.skip(!process.env.TEST_DICTIONARY, "Needs the dictionary fixture built by CI.");
+      await open(page, theme);
+      await seedLibrary(page);
+      await downloadPortugueseDictionary(page);
+      await openReaderWithWordSelected(page);
+      await page.getByRole("button", { name: "Definir", exact: true }).click();
+      await expect(page.getByRole("dialog", { name: "capítulo" }).getByText("Uma divisão de um livro.")).toBeVisible();
+      await settled(page);
+      await expect(page).toHaveScreenshot(`dictionary-${theme}.png`);
+    });
+  });
+}
+
+async function openReaderWithWordSelected(page: Page) {
+  await page.goto(`/ler#${hash}`);
+  const frame = await chapterFrame(page, "Primeiro capítulo");
+  await frame.getByText("Primeiro capítulo").evaluate(element => {
+    const text = element.firstChild!;
+    const range = element.ownerDocument.createRange();
+    range.setStart(text, "Primeiro ".length);
+    range.setEnd(text, "Primeiro capítulo".length);
+    const selection = element.ownerDocument.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   });
 }
 

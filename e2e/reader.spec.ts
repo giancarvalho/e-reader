@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
+import { downloadPortugueseDictionary } from "./support/dictionary";
 import { bytes, hash } from "./support/epub";
 
 test("opens a local EPUB, navigates its index and restores the last chapter offline", async ({ page, context, browserName }) => {
@@ -34,12 +35,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     db.close();
   }, { bytes: Array.from(bytes), hash });
 
-  if (process.env.TEST_DICTIONARY) {
-    await page.goto("/dicionarios");
-    const portuguese = page.locator("section").filter({ has: page.getByRole("heading", { name: "Português" }) });
-    await portuguese.getByRole("button", { name: "Baixar dicionário" }).click();
-    await expect(portuguese.getByText("Dicionário completo disponível neste aparelho.")).toBeVisible();
-  }
+  if (process.env.TEST_DICTIONARY) await downloadPortugueseDictionary(page);
 
   await page.goto(`/ler#${hash}`);
   const controls = () => page.getByRole("button", { name: "Mostrar controles de leitura" }).click();
