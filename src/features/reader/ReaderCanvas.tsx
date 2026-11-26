@@ -2,6 +2,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { contrastRatio, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import type { AnnotationSelection } from "@/features/annotations";
@@ -12,6 +13,9 @@ import type { View } from "@/vendor/foliate/view";
 import styles from "./reader.module.css";
 
 type Props = {
+  title: string;
+  annotationCount: number;
+  onOpenAnnotations: () => void;
   file: Blob;
   initialCfi?: string;
   preferences: ReaderPreferences;
@@ -27,12 +31,15 @@ type Props = {
 };
 
 export function ReaderCanvas({
-  file, initialCfi, preferences, onPosition, onPreferences, annotations, annotationTarget,
+  title, annotationCount, onOpenAnnotations, file, initialCfi, preferences, onPosition, onPreferences, annotations, annotationTarget,
   onSelection, onAnnotation, onChapter, onChapters, children,
 }: Props) {
   const mount = useRef<HTMLDivElement>(null);
   const viewRef = useRef<View>(null);
   const lastCfi = useRef(initialCfi);
+  const [controls, setControls] = useState(false);
+  const [panel, setPanel] = useState<"toc" | "appearance">();
+  const [location, setLocation] = useState({ fraction: 0, chapter: undefined as string | undefined, href: undefined as string | undefined });
   const [toc, setToc] = useState<TocEntry[]>([]);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -67,6 +74,37 @@ export function ReaderCanvas({
     let recording = false;
     let selectionTimer: number | undefined;
     let previousSelection = "";
+
+    function turn(direction: "prev" | "next") {
+      if (recording) void view?.[direction]().catch(() => setFailed(true));
+    }
+
+    function readKey(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+        || (event.target as Element | null)?.closest?.("button, a, input, textarea, select, dialog, [contenteditable]")
+        || (view?.renderer?.getContents().some(({ doc }) => Boolean(doc.getSelection()?.toString())))) return;
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        turn(event.key === "ArrowLeft" ? "prev" : "next");
+      }
+    }
+
+    function readTap(event: MouseEvent) {
+      const doc = event.currentTarget as Document;
+      if (event.defaultPrevented || event.button !== 0 || event.detail > 1
+        || doc.getSelection()?.toString()
+        || (event.target as Element | null)?.closest?.("a, button, input, select, textarea")) return;
+      const frame = view?.renderer?.getContents().find(item => item.doc === doc)?.doc.defaultView?.frameElement;
+      const area = content?.getBoundingClientRect();
+      const bounds = frame?.getBoundingClientRect();
+      if (!area || !bounds || !area.width) return;
+      const fraction = (bounds.left + event.clientX - area.left) / area.width;
+      if (fraction < 0.22) turn("prev");
+      else if (fraction > 0.78) turn("next");
+      else setControls(value => !value);
+    }
+
+    window.addEventListener("keydown", readKey);
 
     function inspectSelection() {
       if (!view?.renderer || document.visibilityState !== "visible") return;
@@ -106,6 +144,8 @@ export function ReaderCanvas({
       view.addEventListener("load", event => {
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
         doc.addEventListener("selectionchange", inspectSelection);
+        doc.addEventListener("keydown", readKey);
+        doc.addEventListener("click", readTap);
       });
       view.addEventListener("draw-annotation", event => {
         const { annotation, draw } = (event as CustomEvent<{
@@ -121,9 +161,12 @@ export function ReaderCanvas({
         if (view) queueMicrotask(() => { if (viewRef.current === view && view) void refresh(view); });
       });
       view.addEventListener("relocate", event => {
-        const { cfi, fraction, index } = (event as CustomEvent<ReadingPosition & { index: number }>).detail;
+        const { cfi, fraction, index, tocItem } = (event as CustomEvent<ReadingPosition & {
+          index: number; tocItem?: TocEntry;
+        }>).detail;
         reportChapter(index);
         if (cfi && Number.isFinite(fraction)) {
+          setLocation({ fraction, chapter: tocItem?.label, href: tocItem?.href });
           if (recording && cfi !== lastCfi.current) onPosition({ cfi, fraction });
           lastCfi.current = cfi;
         }
@@ -156,6 +199,7 @@ export function ReaderCanvas({
     });
     return () => {
       cancelled = true;
+      window.removeEventListener("keydown", readKey);
       window.clearInterval(selectionTimer);
       view?.close();
       view?.remove();
@@ -190,63 +234,112 @@ export function ReaderCanvas({
     }
   }
 
+  const position = new Intl.NumberFormat("pt-BR", { style: "percent" }).format(location.fraction);
+  const controlLabel = controls ? reader.hideControls : reader.showControls;
   return (
-    <>
-      {!ready && !failed && <Text>{reader.loading}</Text>}
-      {failed && <div role="alert"><Text>{reader.failed}</Text></div>}
+    <section className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
+      {!ready && !failed && <div className={styles.state} role="status"><Text>{reader.loading}</Text></div>}
+      {failed && <div className={styles.state} role="alert"><Text>{reader.failed}</Text>
+        <a href="/estante">{reader.shelf}</a></div>}
       <div ref={mount} className={styles.viewport} />
-      {ready && !failed && (
-        <div className={styles.controls}>
-          <div className={styles.actions}>
-            <Button variant="secondary" onClick={() => navigate(() => viewRef.current?.prev())}>{reader.previous}</Button>
-            <Button onClick={() => navigate(() => viewRef.current?.next())}>{reader.next}</Button>
-          </div>
-          {toc.length > 0 && (
-            <details>
-              <summary>{reader.toc}</summary>
-              <TocList entries={toc} goTo={target => navigate(() => viewRef.current?.goTo(target))} />
-            </details>
-          )}
-          {children}
-          <div className={styles.settings}>
-            <label>{reader.textSize} <input type="range" min={12} max={36} value={preferences.size}
-              onChange={event => onPreferences({ ...preferences, size: event.target.valueAsNumber })} /></label>
-            <label>{reader.font} <select value={preferences.font}
-              onChange={event => onPreferences({ ...preferences, font: event.target.value === "serif" ? "serif" : "sans" })}>
-              <option value="serif">{reader.serif}</option><option value="sans">{reader.sans}</option>
-            </select></label>
-            <label>{reader.theme} <select value={preferences.theme}
-              onChange={event => {
-                const theme = event.target.value;
-                onPreferences({ ...preferences, theme: theme === "day" || theme === "night" || theme === "custom" ? theme : "auto" });
-              }}>
-              <option value="auto">{reader.auto}</option><option value="day">{reader.day}</option><option value="night">{reader.night}</option>
-              <option value="custom">{reader.custom}</option>
-            </select></label>
-            {preferences.theme === "custom" && <>
-              <label>{reader.background} <input type="color" value={preferences.background}
-                onChange={event => onPreferences({ ...preferences, background: event.target.value })} /></label>
-              <label>{reader.ink} <input type="color" value={preferences.ink}
-                onChange={event => onPreferences({ ...preferences, ink: event.target.value })} /></label>
-              {contrastRatio(preferences.background, preferences.ink) < 4.5 && <Text>{reader.lowContrast}</Text>}
-            </>}
-          </div>
-        </div>
-      )}
-    </>
+      {ready && !failed && <>
+        {controls && <header className={styles.toolbarTop}>
+          <a className={styles.back} href="/estante" aria-label={reader.shelf}>‹</a>
+          <h1 title={title}>{title}</h1>
+          <Button variant="icon" aria-label={reader.appearance} onClick={() => setPanel("appearance")}>Aa</Button>
+        </header>}
+        <footer className={controls ? styles.toolbarBottom : styles.progressOnly}>
+          {controls && <nav className={styles.tools} aria-label={reader.showControls}>
+            <Button variant="icon" aria-label={reader.previous} onClick={() => navigate(() => viewRef.current?.prev())}>‹</Button>
+            {toc.length > 0 && <Button variant="quiet" onClick={() => setPanel("toc")}>{reader.toc}</Button>}
+            <Button variant="quiet" onClick={onOpenAnnotations}>{messages.annotations.list} ({annotationCount})</Button>
+            <Button variant="icon" aria-label={reader.next} onClick={() => navigate(() => viewRef.current?.next())}>›</Button>
+          </nav>}
+          <button className={styles.progress} type="button" aria-label={controlLabel} aria-expanded={controls}
+            onClick={() => setControls(value => !value)}>
+            {location.chapter && <span>{location.chapter}</span>}
+            <span>{position}</span>
+          </button>
+        </footer>
+        {panel === "toc" && <Sheet title={reader.toc} closeLabel={reader.closePanel} onClose={() => setPanel(undefined)}>
+          <TocList entries={toc} current={location.href} goTo={target => {
+            void navigate(() => viewRef.current?.goTo(target));
+            setPanel(undefined);
+            setControls(false);
+          }} />
+        </Sheet>}
+        {panel === "appearance" && <Sheet title={reader.appearance} closeLabel={reader.closePanel} onClose={() => setPanel(undefined)}>
+          <Appearance preferences={preferences} change={onPreferences} />
+        </Sheet>}
+        {children}
+      </>}
+    </section>
   );
 }
 
-function TocList({ entries, goTo }: { entries: TocEntry[]; goTo: (href: string) => void }) {
+function TocList({ entries, current, goTo }: { entries: TocEntry[]; current?: string; goTo: (href: string) => void }) {
   return (
-    <ul>
+    <ul className={styles.toc}>
       {entries.map((entry, index) => (
         <li key={`${entry.href}-${index}`}>
-          <Button variant="quiet" onClick={() => goTo(entry.href)}>{entry.label}</Button>
-          {entry.subitems?.length ? <TocList entries={entry.subitems} goTo={goTo} /> : null}
+          <Button variant={entry.href === current ? "secondary" : "quiet"} aria-current={entry.href === current ? "location" : undefined}
+            onClick={() => goTo(entry.href)}>{entry.label}</Button>
+          {entry.subitems?.length ? <TocList entries={entry.subitems} current={current} goTo={goTo} /> : null}
         </li>
       ))}
     </ul>
+  );
+}
+
+const sepia = { background: "#EFDFC2", ink: "#39271C" };
+
+function Appearance({ preferences, change }: {
+  preferences: ReaderPreferences; change: (value: ReaderPreferences) => void;
+}) {
+  const { reader } = messages;
+  const theme = preferences.theme === "custom" && preferences.background === sepia.background && preferences.ink === sepia.ink
+    ? "sepia" : preferences.theme;
+  function size(value: number) {
+    change({ ...preferences, size: Math.min(36, Math.max(12, value)) });
+  }
+
+  return (
+    <div className={styles.settings}>
+      <fieldset>
+        <legend>{reader.textSize}</legend>
+        <div className={styles.size}>
+          <Button variant="secondary" aria-label={reader.smaller} disabled={preferences.size <= 12}
+            onClick={() => size(preferences.size - 1)}>A−</Button>
+          <output>{preferences.size}</output>
+          <Button variant="secondary" aria-label={reader.larger} disabled={preferences.size >= 36}
+            onClick={() => size(preferences.size + 1)}>A+</Button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>{reader.font}</legend>
+        <div className={styles.options}>
+          {(["serif", "sans"] as const).map(font => <Button key={font} variant={preferences.font === font ? "primary" : "secondary"}
+            aria-pressed={preferences.font === font} onClick={() => change({ ...preferences, font })}>{reader[font]}</Button>)}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>{reader.theme}</legend>
+        <div className={styles.options}>
+          {(["auto", "day", "sepia", "night", "custom"] as const).map(value => <Button key={value}
+            variant={theme === value ? "primary" : "secondary"} aria-pressed={theme === value}
+            onClick={() => change(value === "sepia" ? { ...preferences, ...sepia, theme: "custom" } : { ...preferences, theme: value })}>
+            {reader[value]}
+          </Button>)}
+        </div>
+      </fieldset>
+      {theme === "custom" && <>
+        <label>{reader.background} <input type="color" value={preferences.background}
+          onChange={event => change({ ...preferences, background: event.target.value })} /></label>
+        <label>{reader.ink} <input type="color" value={preferences.ink}
+          onChange={event => change({ ...preferences, ink: event.target.value })} /></label>
+        {contrastRatio(preferences.background, preferences.ink) < 4.5 && <Text>{reader.lowContrast}</Text>}
+      </>}
+    </div>
   );
 }
 

@@ -34,7 +34,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="auto"] {
+  [data-theme="auto"] {
     --color-bg: var(--night-bg);
     --color-surface: var(--night-surface);
     --color-ink: var(--night-ink);
@@ -70,11 +70,6 @@ body {
   :root {
     --transition-short: 0ms;
   }
-}
-
-:root {
-  --reader-min-viewport: 14rem;
-  --reader-viewport: 62dvh;
 }
 
 :root {

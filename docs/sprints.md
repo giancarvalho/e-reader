@@ -88,3 +88,15 @@ fragmentos consultados ficam disponíveis offline. O [processo do corpus](sprint
 gera os arquivos e publica os fragmentos versionados no Supabase. O deploy da
 Vercel mantém as consultas no domínio do app. A publicação em produção e a
 revisão de precisão contextual em 100 palavras de cada idioma ainda estão pendentes.
+
+## Redesign do e-reader
+
+| Sprint | Entrega | Critério de aceitação |
+| --- | --- | --- |
+| **8 — Leitor imersivo** | Página em tela cheia, controles recolhíveis, progresso, sumário e aparência em painéis. Preservar posição e seleção ao navegar. | Virar páginas com toque, gesto e teclado. Abrir controles sem repaginar. Saltar para um capítulo e ajustar a fonte mantendo o trecho. Conferir modo Noite e 320 px. |
+| **9 — Estante orientada à leitura** | Retomada pessoal, leitura do clube separada, capas e abertura com download integrado. Gestão em segundo nível e estante offline consistente. | Retomar um livro baixado em um toque. Abrir um livro novo com uma ação. Publicar e reorganizar com a conta de organizador. |
+| **10 — Margens compartilhadas** | Ações junto à seleção, grifo rápido com desfazer, lista por capítulo, dicionário compacto e conversa com campo de resposta acessível. | Grifar, definir e responder sem perder o trecho. Reabrir grifos e respostas offline. Conferir seleção e teclado em telas estreitas. |
+| **11 — Convite, acessibilidade e beta** | Convite compartilhável com retorno após OAuth, conta e estados offline mais claros, acessibilidade e roteiro de beta. | Validar entrada com convite, teclado, leitor de tela, texto ampliado e reconexão. Pilotar em iPhone e Android instalados com duas contas. |
+
+O beta em aparelho real exige acesso ao projeto hospedado, dois membros e
+livros de teste. Registre os resultados de campo à parte dos checks da CI.
