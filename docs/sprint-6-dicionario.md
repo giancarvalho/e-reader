@@ -69,3 +69,20 @@ curl -fSL https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.js
 4. Depois do deploy, confira `/dict/pt/manifest.json` e
    `/dict/en/manifest.json` no domínio do app. Consulte uma palavra em cada
    idioma e repita em modo avião para confirmar o cache dos fragmentos.
+
+## Dicionários completos no aparelho
+
+Em **Sua conta → Dicionários offline**, baixe português ou inglês antes de
+ficar sem rede. O app pode retomar uma transferência interrompida, buscar
+atualizações e remover os dados de cada idioma individualmente.
+
+Os fragmentos versionados do Storage são transferidos por um worker. O
+worker guarda pequenos blocos comprimidos no IndexedDB e ativa a edição
+somente depois de gravar todos os fragmentos. Durante uma atualização,
+a edição anterior continua disponível. A busca usa o bloco local da
+palavra e segue referências para o lema, sem acessar a rede quando o
+idioma está instalado.
+
+Consulte uma palavra após baixar o idioma, recarregue o PWA em modo
+avião e consulte uma palavra nova. Repita no iPhone e no Android. O
+navegador pode liberar dados deste aparelho quando falta armazenamento.

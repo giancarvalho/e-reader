@@ -7,7 +7,7 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
   additionalPrecacheEntries: [
-    "/", "/estante-offline", "/ler", "/diagnostico", "/manifest.webmanifest",
+    "/", "/estante-offline", "/ler", "/diagnostico", "/dicionarios", "/manifest.webmanifest",
     "/icons/book-192.png", "/icons/book-512.png",
   ].map(url => ({ url, revision })),
 });

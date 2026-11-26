@@ -56,6 +56,13 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     db.close();
   }, { bytes: Array.from(bytes), hash });
 
+  if (process.env.TEST_DICTIONARY) {
+    await page.goto("/dicionarios");
+    const portuguese = page.locator("section").filter({ has: page.getByRole("heading", { name: "Português" }) });
+    await portuguese.getByRole("button", { name: "Baixar dicionário" }).click();
+    await expect(portuguese.getByText("Dicionário completo disponível neste aparelho.")).toBeVisible();
+  }
+
   await page.goto(`/ler#${hash}`);
   const controls = () => page.getByRole("button", { name: "Mostrar controles de leitura" }).click();
   const closePanel = () => page.getByRole("button", { name: "Fechar painel", exact: true }).click();
@@ -122,6 +129,10 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   }
 
   if (browserName === "webkit") return;
+  let dictionaryRequests = 0;
+  page.on("request", request => {
+    if (new URL(request.url()).pathname.startsWith("/dict/")) dictionaryRequests++;
+  });
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator("section[data-theme=custom]")).toBeVisible();
@@ -133,6 +144,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
+    expect(dictionaryRequests).toBe(0);
   }
   const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
   if (!visibleFrame) throw new Error("Missing reading frame");

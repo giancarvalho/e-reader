@@ -29,6 +29,7 @@ export async function AccountPage({ searchParams }: { searchParams: Promise<{ st
       <section className={styles.section}>
         <Heading as="h2">{auth.storage}</Heading>
         <a href="/estante-offline">{messages.shelf.offline}</a>
+        <a href="/dicionarios">{messages.dictionary.offlineTitle}</a>
       </section>
       <section className={styles.section}>
         <Heading as="h2">{auth.help}</Heading>
