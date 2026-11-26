@@ -74,7 +74,7 @@ outra máquina não servem. Alterou a aparência de propósito?
 2. Baixe o artefato `visual-snapshots` da execução (`gh run download <id> -n visual-snapshots -D e2e/visual.spec.ts-snapshots`).
 3. Revise as imagens, faça commit e envie de novo. Mudança visual sem motivo é regressão.
 
-Tolerância: 0,2% dos pixels (`playwright.config.ts`). Para telas que precisam de
+Tolerância: 50 pixels (um limite proporcional esconde mudanças pequenas, como um ícone de 18 px) (`playwright.config.ts`). Para telas que precisam de
 login, ainda não há captura; cubra com o catálogo `/dev/design`.
 
 ## Linha de base (exceções antigas)
