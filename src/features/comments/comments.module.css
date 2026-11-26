@@ -19,3 +19,6 @@
 
 .thread { display: grid; gap: var(--space-12); }
 .replies { max-block-size: 32dvh; overflow: auto; overscroll-behavior: contain; }
+
+.bubble { position: fixed; z-index: 40; box-sizing: border-box; inline-size: min(calc(100% - 2 * var(--space-12)), 26rem); overflow: auto; overscroll-behavior: contain; background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-muted); border-radius: var(--radius-control); padding: var(--space-12); box-shadow: 0 var(--space-8) var(--space-24) rgb(0 0 0 / 20%); }
+.toolbar { display: flex; justify-content: flex-end; }

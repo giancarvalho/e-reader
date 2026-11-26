@@ -23,18 +23,20 @@ type Props = {
   onPosition: (position: ReadingPosition) => void;
   onPreferences: (preferences: ReaderPreferences) => void;
   annotations: Annotation[];
+  commentCounts: Map<string, number>;
   annotationTarget?: { cfi: string };
   selectionReset: number;
   onSelection: (value: AnnotationSelection) => void;
-  onAnnotation: (id: string) => void;
+  onAnnotation: (id: string, anchor?: { x: number; top: number; bottom: number }) => void;
+  onDismissAnnotation: () => void;
   onChapter: (index: number) => void;
   onChapters: (chapters: Record<string, { index: number; label: string }>) => void;
   children: ReactNode;
 };
 
 export function ReaderCanvas({
-  title, annotationCount, onOpenAnnotations, file, initialCfi, preferences, onPosition, onPreferences, annotations, annotationTarget,
-  onSelection, onAnnotation, onChapter, onChapters, selectionReset, children,
+  title, annotationCount, onOpenAnnotations, file, initialCfi, preferences, onPosition, onPreferences, annotations, commentCounts, annotationTarget,
+  onSelection, onAnnotation, onDismissAnnotation, onChapter, onChapters, selectionReset, children,
 }: Props) {
   const readerSurface = useRef<HTMLElement>(null);
   const mount = useRef<HTMLDivElement>(null);
@@ -52,10 +54,11 @@ export function ReaderCanvas({
   const rendered = useRef(new Map<string, DrawnAnnotation>());
   const reportSelection = useEffectEvent(onSelection);
   const reportAnnotation = useEffectEvent(onAnnotation);
+  const dismissAnnotation = useEffectEvent(onDismissAnnotation);
   const reportChapter = useEffectEvent(onChapter);
   const reportChapters = useEffectEvent(onChapters);
   const refresh = useEffectEvent(async (view: View) => {
-    const current = new Map(annotations.map(row => [row.id, drawing(row)]));
+    const current = new Map(annotations.map(row => [row.id, drawing(row, (commentCounts.get(row.id) ?? 0) > 0)]));
     const removed = [...rendered.current.values()].filter(row => !current.has(row.id));
     await Promise.all(removed.map(row => view.deleteAnnotation(row).catch(() => undefined)));
     const labels: Record<string, { index: number; label: string }> = {};
@@ -112,6 +115,7 @@ export function ReaderCanvas({
       const fraction = (bounds.left + event.clientX - area.left) / area.width;
       queueMicrotask(() => {
         if (cancelled || performance.now() - lastAnnotationTap < 50) return;
+        dismissAnnotation();
         if (fraction < 0.22) turn("prev");
         else if (fraction > 0.78) turn("next");
         else setControls(value => !value);
@@ -196,11 +200,30 @@ export function ReaderCanvas({
           annotation: DrawnAnnotation;
           draw: (method: typeof Overlayer.highlight, options: { color: string; opacity: number }) => void;
         }>).detail;
-        draw(Overlayer.highlight, { color: annotation.color, opacity: 0.38 });
+        draw((rects, options) => {
+          const group = Overlayer.highlight(rects, options);
+          if (annotation.hasComments && rects.length) {
+            const rect = rects[rects.length - 1];
+            const mark = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            const x = rect.right - 10, y = rect.bottom - 9;
+            mark.setAttribute("d", `M${x} ${y} h9 v6 h-4 l-3 3 v-3 h-2 Z`);
+            mark.setAttribute("fill", annotation.color);
+            mark.setAttribute("stroke", "currentColor");
+            mark.setAttribute("stroke-width", "1");
+            const wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            wrapper.append(group, mark);
+            return wrapper;
+          }
+          return group;
+        }, { color: annotation.color, opacity: 0.38 });
       });
       view.addEventListener("show-annotation", event => {
         lastAnnotationTap = performance.now();
-        reportAnnotation((event as CustomEvent<{ value: string }>).detail.value);
+        const { value, range } = (event as CustomEvent<{ value: string; range?: Range }>).detail;
+        const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
+        const rect = range?.getBoundingClientRect();
+        const bounds = frame?.getBoundingClientRect();
+        reportAnnotation(value, rect && bounds ? { x: bounds.left + rect.left + rect.width / 2, top: bounds.top + rect.top, bottom: bounds.top + rect.bottom } : undefined);
       });
       view.addEventListener("create-overlay", () => {
         if (view) queueMicrotask(() => { if (viewRef.current === view && view) void refresh(view); });
@@ -209,6 +232,7 @@ export function ReaderCanvas({
         const { cfi, fraction, index, tocItem } = (event as CustomEvent<ReadingPosition & {
           index: number; tocItem?: TocEntry;
         }>).detail;
+        dismissAnnotation();
         reportChapter(index);
         if (cfi && Number.isFinite(fraction)) {
           setLocation({ fraction, chapter: tocItem?.label, href: tocItem?.href });
@@ -282,7 +306,7 @@ export function ReaderCanvas({
 
   useEffect(() => {
     if (ready && viewRef.current) void refresh(viewRef.current);
-  }, [annotations, ready]);
+  }, [annotations, commentCounts, ready]);
 
   useEffect(() => {
     for (const { doc } of viewRef.current?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
@@ -438,11 +462,11 @@ function readerStyles(preferences: ReaderPreferences) {
   `;
 }
 
-type DrawnAnnotation = { id: string; value: string; color: string };
+type DrawnAnnotation = { id: string; value: string; color: string; hasComments: boolean };
 
-function drawing(row: Annotation): DrawnAnnotation {
+function drawing(row: Annotation, hasComments: boolean): DrawnAnnotation {
   const token = row.color === "amber" ? "--color-amber" : `--highlight-${row.color}`;
   return {
-    id: row.id, value: row.cfi, color: getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
+    id: row.id, value: row.cfi, hasComments, color: getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
   };
 }

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
-import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import type { ReaderIdentity } from "@/lib/books/local";
@@ -20,13 +19,48 @@ type Props = {
   save: (row: Comment) => Promise<boolean>;
   retry: () => Promise<void>;
   close: () => void;
+  anchor?: { x: number; top: number; bottom: number };
+  edit?: () => void;
 };
 
-export function CommentThread({ identity, annotation, rows, status, save, retry, close }: Props) {
+export function CommentThread({ identity, annotation, rows, status, save, retry, close, anchor, edit }: Props) {
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const { comments } = messages;
-  const thread = rows.filter(row => row.annotation_id === annotation.id)
+  const panel = useRef<HTMLDivElement>(null);
+  const [menu, setMenu] = useState(false);
+  useEffect(() => {
+    const node = panel.current;
+    if (!node) return;
+    function place() {
+      if (!node) return;
+      const viewport = window.visualViewport;
+      const left = viewport?.offsetLeft ?? 0, top = viewport?.offsetTop ?? 0;
+      const width = viewport?.width ?? window.innerWidth, height = viewport?.height ?? window.innerHeight;
+      const inset = 12;
+      node.style.maxHeight = Math.max(0, height - 2 * inset) + "px";
+      const box = node.getBoundingClientRect();
+      node.style.left = Math.max(left + inset, Math.min((anchor?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
+      const below = (anchor?.bottom ?? top + height) + inset;
+      const above = (anchor?.top ?? top + height) - box.height - inset;
+      node.style.top = Math.max(top + inset, Math.min(below + box.height <= top + height ? below : above, top + height - box.height - inset)) + "px";
+    }
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(node);
+    window.visualViewport?.addEventListener("resize", place);
+    window.visualViewport?.addEventListener("scroll", place);
+    window.addEventListener("resize", place);
+    return () => { observer.disconnect(); window.visualViewport?.removeEventListener("resize", place); window.visualViewport?.removeEventListener("scroll", place); window.removeEventListener("resize", place); };
+  }, [anchor]);
+  useEffect(() => {
+    function outside(event: PointerEvent) { if (!panel.current?.contains(event.target as Node)) close(); }
+    function key(event: KeyboardEvent) { if (event.key === "Escape") close(); }
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", key); };
+  }, [close]);
+  const thread = rows.filter(row => row.annotation_id === annotation.id && !row.deleted_at)
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
 
 
@@ -45,9 +79,13 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
   }
 
   return (
-    <Sheet title={comments.thread} closeLabel={comments.close} onClose={close}>
+    <div ref={panel} className={styles.bubble} role="dialog" aria-label={comments.thread}>
       <div className={styles.thread}>
-        <Text>{annotation.quote_text}</Text>
+        <div className={styles.toolbar}>
+          {edit && <Button variant="icon" aria-label={messages.annotations.edit} aria-expanded={menu} onClick={() => setMenu(value => !value)}>⋯</Button>}
+          <Button variant="icon" aria-label={comments.close} onClick={close}>×</Button>
+        </div>
+        {menu && edit && <Button variant="quiet" onClick={edit}>{messages.annotations.edit}</Button>}
         {annotation.note && <Text tone="muted">{annotation.note}</Text>}
         <div className={styles.replies}>
         {thread.length === 0 && <Text>{comments.empty}</Text>}
@@ -76,6 +114,6 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
           <Button type="submit" loading={busy} disabled={!reply.trim()}>{comments.send}</Button>
         </form>
       </div>
-    </Sheet>
+    </div>
   );
 }
