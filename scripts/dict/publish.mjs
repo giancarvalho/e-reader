@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { setTimeout } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 
@@ -19,23 +20,46 @@ export async function publishDictionary(bucket, root, language) {
   }
 
   async function upload(path, body, cacheControl, upsert) {
-    const { error } = await bucket.upload(path, body, { cacheControl, contentType: "application/json", upsert });
-    if (!error) return;
-    if (!upsert && (error.status === 409 || String(error.statusCode) === "409")) {
-      const existing = await bucket.download(path);
-      if (!existing.error && body.equals(Buffer.from(await existing.data.arrayBuffer()))) return;
+    const attempts = 4;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const { error } = await bucket.upload(path, body, { cacheControl, contentType: "application/json", upsert });
+      if (!error) return;
+
+      const status = Number(error.status || error.statusCode) || undefined;
+      const duplicate = status === 409 || String(error.statusCode) === "409"
+        || error.code === "Duplicate" || error.code === "ResourceAlreadyExists" || error.code === "KeyAlreadyExists";
+      const transient = status === 408 || status === 429 || status >= 500
+        || (status === undefined && error.name === "StorageUnknownError")
+        || (status === 400 && error.message === "Unknown");
+      let canRetry = transient;
+
+      if (!upsert && (duplicate || transient)) {
+        // A failed response can arrive after Storage has already persisted the request.
+        const existing = await bucket.download(path);
+        if (!existing.error) {
+          if (body.equals(Buffer.from(await existing.data.arrayBuffer()))) return;
+          throw new Error(`Could not publish ${path}: the stored shard differs from the local file`);
+        }
+        canRetry ||= duplicate;
+      }
+
+      if (!canRetry || attempt === attempts) {
+        throw new Error(`Could not publish ${path}${status ? ` (HTTP ${status})` : ""}: ${error.message}`);
+      }
+      await setTimeout(250 * 2 ** (attempt - 1));
     }
-    throw new Error(`Could not publish ${path}: ${error.message}`);
   }
 
   // Leave the active manifest in place until all new shards are available.
-  const parallel = 6;
+  const parallel = 3;
   for (let offset = 0; offset < prefixes.length; offset += parallel) {
-    await Promise.all(prefixes.slice(offset, offset + parallel).map(async prefix => {
+    const results = await Promise.allSettled(prefixes.slice(offset, offset + parallel).map(async prefix => {
       const filename = `${prefix}.json`;
       const body = await readFile(join(directory, filename));
       await upload(`${language}/${sha256}/${filename}`, body, "31536000", false);
     }));
+    const failed = results.find(result => result.status === "rejected");
+    if (failed) throw failed.reason;
   }
   await upload(`${language}/manifest.json`, manifest, "60", true);
 }

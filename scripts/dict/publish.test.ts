@@ -37,9 +37,36 @@ it("publishes versioned shards before switching the live manifest", async () => 
 
 it("keeps the old manifest when a shard upload fails", async () => {
   await withCorpus(async root => {
-    const upload = vi.fn().mockResolvedValue({ error: { message: "Unavailable" } });
-    await expect(publishDictionary({ upload }, root, "pt")).rejects.toThrow("Unavailable");
+    const upload = vi.fn().mockResolvedValue({ error: { status: 401, message: "Unauthorized" } });
+    await expect(publishDictionary({ upload }, root, "pt")).rejects.toThrow("(HTTP 401): Unauthorized");
     expect(upload.mock.calls.map(([path]) => path)).not.toContain("pt/manifest.json");
+    expect(upload).toHaveBeenCalledTimes(2);
+  });
+});
+
+it("retries a transient upload and publishes the manifest afterward", async () => {
+  await withCorpus(async root => {
+    const failedPath = `pt/${sha256}/ag.json`;
+    let failures = 0;
+    const upload = vi.fn().mockImplementation(async (path: string) => ({
+      error: path === failedPath && failures++ === 0 ? { status: 400, message: "Unknown" } : null,
+    }));
+    const download = vi.fn().mockResolvedValue({ error: { status: 404 }, data: null });
+    await publishDictionary({ upload, download }, root, "pt");
+    expect(upload.mock.calls.filter(([path]) => path === failedPath)).toHaveLength(2);
+    expect(upload.mock.lastCall?.[0]).toBe("pt/manifest.json");
+  });
+});
+
+it("accepts a matching object when Storage committed before the connection failed", async () => {
+  await withCorpus(async root => {
+    const upload = vi.fn().mockImplementation(async (path: string) => ({
+      error: path.includes(sha256) ? { name: "StorageUnknownError", message: "fetch failed" } : null,
+    }));
+    const download = vi.fn().mockResolvedValue({ error: null, data: new Blob([shard]) });
+    await publishDictionary({ upload, download }, root, "pt");
+    expect(upload).toHaveBeenCalledTimes(3);
+    expect(upload.mock.lastCall?.[0]).toBe("pt/manifest.json");
   });
 });
 

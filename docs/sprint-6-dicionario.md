@@ -63,6 +63,9 @@ curl -fSL https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.js
    a pasta que contém os diretórios `pt` e `en`. Cada publicação envia os
    fragmentos para um caminho versionado antes de atualizar o manifesto
    consultado pelo leitor. Repetir o comando retoma envios incompletos.
+   Em um terminal que usa um proxy, exporte `NODE_USE_ENV_PROXY=1` no Node 24.
+   O publicador repete erros transitórios e inclui o status HTTP quando
+   o Storage fornece um. Se um idioma já foi publicado, execute só o outro.
 4. Depois do deploy, confira `/dict/pt/manifest.json` e
    `/dict/en/manifest.json` no domínio do app. Consulte uma palavra em cada
    idioma e repita em modo avião para confirmar o cache dos fragmentos.
