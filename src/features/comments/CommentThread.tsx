@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
-import { getViewport, observeViewport } from "@/design-system/viewport";
 import { getNoteAuthor } from "@/features/annotations";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Button } from "@/design-system/components/Button";
 import { IconButton } from "@/design-system/components/IconButton";
+import { Popover } from "@/design-system/components/Popover";
 import { List, ListItem } from "@/design-system/components/List";
 import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
@@ -37,56 +37,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const { comments } = messages;
-  const panel = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState(false);
-  useEffect(() => {
-    const node = panel.current;
-    if (!node) return;
-    const place = () => {
-      const position = anchor?.();
-      const { left, top, width, height } = getViewport();
-      const inset = parseFloat(getComputedStyle(node).paddingTop);
-      node.style.maxWidth = Math.max(0, width - 2 * inset) + "px";
-      node.style.maxHeight = Math.max(0, height - 2 * inset) + "px";
-      const box = node.getBoundingClientRect();
-      node.style.left = Math.max(left + inset, Math.min((position?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
-      const below = (position?.bottom ?? top + height) + inset;
-      const above = (position?.top ?? top + height) - box.height - inset;
-      const panelTop = Math.max(top + inset, Math.min(
-        below + box.height <= top + height ? below : above,
-        top + height - box.height - inset,
-      ));
-      node.style.top = `${panelTop}px`;
-      const focused = document.activeElement;
-      if (focused instanceof HTMLTextAreaElement && node.contains(focused)) {
-        const overflow = focused.getBoundingClientRect().bottom - (panelTop + node.clientHeight - inset);
-        if (overflow > 0) node.scrollTop += overflow;
-      }
-    };
-    place();
-    const observer = new ResizeObserver(place);
-    observer.observe(node);
-    const stopObserving = observeViewport(place);
-    return () => { observer.disconnect(); stopObserving(); };
-  }, [anchor]);
-  useEffect(() => {
-    const node = panel.current;
-    const previous = document.activeElement;
-    node?.focus({ preventScroll: true });
-    return () => {
-      if (previous instanceof HTMLElement && previous.isConnected &&
-        (document.activeElement === document.body || node?.contains(document.activeElement))) {
-        previous.focus({ preventScroll: true });
-      }
-    };
-  }, []);
-  useEffect(() => {
-    function outside(event: PointerEvent) { if (!panel.current?.contains(event.target as Node)) close(); }
-    function key(event: KeyboardEvent) { if (event.key === "Escape") close(); }
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", key);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", key); };
-  }, [close]);
   const thread = rows.filter(row => row.annotation_id === annotation.id && !row.deleted_at)
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
 
@@ -130,7 +81,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
   }
 
   return (
-    <div ref={panel} className={styles.bubble} tabIndex={-1} role="dialog" aria-label={comments.thread}>
+    <Popover label={comments.thread} onClose={close} anchor={anchor}>
       <div className={styles.thread}>
         <div className={styles.header}>
           {annotation.note && <div className={styles.author}>
@@ -177,6 +128,6 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
           <IconButton icon="send" label={comments.send} type="submit" loading={busy} disabled={!reply.trim()} />
         </form>}
       </div>
-    </div>
+    </Popover>
   );
 }

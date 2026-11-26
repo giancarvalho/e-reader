@@ -116,26 +116,3 @@
 .state { position: absolute; inset-block-start: var(--space-24); inset-inline: var(--space-24); }
 .progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }
 
-.selectionMenu, .savedNotice {
-  position: absolute;
-  inset-inline: var(--space-8);
-  inset-block-end: calc(var(--touch-target) + env(safe-area-inset-bottom));
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  box-sizing: border-box;
-  inline-size: fit-content;
-  max-inline-size: calc(100% - 2 * var(--space-8));
-  margin-inline: auto;
-  padding: var(--space-8);
-  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- baseline(B10) */
-  border: var(--focus-ring) solid var(--color-surface);
-  /* stylelint-disable-next-line property-disallowed-list -- baseline(B9) */
-  border-radius: var(--radius-control);
-  background: var(--color-bg);
-}
-
-.selectionMenu button { padding-inline: var(--space-8); }

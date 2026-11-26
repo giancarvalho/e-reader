@@ -19,6 +19,7 @@ import { TextField } from "@/design-system/components/TextField";
 import { Progress } from "@/design-system/components/Progress";
 import { StatusBanner } from "@/design-system/components/StatusBanner";
 import { messages } from "@/lib/messages/pt-br";
+import { PopoverExample } from "./PopoverExample";
 import { SheetExample } from "./SheetExample";
 import styles from "./page.module.css";
 
@@ -47,6 +48,7 @@ export default function DesignCatalog() {
           <Notice live="alert">{messages.annotations.saveFailed}</Notice>
           <Avatar name={catalog.author} />
           <SheetExample />
+          <PopoverExample />
           <BookCard title={catalog.book} author={catalog.author} status={messages.shelf.available} />
           <BookCard featured title={catalog.book} author={catalog.author} />
           <div className={styles.actions}>

@@ -105,6 +105,7 @@ export const messages = {
   },
   annotations: {
     selection: "Ações do trecho selecionado",
+    savedActions: "Ações do grifo salvo",
     addNote: "Adicionar nota",
     define: "Definir",
     saved: "Grifo salvo neste aparelho.",
@@ -202,6 +203,8 @@ export const messages = {
     night: "Noite",
     body: "Texto da interface",
     link: "Link de exemplo",
+    showPopover: "Abrir painel flutuante",
+    actionBar: "Barra de ações de exemplo",
     section: "Seção de exemplo",
     display: "Título grande",
     label: "Legenda de exemplo",

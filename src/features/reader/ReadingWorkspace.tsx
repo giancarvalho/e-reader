@@ -6,6 +6,7 @@ import { DictionaryPanel } from "@/features/dictionary";
 import { CommentThread, useComments } from "@/features/comments";
 import { Button } from "@/design-system/components/Button";
 import { Notice } from "@/design-system/components/Notice";
+import { ActionBar } from "@/design-system/components/ActionBar";
 import { IconButton } from "@/design-system/components/IconButton";
 import { Sheet } from "@/design-system/components/Sheet";
 import { detectDictionaryLanguage, dictionaryWord, type DictionaryLanguage } from "@/lib/dictionary/lookup";
@@ -14,7 +15,6 @@ import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
 import type { Annotation, AnnotationColor } from "@/lib/sync/annotations";
 import { messages } from "@/lib/messages/pt-br";
 import { ReaderCanvas } from "./ReaderCanvas";
-import styles from "./reader.module.css";
 
 type Chapter = { index: number; label: string };
 
@@ -132,7 +132,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           return true;
         }}
       >
-        {selection && <div className={styles.selectionMenu} role="group" aria-label={annotations.selection}>
+        {selection && <ActionBar label={annotations.selection}>
           <AnnotationColors color={selectedHighlight?.color} disabled={quickBusy} onSelect={color => void selectColor(color)} />
           <Button variant="quiet" disabled={!selectedHighlight || quickBusy}
             onClick={() => { if (selectedHighlight) edit(selectedHighlight, true); }}>{annotations.addNote}</Button>
@@ -140,17 +140,17 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           {activeChange && <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>}
           <IconButton icon="close" label={annotations.cancel} onClick={cancel} />
           {colorFailed && <Notice live="alert">{annotations.saveFailed}</Notice>}
-        </div>}
+        </ActionBar>}
         {editing && <Sheet title={editing.noteOnly ? annotations.addNote : annotations.edit}
           closeLabel={messages.reader.closePanel} onClose={cancel}>
           <AnnotationPanel key={editing.annotation.id} annotation={editing.annotation} noteOnly={editing.noteOnly}
             cancel={cancel} onSave={save} />
         </Sheet>}
-        {change && !selection && !editing && !lookup && <div className={styles.savedNotice}>
+        {change && !selection && !editing && !lookup && <ActionBar label={annotations.savedActions}>
           <Notice>{colorFailed ? annotations.saveFailed : annotations.saved}</Notice>
           <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>
           <IconButton icon="close" label={messages.reader.closePanel} onClick={() => setChange(undefined)} />
-        </div>}
+        </ActionBar>}
         {lookup && <DictionaryPanel key={lookup.word} word={lookup.word} language={lookup.language}
           close={cancel} />}
         {listOpen && <Sheet variant="compact" title={annotations.list} closeLabel={messages.reader.closePanel} onClose={() => setListOpen(false)}>
