@@ -1,4 +1,5 @@
 import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
+import { redeemInvite } from "../access/redeemInvite";
 import { NextResponse, type NextRequest } from "next/server";
 import { getRequestAuth } from "@/lib/supabase/server";
 
@@ -10,7 +11,7 @@ export async function finishGoogleSignIn(request: NextRequest) {
 
   if (auth && code) {
     const { error } = await auth.client.auth.exchangeCodeForSession(code);
-    if (!error) path = invitePath(invite);
+    if (!error) path = invite ? await redeemInvite(auth.client, invite) : invitePath();
   }
 
   const response = new NextResponse(null, {

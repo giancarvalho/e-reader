@@ -4,9 +4,11 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { encodeGoogleFlow, googleFlowCookie, newGoogleFlow } from "./google";
 import { finishDirectGoogleSignIn } from "./googleCallback";
 
+const rpc = vi.hoisted(() => vi.fn());
 const signInWithIdToken = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/supabase/server", () => ({
   createAuthClient: (_config: unknown, cookies: CookieMethodsServer) => ({
+    rpc,
     auth: {
       signInWithIdToken: async (credentials: unknown) => {
         const result = await signInWithIdToken(credentials);
@@ -20,6 +22,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 beforeEach(() => {
+  rpc.mockReset().mockReturnValue({ single: async () => ({ data: { status: "joined" }, error: null }) });
   signInWithIdToken.mockReset().mockResolvedValue({ error: null });
   vi.stubEnv("APP_ORIGIN", "https://margins.example");
   vi.stubEnv("SUPABASE_URL", "https://project.supabase.co");
@@ -75,10 +78,12 @@ it("returns to sign-in if the Google token endpoint is unavailable", async () =>
 });
 
 
-it("restores a pending invite after a successful Google callback", async () => {
+it("redeems a pending invite after a successful Google callback", async () => {
   const invite = "ABCDEFGH234567AB";
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ id_token: "id", access_token: "access" })));
   const response = await finishDirectGoogleSignIn(callback(true, invite).request);
-  expect(response.headers.get("location")).toBe(`/convite?codigo=${invite}`);
+  expect(response.headers.get("location")).toBe("/estante");
+  expect(rpc).toHaveBeenCalledOnce();
+  expect(rpc).toHaveBeenCalledWith("join_group", { code: invite });
   expect(response.cookies.get("shared_margins_invite")?.maxAge).toBe(0);
 });

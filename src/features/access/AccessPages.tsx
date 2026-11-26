@@ -8,10 +8,12 @@ import { InviteForm } from "./InviteForm";
 import { getGroupAccess } from "./membership";
 import styles from "./access.module.css";
 
-export async function InvitePage({ searchParams }: { searchParams: Promise<{ codigo?: string }> }) {
-  const code = normalizeInviteCode((await searchParams).codigo);
+export async function InvitePage({ searchParams }: { searchParams: Promise<{ codigo?: string; status?: string }> }) {
+  const { codigo, status } = await searchParams;
+  const code = normalizeInviteCode(codigo);
+  const error = status === "invalid_code" || status === "rate_limited" || status === "unavailable" ? status : undefined;
   const result = await getGroupAccess(code);
-  if (result.status === "member") redirect("/estante");
+  if (result.status === "member" && !error) redirect("/estante");
   const group = result.status === "invite_required" && code
     ? (await result.client.rpc("preview_group_invite", { invite_code: code })).data
     : undefined;
@@ -20,6 +22,7 @@ export async function InvitePage({ searchParams }: { searchParams: Promise<{ cod
   return (
     <main className={styles.page}>
       <Heading>{access.inviteTitle}</Heading>
+      {error && result.status !== "unavailable" && <div role="status"><Text>{access.errors[error]}</Text></div>}
       {result.status === "unavailable"
         ? <Text>{access.errors.unavailable}</Text>
         : <><Text>{typeof group === "string" ? `${access.invitedTo} ${group}` : access.inviteHint}</Text><InviteForm initialCode={code} /></>}

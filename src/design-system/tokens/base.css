@@ -1,4 +1,4 @@
-:root, [data-theme="day"] {
+:root, [data-theme="day"], [data-theme="auto"] {
   --space-8: 0.5rem;
   --space-24: 1.5rem;
   --space-48: 3rem;

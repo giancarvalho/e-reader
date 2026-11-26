@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { AnnotationColors, AnnotationList, AnnotationPanel, useAnnotations, type AnnotationSelection } from "@/features/annotations";
 import { DictionaryPanel } from "@/features/dictionary";
 import { CommentThread, useComments } from "@/features/comments";
@@ -32,7 +32,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   const { rows, status, save, retry } = useAnnotations(identity);
   const comments = useComments(identity);
   const [selectionReset, resetSelection] = useState(0);
-  const [highlight, setHighlight] = useState<Annotation>();
+  const [anchor, setAnchor] = useState<() => { x: number; top: number; bottom: number } | undefined>();
   const [change, setChange] = useState<{ row: Annotation; previous?: Annotation }>();
   const savingColor = useRef(false);
   const [quickBusy, setQuickBusy] = useState(false);
@@ -41,8 +41,11 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   const [lookup, setLookup] = useState<{ word: string; language: DictionaryLanguage }>();
   const [threadId, openThread] = useState<string>();
   const thread = rows.find(row => row.id === threadId);
-  const counts = new Map<string, number>();
-  for (const row of comments.rows) counts.set(row.annotation_id, (counts.get(row.annotation_id) ?? 0) + 1);
+  const counts = useMemo(() => {
+    const result = new Map<string, number>();
+    for (const row of comments.rows) if (!row.deleted_at) result.set(row.annotation_id, (result.get(row.annotation_id) ?? 0) + 1);
+    return result;
+  }, [comments.rows]);
   const [selection, setSelection] = useState<AnnotationSelection>();
   const activeChange = change?.row.cfi === selection?.cfi ? change : undefined;
   const selectedHighlight = activeChange?.row ?? rows.find(row => row.cfi === selection?.cfi && row.author_id === identity.user);
@@ -123,10 +126,15 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
     <>
       <ReaderCanvas title={title} annotationCount={rows.length} onOpenAnnotations={() => setListOpen(true)} file={file} initialCfi={cfi} preferences={preferences}
         onPosition={onPosition} onPreferences={onPreferences}
-        annotations={rows} annotationTarget={target} onChapter={setCurrentChapter} onChapters={setChapters}
+        annotations={rows} commentCounts={counts} annotationTarget={target} onChapter={setCurrentChapter} onChapters={setChapters}
         selectionReset={selectionReset}
         onSelection={select}
-        onAnnotation={id => setHighlight(rows.find(row => row.id === id))}
+        onAnnotation={(id, position) => { setAnchor(() => position); openThread(id); }}
+        onDismissAnnotation={() => {
+          if (!threadId) return false;
+          openThread(undefined);
+          return true;
+        }}
       >
         {selection && <div className={styles.selectionMenu} role="group" aria-label={annotations.selection}>
           <AnnotationColors color={selectedHighlight?.color} disabled={quickBusy} onSelect={color => void selectColor(color)} />
@@ -146,26 +154,17 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           <Button variant="quiet" disabled={quickBusy} onClick={() => void undo()}>{annotations.undo}</Button>
           <Button variant="icon" onClick={() => setChange(undefined)} aria-label={messages.reader.closePanel}>×</Button>
         </div>}
-        {highlight && <Sheet title={annotations.summary} closeLabel={messages.reader.closePanel} onClose={() => setHighlight(undefined)}>
-          <blockquote>{highlight.quote_text}</blockquote>
-          {highlight.note && <Text>{highlight.note}</Text>}
-          <Button variant="secondary" onClick={() => { openThread(highlight.id); setHighlight(undefined); }}>
-            {messages.comments.label} ({counts.get(highlight.id) ?? 0})
-          </Button>
-          {highlight.author_id === identity.user && <Button variant="quiet" onClick={() => { edit(highlight); setHighlight(undefined); }}>
-            {annotations.edit}
-          </Button>}
-        </Sheet>}
         {lookup && <DictionaryPanel key={lookup.word} word={lookup.word} language={lookup.language}
           close={cancel} />}
         {listOpen && <Sheet title={annotations.list} closeLabel={messages.reader.closePanel} onClose={() => setListOpen(false)}>
           <div role="status">{announcement}</div>
           <AnnotationList rows={rows} userId={identity.user} chapters={chapters} currentChapter={currentChapter}
           onGo={row => { setListOpen(false); setTarget({ cfi: row.cfi }); }} onEdit={row => { setListOpen(false); edit(row); }}
-          commentCounts={counts} onThread={row => openThread(row.id)} />
+          commentCounts={counts} onThread={row => { setListOpen(false); setAnchor(undefined); openThread(row.id); }} />
         </Sheet>}
         {thread && <CommentThread key={thread.id} identity={identity} annotation={thread} rows={comments.rows}
-          status={comments.status} save={comments.save} retry={comments.retry} close={() => openThread(undefined)} />}
+          status={comments.status} save={comments.save} retry={comments.retry} anchor={anchor}
+          edit={thread.author_id === identity.user ? () => { openThread(undefined); edit(thread); } : undefined} close={() => openThread(undefined)} />}
       </ReaderCanvas>
     </>
   );

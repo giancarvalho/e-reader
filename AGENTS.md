@@ -42,3 +42,15 @@ lint estiverem verdes no PR, o merge e o avanço para a próxima sprint estão
 autorizados, sem nova confirmação. A CI também exige typecheck e os demais testes
 automáticos aplicáveis. Registre separadamente a aceitação em aparelho real e
 qualquer dependência pendente que bloqueie uma tarefa posterior.
+
+## Contratos da experiência de leitura
+
+- O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
+  `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
+  leitor segue as preferências individuais do EPUB.
+- Convites compartilhados usam `/?invite=CODIGO`. A home envia
+  `POST /auth/invite` na mesma origem com JSON `{ code }`. O endpoint usa a
+  sessão do leitor, devolve `401` para iniciar o fluxo de login da home e
+  responde com `{ path }` após uma tentativa autenticada de ingresso. Os
+  callbacks OAuth também usam a RPC `join_group` e o cookie de convite
+  pendente. Links antigos por `/convite?codigo=CODIGO` continuam válidos.

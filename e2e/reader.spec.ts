@@ -194,12 +194,12 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   }
 
-  if (browserName === "webkit") return;
   let dictionaryRequests = 0;
   page.on("request", request => {
     if (new URL(request.url()).pathname.startsWith("/dict/")) dictionaryRequests++;
   });
-  await context.setOffline(true);
+  // Offline PWA behavior on iOS requires an installed app on a real device.
+  if (browserName !== "webkit") await context.setOffline(true);
   await page.reload();
   await expect(page.locator("section[data-theme=custom]")).toBeVisible();
   await expect.poll(() => chapterVisible("Segundo capítulo")).toBe(true);
@@ -210,7 +210,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
-    expect(dictionaryRequests).toBe(0);
+    if (browserName !== "webkit") expect(dictionaryRequests).toBe(0);
   }
   const visibleFrame = page.frames().find(frame => frame.url().startsWith("blob:"));
   if (!visibleFrame) throw new Error("Missing reading frame");
@@ -242,13 +242,62 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(page.getByText("Grifos (1)", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
   await expect(page.getByText("Leitura sem rede")).toBeVisible();
-  await page.getByRole("button", { name: "Comentários (0)" }).click();
+  await expect(page.getByRole("button", { name: "Comentários (0)" })).toBeVisible();
+  const overlayCount = (selector: string) => page.locator("foliate-view").evaluate((element, query) => {
+    const view = element as HTMLElement & { renderer: { getContents: () => { overlayer?: { element: SVGElement } }[] } };
+    return view.renderer.getContents().reduce((total, { overlayer }) =>
+      total + (overlayer?.element.querySelectorAll(query).length ?? 0), 0);
+  }, selector);
+  const markers = () => overlayCount("[data-comment-marker]");
+  await expect.poll(() => overlayCount("g > rect")).toBeGreaterThan(0);
+  await expect.poll(markers).toBe(0);
+  const readingPosition = () => page.locator("foliate-view").evaluate(element =>
+    (element as HTMLElement & { lastLocation: { cfi: string } }).lastLocation.cfi);
+  const before = await readingPosition();
+
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Ocultar controles de leitura" }).click();
+  const chapterFrame = page.frames().find(frame => frame.url().startsWith("blob:"))!;
+  const frameBox = await (await chapterFrame.frameElement()).boundingBox();
+  if (!frameBox) throw new Error("Missing chapter bounds");
+  const point = await chapterFrame.getByText("Segundo capítulo").evaluate(element => {
+    const range = element.ownerDocument.createRange();
+    range.selectNodeContents(element);
+    const { left, top, width, height } = range.getClientRects()[0]!;
+    return { x: left + width / 2, y: top + height / 2 };
+  });
+  if (test.info().project.name === "desktop") {
+    await page.mouse.click(frameBox.x + point.x, frameBox.y + point.y);
+  } else {
+    await page.touchscreen.tap(frameBox.x + point.x, frameBox.y + point.y);
+  }
   const thread = page.getByRole("dialog", { name: "Comentários do grifo" });
-  await thread.getByRole("textbox", { name: "Escreva uma resposta" }).fill("Resposta offline");
+  await expect(thread).toBeVisible();
+  await expect(thread.getByText("Segundo capítulo")).toHaveCount(0);
+  const reply = thread.getByRole("textbox", { name: "Escreva uma resposta" });
+  await reply.fill("Resposta offline");
+  const reducedHeight = await page.evaluate(() => {
+    const viewport = window.visualViewport!;
+    const height = viewport.height * 0.55;
+    Object.defineProperty(viewport, "height", { configurable: true, value: height });
+    viewport.dispatchEvent(new Event("resize"));
+    return height;
+  });
+  await expect.poll(async () => {
+    const box = await reply.boundingBox();
+    return Boolean(box && box.y + box.height <= reducedHeight);
+  }).toBe(true);
+  await page.evaluate(() => {
+    Reflect.deleteProperty(window.visualViewport!, "height");
+    window.visualViewport!.dispatchEvent(new Event("resize"));
+  });
+  expect(await readingPosition()).toBe(before);
   await thread.getByRole("button", { name: "Enviar resposta" }).click();
   await expect(thread.getByText("Resposta offline")).toBeVisible();
-  await thread.getByRole("button", { name: "Fechar comentários" }).click();
-  await expect(page.getByRole("button", { name: "Comentários (1)" })).toBeVisible();
+  await expect.poll(markers).toBe(1);
+  await page.mouse.click(2, 2);
+  await expect(thread).toHaveCount(0);
+  expect(await readingPosition()).toBe(before);
   await page.reload();
   await controls();
   await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
@@ -256,7 +305,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(thread.getByText("Resposta offline")).toBeVisible();
   await thread.getByRole("button", { name: "Apagar comentário" }).click();
   await expect(thread.getByText("Resposta offline")).toHaveCount(0);
+  await expect.poll(markers).toBe(0);
   await thread.getByRole("button", { name: "Fechar comentários" }).click();
+  await page.getByRole("button", { name: "Grifos (1)", exact: true }).click();
   await page.getByRole("button", { name: "Editar grifo" }).click();
   await expect(blue).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Apagar grifo" }).click();

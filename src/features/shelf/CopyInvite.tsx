@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { Sheet } from "@/design-system/components/Sheet";
 import { TextField } from "@/design-system/components/TextField";
-import { invitePath } from "@/lib/access/invite";
+import { homeInvitePath } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
 
 export function CopyInvite({ code }: { code: string }) {
@@ -13,7 +13,7 @@ export function CopyInvite({ code }: { code: string }) {
   const { access, reader } = messages;
 
   async function copy() {
-    const value = new URL(invitePath(code), window.location.origin).href;
+    const value = new URL(homeInvitePath(code), window.location.origin).href;
     try {
       await navigator.clipboard.writeText(value);
       setStatus(access.inviteCopied);

@@ -46,3 +46,16 @@
   outline: var(--focus-ring) solid var(--color-accent-text);
   outline-offset: var(--focus-ring);
 }
+
+.home { grid-template-rows: auto 1fr auto; }
+.credits { color: var(--color-muted); }
+.credits a { display: inline-flex; align-items: center; min-block-size: var(--touch-target); color: inherit; }
+
+.theme { justify-self: end; }
+.theme [data-icon="sun"] { display: none; }
+:global(html[data-theme="night"]) .theme [data-icon="sun"] { display: inline; }
+:global(html[data-theme="night"]) .theme [data-icon="moon"] { display: none; }
+@media (prefers-color-scheme: dark) {
+  :global(html[data-theme="auto"]) .theme [data-icon="sun"] { display: inline; }
+  :global(html[data-theme="auto"]) .theme [data-icon="moon"] { display: none; }
+}
