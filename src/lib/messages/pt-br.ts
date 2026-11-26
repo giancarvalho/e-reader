@@ -5,6 +5,10 @@ export const messages = {
     subtitle: "Um livro. Muitas leituras.",
     enter: "Entrar",
     credits: "Créditos e licenças",
+    creditsDictionary: "As definições em português e inglês foram extraídas e adaptadas dos Wikcionários, incluindo seleção e formatação. As contribuições e o histórico estão vinculados em cada verbete. As definições adaptadas são distribuídas sob CC BY-SA 4.0.",
+    wiktionaryPortuguese: "Wikcionário em português",
+    wiktionaryEnglish: "Wikcionário em inglês",
+    foliateLicense: "Foliate JS · Licença MIT",
     toggleTheme: "Alternar tema claro e escuro",
   },
   auth: {
@@ -129,6 +133,7 @@ export const messages = {
   comments: {
     label: "Comentários",
     thread: "Comentários do grifo",
+    options: "Opções do grifo",
     empty: "Ainda não há respostas.",
     you: "Você",
     member: "Membro do grupo",
@@ -183,6 +188,7 @@ export const messages = {
     source: "Extraído e adaptado pelo Wiktextract, via Kaikki.",
     wiktionary: "Wikcionário",
     history: "Histórico e autores",
+    adapted: "Definições adaptadas",
     license: "CC BY-SA 4.0",
     close: "Fechar dicionário",
     pos: {

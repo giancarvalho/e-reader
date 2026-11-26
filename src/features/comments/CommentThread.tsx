@@ -19,7 +19,7 @@ type Props = {
   save: (row: Comment) => Promise<boolean>;
   retry: () => Promise<void>;
   close: () => void;
-  anchor?: { x: number; top: number; bottom: number };
+  anchor?: () => { x: number; top: number; bottom: number } | undefined;
   edit?: () => void;
 };
 
@@ -32,19 +32,29 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
   useEffect(() => {
     const node = panel.current;
     if (!node) return;
-    function place() {
-      if (!node) return;
+    const place = () => {
+      const position = anchor?.();
       const viewport = window.visualViewport;
       const left = viewport?.offsetLeft ?? 0, top = viewport?.offsetTop ?? 0;
       const width = viewport?.width ?? window.innerWidth, height = viewport?.height ?? window.innerHeight;
-      const inset = 12;
+      const inset = parseFloat(getComputedStyle(node).paddingTop);
+      node.style.maxWidth = Math.max(0, width - 2 * inset) + "px";
       node.style.maxHeight = Math.max(0, height - 2 * inset) + "px";
       const box = node.getBoundingClientRect();
-      node.style.left = Math.max(left + inset, Math.min((anchor?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
-      const below = (anchor?.bottom ?? top + height) + inset;
-      const above = (anchor?.top ?? top + height) - box.height - inset;
-      node.style.top = Math.max(top + inset, Math.min(below + box.height <= top + height ? below : above, top + height - box.height - inset)) + "px";
-    }
+      node.style.left = Math.max(left + inset, Math.min((position?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
+      const below = (position?.bottom ?? top + height) + inset;
+      const above = (position?.top ?? top + height) - box.height - inset;
+      const panelTop = Math.max(top + inset, Math.min(
+        below + box.height <= top + height ? below : above,
+        top + height - box.height - inset,
+      ));
+      node.style.top = `${panelTop}px`;
+      const focused = document.activeElement;
+      if (focused instanceof HTMLTextAreaElement && node.contains(focused)) {
+        const overflow = focused.getBoundingClientRect().bottom - (panelTop + node.clientHeight - inset);
+        if (overflow > 0) node.scrollTop += overflow;
+      }
+    };
     place();
     const observer = new ResizeObserver(place);
     observer.observe(node);
@@ -53,6 +63,17 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
     window.addEventListener("resize", place);
     return () => { observer.disconnect(); window.visualViewport?.removeEventListener("resize", place); window.visualViewport?.removeEventListener("scroll", place); window.removeEventListener("resize", place); };
   }, [anchor]);
+  useEffect(() => {
+    const node = panel.current;
+    const previous = document.activeElement;
+    node?.focus({ preventScroll: true });
+    return () => {
+      if (previous instanceof HTMLElement && previous.isConnected &&
+        (document.activeElement === document.body || node?.contains(document.activeElement))) {
+        previous.focus({ preventScroll: true });
+      }
+    };
+  }, []);
   useEffect(() => {
     function outside(event: PointerEvent) { if (!panel.current?.contains(event.target as Node)) close(); }
     function key(event: KeyboardEvent) { if (event.key === "Escape") close(); }
@@ -79,15 +100,15 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
   }
 
   return (
-    <div ref={panel} className={styles.bubble} role="dialog" aria-label={comments.thread}>
+    <div ref={panel} className={styles.bubble} tabIndex={-1} role="dialog" aria-label={comments.thread}>
       <div className={styles.thread}>
         <div className={styles.toolbar}>
-          {edit && <Button variant="icon" aria-label={messages.annotations.edit} aria-expanded={menu} onClick={() => setMenu(value => !value)}>⋯</Button>}
+          {edit && <Button variant="icon" aria-label={comments.options} aria-expanded={menu} onClick={() => setMenu(value => !value)}>⋯</Button>}
           <Button variant="icon" aria-label={comments.close} onClick={close}>×</Button>
         </div>
         {menu && edit && <Button variant="quiet" onClick={edit}>{messages.annotations.edit}</Button>}
-        {annotation.note && <Text tone="muted">{annotation.note}</Text>}
         <div className={styles.replies}>
+        {annotation.note && <Text tone="muted">{annotation.note}</Text>}
         {thread.length === 0 && <Text>{comments.empty}</Text>}
         <ul className={styles.list}>
           {thread.map(row => {
@@ -104,13 +125,13 @@ export function CommentThread({ identity, annotation, rows, status, save, retry,
             );
           })}
         </ul>
-        </div>
         {status !== "idle" && <div role="status">
           <Text>{comments[status]}</Text>
           {status === "error" && <Button variant="quiet" onClick={() => void retry()}>{messages.annotations.retry}</Button>}
         </div>}
+        </div>
         <form className={styles.panel} onSubmit={submit}>
-          <TextArea label={comments.reply} value={reply} onChange={event => setReply(event.target.value)} maxLength={4000} required />
+          <TextArea label={comments.reply} value={reply} onChange={event => setReply(event.target.value)} maxLength={4000} rows={1} required />
           <Button type="submit" loading={busy} disabled={!reply.trim()}>{comments.send}</Button>
         </form>
       </div>

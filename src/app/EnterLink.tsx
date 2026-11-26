@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { normalizeInviteCode } from "@/lib/access/invite";
+import { invitePath, normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./page.module.css";
 
@@ -16,15 +16,40 @@ function subscribe(callback: () => void) {
 
 export function EnterLink() {
   const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
-  const invite = useSyncExternalStore(() => () => {}, () => normalizeInviteCode(new URLSearchParams(window.location.search).get("invite")), () => undefined);
+  const rawInvite = useSyncExternalStore(() => () => {}, () => new URLSearchParams(window.location.search).get("invite"), () => null);
+  const invite = normalizeInviteCode(rawInvite);
   useEffect(() => {
     if (!online || !invite) return;
     const controller = new AbortController();
-    void fetch("/auth/invite", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: invite }), signal: controller.signal })
-      .then(async response => { if (response.ok) { const { path } = await response.json(); if (!controller.signal.aborted && (path === "/estante" || path.startsWith("/convite?"))) window.location.replace(path); } })
-      .catch(() => undefined);
+    async function join(code: string) {
+      try {
+        const response = await fetch("/auth/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+          signal: controller.signal,
+        });
+        if (response.status === 401 || controller.signal.aborted) return;
+        if (response.ok) {
+          const { path } = await response.json();
+          if (!controller.signal.aborted && typeof path === "string" && (path === "/estante" || path.startsWith("/convite?"))) {
+            window.location.replace(path);
+            return;
+          }
+        }
+      } catch {
+        // Preserve the code so the reader can retry after reconnecting.
+      }
+      if (!controller.signal.aborted) window.location.replace(invitePath(code, "unavailable"));
+    }
+    void join(invite);
     return () => controller.abort();
   }, [online, invite]);
   // Document navigation also works from the precached homepage.
-  return <a className={styles.enter} href={online ? (invite ? `/auth/google/start?codigo=${encodeURIComponent(invite)}` : "/auth/google/start") : "/estante-offline"}>{messages.home.enter}</a>;
+  const destination = invite ? `/auth/google/start?codigo=${encodeURIComponent(invite)}` : "/auth/google/start";
+  return <>
+    {rawInvite !== null && !invite && <p role="status">{messages.access.errors.invalid_code}</p>}
+    {invite && !online && <p role="status">{messages.access.errors.unavailable}</p>}
+    <a className={styles.enter} href={online ? destination : "/estante-offline"}>{messages.home.enter}</a>
+  </>;
 }

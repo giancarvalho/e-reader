@@ -47,10 +47,11 @@
   outline-offset: var(--focus-ring);
 }
 
-.credits { position: absolute; inset-block-end: max(var(--space-24), env(safe-area-inset-bottom)); color: var(--color-muted); }
-.credits a { color: inherit; }
+.home { grid-template-rows: auto 1fr auto; }
+.credits { color: var(--color-muted); }
+.credits a { display: inline-flex; align-items: center; min-block-size: var(--touch-target); color: inherit; }
 
-.theme { position: absolute; inset-block-start: max(var(--space-16), env(safe-area-inset-top)); inset-inline-end: max(var(--space-16), env(safe-area-inset-right)); }
+.theme { justify-self: end; }
 .theme [data-icon="sun"] { display: none; }
 :global(html[data-theme="night"]) .theme [data-icon="sun"] { display: inline; }
 :global(html[data-theme="night"]) .theme [data-icon="moon"] { display: none; }

@@ -6,8 +6,11 @@ export function normalizeInviteCode(value: unknown) {
   return /^[A-Z2-7]{16,64}$/.test(code) ? code : undefined;
 }
 
-export function invitePath(code?: string) {
-  return code ? `/convite?codigo=${encodeURIComponent(code)}` : "/convite";
+export function invitePath(code?: string, error?: "invalid_code" | "rate_limited" | "unavailable") {
+  const query = new URLSearchParams();
+  if (code) query.set("codigo", code);
+  if (error) query.set("status", error);
+  return query.size ? `/convite?${query}` : "/convite";
 }
 
 export function signInPath(status?: "failed" | "unavailable", code?: string) {

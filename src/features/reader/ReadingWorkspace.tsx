@@ -32,7 +32,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   const { rows, status, save, retry } = useAnnotations(identity);
   const comments = useComments(identity);
   const [selectionReset, resetSelection] = useState(0);
-  const [anchor, setAnchor] = useState<{ x: number; top: number; bottom: number }>();
+  const [anchor, setAnchor] = useState<() => { x: number; top: number; bottom: number } | undefined>();
   const [change, setChange] = useState<{ row: Annotation; previous?: Annotation }>();
   const savingColor = useRef(false);
   const [quickBusy, setQuickBusy] = useState(false);
@@ -129,8 +129,12 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
         annotations={rows} commentCounts={counts} annotationTarget={target} onChapter={setCurrentChapter} onChapters={setChapters}
         selectionReset={selectionReset}
         onSelection={select}
-        onAnnotation={(id, position) => { setAnchor(position); openThread(id); }}
-        onDismissAnnotation={() => openThread(undefined)}
+        onAnnotation={(id, position) => { setAnchor(() => position); openThread(id); }}
+        onDismissAnnotation={() => {
+          if (!threadId) return false;
+          openThread(undefined);
+          return true;
+        }}
       >
         {selection && <div className={styles.selectionMenu} role="group" aria-label={annotations.selection}>
           <AnnotationColors color={selectedHighlight?.color} disabled={quickBusy} onSelect={color => void selectColor(color)} />

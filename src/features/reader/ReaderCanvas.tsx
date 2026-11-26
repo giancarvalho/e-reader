@@ -27,8 +27,8 @@ type Props = {
   annotationTarget?: { cfi: string };
   selectionReset: number;
   onSelection: (value: AnnotationSelection) => void;
-  onAnnotation: (id: string, anchor?: { x: number; top: number; bottom: number }) => void;
-  onDismissAnnotation: () => void;
+  onAnnotation: (id: string, anchor?: () => { x: number; top: number; bottom: number } | undefined) => void;
+  onDismissAnnotation: () => boolean;
   onChapter: (index: number) => void;
   onChapters: (chapters: Record<string, { index: number; label: string }>) => void;
   children: ReactNode;
@@ -52,24 +52,28 @@ export function ReaderCanvas({
   const applied = useRef<ReaderPreferences>(null);
   const { reader } = messages;
   const rendered = useRef(new Map<string, DrawnAnnotation>());
+  const pendingDraw = useRef(Promise.resolve());
   const reportSelection = useEffectEvent(onSelection);
   const reportAnnotation = useEffectEvent(onAnnotation);
   const dismissAnnotation = useEffectEvent(onDismissAnnotation);
   const reportChapter = useEffectEvent(onChapter);
   const reportChapters = useEffectEvent(onChapters);
-  const refresh = useEffectEvent(async (view: View) => {
+  const refresh = useEffectEvent((view: View) => {
     const current = new Map(annotations.map(row => [row.id, drawing(row, (commentCounts.get(row.id) ?? 0) > 0)]));
-    const removed = [...rendered.current.values()].filter(row => !current.has(row.id));
-    await Promise.all(removed.map(row => view.deleteAnnotation(row).catch(() => undefined)));
-    const labels: Record<string, { index: number; label: string }> = {};
-    for (const row of current.values()) {
-      const result = await view.addAnnotation(row).catch(() => null);
-      if (result) labels[row.id] = result;
-    }
-    if (viewRef.current === view) {
-      rendered.current = current;
-      reportChapters(labels);
-    }
+    pendingDraw.current = pendingDraw.current.then(async () => {
+      if (viewRef.current !== view) return;
+      const removed = [...rendered.current.values()].filter(row => !current.has(row.id));
+      await Promise.all(removed.map(row => view.deleteAnnotation(row).catch(() => undefined)));
+      const labels: Record<string, { index: number; label: string }> = {};
+      for (const row of current.values()) {
+        const result = await view.addAnnotation(row).catch(() => null);
+        if (result) labels[row.id] = result;
+      }
+      if (viewRef.current === view) {
+        rendered.current = current;
+        reportChapters(labels);
+      }
+    });
   });
 
   useEffect(() => {
@@ -83,7 +87,7 @@ export function ReaderCanvas({
     let pointerId: number | undefined;
     let words: AbortController | undefined;
     let previousSelection = "";
-    let lastAnnotationTap = -Infinity;
+    let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     function applyMotion() {
       view?.renderer?.toggleAttribute("animated", !reducedMotion.matches);
@@ -95,7 +99,7 @@ export function ReaderCanvas({
 
     function readKey(event: KeyboardEvent) {
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
-        || (event.target as Element | null)?.closest?.("button, a, input, textarea, select, dialog, [contenteditable]")
+        || (event.target as Element | null)?.closest?.("button, a, input, textarea, select, dialog, [role=dialog], [contenteditable]")
         || (view?.renderer?.getContents().some(({ doc }) => Boolean(doc.getSelection()?.toString())))) return;
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
@@ -104,22 +108,22 @@ export function ReaderCanvas({
     }
 
     function readTap(event: MouseEvent) {
+      const currentTap = { event, annotationHit: false };
+      tap = currentTap;
       const doc = event.currentTarget as Document;
-      if (event.defaultPrevented || event.button !== 0 || event.detail > 1
-        || doc.getSelection()?.toString()
-        || (event.target as Element | null)?.closest?.("a, button, input, select, textarea")) return;
-      const frame = view?.renderer?.getContents().find(item => item.doc === doc)?.doc.defaultView?.frameElement;
       const area = content?.getBoundingClientRect();
-      const bounds = frame?.getBoundingClientRect();
-      if (!area || !bounds || !area.width) return;
-      const fraction = (bounds.left + event.clientX - area.left) / area.width;
-      queueMicrotask(() => {
-        if (cancelled || performance.now() - lastAnnotationTap < 50) return;
-        dismissAnnotation();
+      const bounds = doc.defaultView?.frameElement?.getBoundingClientRect();
+      const interactive = (event.target as Element | null)?.closest?.("a, button, input, select, textarea");
+      window.setTimeout(() => {
+        if (tap === currentTap) tap = undefined;
+        if (cancelled || currentTap.annotationHit || event.button !== 0) return;
+        if (dismissAnnotation() || event.defaultPrevented || event.detail > 1 || interactive ||
+          doc.getSelection()?.toString() || !area?.width || !bounds) return;
+        const fraction = (bounds.left + event.clientX - area.left) / area.width;
         if (fraction < 0.22) turn("prev");
         else if (fraction > 0.78) turn("next");
         else setControls(value => !value);
-      });
+      }, 0);
     }
 
     window.addEventListener("keydown", readKey);
@@ -132,7 +136,7 @@ export function ReaderCanvas({
         const quote = selected?.toString().trim().slice(0, 4000);
         if (!quote || !selected?.rangeCount) continue;
         try {
-          const cfi = view.getCFI(index, selected.getRangeAt(0));
+          const cfi = view.getCFI(index, textRange(doc, selected.getRangeAt(0)));
           if (cfi.length <= 4096 && cfi !== previousSelection) {
             previousSelection = cfi;
             window.clearTimeout(selectionSettle);
@@ -193,22 +197,31 @@ export function ReaderCanvas({
         });
         doc.addEventListener("selectionchange", inspectSelection);
         doc.addEventListener("keydown", readKey);
-        doc.addEventListener("click", readTap);
+        doc.addEventListener("click", readTap, true);
       });
       view.addEventListener("draw-annotation", event => {
-        const { annotation, draw } = (event as CustomEvent<{
+        const { annotation, draw, range } = (event as CustomEvent<{
           annotation: DrawnAnnotation;
+          range: Range;
           draw: (method: typeof Overlayer.highlight, options: { color: string; opacity: number }) => void;
         }>).detail;
+        // Older CFIs lost offsets when both boundaries were on the same element.
+        if (range.collapsed && range.startContainer.nodeType === Node.ELEMENT_NODE &&
+          range.startContainer.textContent?.trim() === annotation.quote) {
+          range.selectNodeContents(range.startContainer);
+        }
         draw((rects, options) => {
           const group = Overlayer.highlight(rects, options);
           if (annotation.hasComments && rects.length) {
-            const rect = rects[rects.length - 1];
+            const rect = Array.from(rects).reverse().find(fragment => fragment.width > 0 && fragment.height > 0);
+            if (!rect) return group;
             const mark = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const x = rect.right - 10, y = rect.bottom - 9;
+            const x = Math.max(rect.left, rect.right - 10);
+            const y = Math.max(rect.top, rect.bottom - 9);
+            mark.setAttribute("data-comment-marker", "");
             mark.setAttribute("d", `M${x} ${y} h9 v6 h-4 l-3 3 v-3 h-2 Z`);
-            mark.setAttribute("fill", annotation.color);
-            mark.setAttribute("stroke", "currentColor");
+            mark.setAttribute("fill", "var(--color-bg)");
+            mark.setAttribute("stroke", "var(--color-ink)");
             mark.setAttribute("stroke-width", "1");
             const wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
             wrapper.append(group, mark);
@@ -218,12 +231,27 @@ export function ReaderCanvas({
         }, { color: annotation.color, opacity: 0.38 });
       });
       view.addEventListener("show-annotation", event => {
-        lastAnnotationTap = performance.now();
+        if (tap) tap.annotationHit = true;
         const { value, range } = (event as CustomEvent<{ value: string; range?: Range }>).detail;
-        const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
-        const rect = range?.getBoundingClientRect();
-        const bounds = frame?.getBoundingClientRect();
-        reportAnnotation(value, rect && bounds ? { x: bounds.left + rect.left + rect.width / 2, top: bounds.top + rect.top, bottom: bounds.top + rect.bottom } : undefined);
+        const point = tap && { x: tap.event.clientX, y: tap.event.clientY };
+        reportAnnotation(value, () => {
+          const frame = range?.startContainer.ownerDocument?.defaultView?.frameElement;
+          const bounds = frame?.getBoundingClientRect();
+          const area = content?.getBoundingClientRect();
+          if (!range || !bounds || !area) return;
+          const visible = Array.from(range.getClientRects()).map(rect => ({
+            left: Math.max(area.left, bounds.left, bounds.left + rect.left),
+            right: Math.min(area.right, bounds.right, bounds.left + rect.right),
+            top: Math.max(area.top, bounds.top, bounds.top + rect.top),
+            bottom: Math.min(area.bottom, bounds.bottom, bounds.top + rect.bottom),
+          })).filter(rect => rect.right > rect.left && rect.bottom > rect.top);
+          const line = point && visible.find(rect => {
+            const x = bounds.left + point.x;
+            const y = bounds.top + point.y;
+            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+          }) || visible[0];
+          if (line) return { x: (line.left + line.right) / 2, top: line.top, bottom: line.bottom };
+        });
       });
       view.addEventListener("create-overlay", () => {
         if (view) queueMicrotask(() => { if (viewRef.current === view && view) void refresh(view); });
@@ -232,7 +260,6 @@ export function ReaderCanvas({
         const { cfi, fraction, index, tocItem } = (event as CustomEvent<ReadingPosition & {
           index: number; tocItem?: TocEntry;
         }>).detail;
-        dismissAnnotation();
         reportChapter(index);
         if (cfi && Number.isFinite(fraction)) {
           setLocation({ fraction, chapter: tocItem?.label, href: tocItem?.href });
@@ -249,6 +276,10 @@ export function ReaderCanvas({
         return;
       }
       viewRef.current = view;
+      view.renderer.addEventListener("relocate", event => {
+        const { reason } = (event as CustomEvent<{ reason: string }>).detail;
+        if (reason !== "anchor") dismissAnnotation();
+      });
       applyMotion();
       reducedMotion.addEventListener("change", applyMotion);
       // A sandboxed iframe can omit selectionchange events in WebKit.
@@ -462,11 +493,31 @@ function readerStyles(preferences: ReaderPreferences) {
   `;
 }
 
-type DrawnAnnotation = { id: string; value: string; color: string; hasComments: boolean };
+type DrawnAnnotation = { id: string; value: string; color: string; hasComments: boolean; quote: string };
+
+function textRange(doc: Document, selection: Range) {
+  const startIsText = selection.startContainer.nodeType === Node.TEXT_NODE;
+  const endIsText = selection.endContainer.nodeType === Node.TEXT_NODE;
+  if (startIsText && endIsText) return selection;
+
+  // EPUB CFIs only encode character offsets for text nodes.
+  const walker = doc.createTreeWalker(selection.commonAncestorContainer, NodeFilter.SHOW_TEXT);
+  let first: Node | undefined;
+  let last: Node | undefined;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (!node.textContent || !selection.intersectsNode(node)) continue;
+    first ??= node;
+    last = node;
+  }
+  const range = selection.cloneRange();
+  if (!startIsText && first) range.setStart(first, 0);
+  if (!endIsText && last) range.setEnd(last, last.textContent!.length);
+  return range;
+}
 
 function drawing(row: Annotation, hasComments: boolean): DrawnAnnotation {
   const token = row.color === "amber" ? "--color-amber" : `--highlight-${row.color}`;
   return {
-    id: row.id, value: row.cfi, hasComments, color: getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
+    id: row.id, value: row.cfi, hasComments, quote: row.quote_text, color: getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
   };
 }
