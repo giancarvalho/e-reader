@@ -9,6 +9,7 @@ import { Text } from "@/design-system/components/Text";
 import { contrastRatio, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import type { AnnotationSelection } from "@/features/annotations";
 import type { Annotation } from "@/lib/sync/annotations";
+import { formatPercent } from "@/lib/format";
 import { messages } from "@/lib/messages/pt-br";
 import type { TocEntry } from "@/vendor/foliate/epub";
 import type { View } from "@/vendor/foliate/view";
@@ -386,7 +387,7 @@ export function ReaderCanvas({
     }
   }
 
-  const position = new Intl.NumberFormat("pt-BR", { style: "percent" }).format(location.fraction);
+  const position = formatPercent(location.fraction);
   const controlLabel = controls ? reader.hideControls : reader.showControls;
   return (
     <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>

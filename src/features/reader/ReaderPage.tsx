@@ -12,6 +12,7 @@ import {
 } from "@/lib/books/local";
 import { recordDiagnostic } from "@/lib/diagnostics";
 import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
+import { isOnline, onReconnect } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import { ReadingWorkspace } from "./ReadingWorkspace";
 import { syncReaderState } from "./sync";
@@ -53,7 +54,7 @@ export function ReaderPage() {
   }, []);
 
   const sync = useCallback(async () => {
-    if (!identity || !navigator.onLine || syncing.current) return;
+    if (!identity || !isOnline() || syncing.current) return;
     syncing.current = true;
     try {
       const sent = await readReaderState(identity);
@@ -83,7 +84,7 @@ export function ReaderPage() {
         };
       });
     } catch {
-      if (navigator.onLine) recordDiagnostic("reader", "error");
+      if (isOnline()) recordDiagnostic("reader", "error");
     } finally {
       syncing.current = false;
     }
@@ -97,13 +98,13 @@ export function ReaderPage() {
     function syncNow() { void sync(); }
     syncNow();
     const interval = window.setInterval(syncWhenVisible, 10_000);
-    window.addEventListener("online", syncNow);
+    const stopReconnect = onReconnect(syncNow);
     window.addEventListener("pagehide", syncNow);
     document.addEventListener("visibilitychange", syncNow);
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timer.current);
-      window.removeEventListener("online", syncNow);
+      stopReconnect();
       window.removeEventListener("pagehide", syncNow);
       document.removeEventListener("visibilitychange", syncNow);
     };

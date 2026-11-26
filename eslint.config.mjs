@@ -52,6 +52,11 @@ export default defineConfig([
     },
   },
   {
+    // The shared formatters are the one place that constructs Intl objects.
+    files: ["src/lib/format/**"],
+    rules: { "no-restricted-properties": "off" },
+  },
+  {
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/lib/online/**", "src/**/*.test.{ts,tsx}", "src/vendor/**"],
     plugins: { project },

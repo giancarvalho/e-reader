@@ -16,6 +16,7 @@ import {
   type ReaderIdentity,
   type ShelfBook, type ShelfSnapshot,
 } from "@/lib/books/local";
+import { formatPercent } from "@/lib/format";
 import { recordDiagnostic } from "@/lib/diagnostics";
 import { maxEpubBytes } from "@/lib/epub/inspect";
 import { messages } from "@/lib/messages/pt-br";
@@ -170,7 +171,7 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
         coverHref={stored ? readerHref : undefined} status={stored ? shelf.available : undefined}>
         {progress !== undefined && <div className={styles.progress}>
           <progress aria-label={shelf.progress} value={progress} max={1} />
-          <span>{new Intl.NumberFormat("pt-BR", { style: "percent" }).format(progress)}</span>
+          <span>{formatPercent(progress)}</span>
         </div>}
         {!offline && stored === false && <>
           <Button loading={busy} onClick={() => download(true)}>{shelf.read}</Button>

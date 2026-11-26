@@ -5,6 +5,8 @@ import { Link } from "@/design-system/components/Link";
 import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
+import { formatDateTime } from "@/lib/format";
+import { isOnline, onConnectivityChange } from "@/lib/online";
 import { observeDiagnostics, readDiagnostics } from "@/lib/diagnostics";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./diagnostics.module.css";
@@ -17,28 +19,23 @@ export function DiagnosticsPage() {
 
   useEffect(() => {
     const update = () => {
-      setOnline(navigator.onLine);
+      setOnline(isOnline());
       setWorker(Boolean(navigator.serviceWorker?.controller));
     };
     const refresh = () => setSnapshot(readDiagnostics());
     const unsubscribe = observeDiagnostics(refresh);
     update();
     refresh();
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
+    const stopConnectivity = onConnectivityChange(update);
     navigator.serviceWorker?.addEventListener("controllerchange", update);
     return () => {
       unsubscribe();
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
+      stopConnectivity();
       navigator.serviceWorker?.removeEventListener("controllerchange", update);
     };
   }, []);
 
   const version = process.env.NEXT_PUBLIC_APP_VERSION || diagnostics.local;
-  const time = (value: string) => new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short", timeStyle: "short",
-  }).format(new Date(value));
   return (
     <Page>
       <Heading>{diagnostics.title}</Heading>
@@ -51,14 +48,14 @@ export function DiagnosticsPage() {
         {Object.values(snapshot?.last ?? {}).map(entry => (
           <div key={entry.system}>
             <dt>{diagnostics.systems[entry.system]}</dt>
-            <dd>{diagnostics.states[entry.state]} · {time(entry.time)}</dd>
+            <dd>{diagnostics.states[entry.state]} · {formatDateTime(entry.time)}</dd>
           </div>
         ))}
       </dl>
       <Heading as="h2">{diagnostics.errors}</Heading>
       {snapshot?.errors.length ? <ul>
         {snapshot.errors.map(entry => <li key={`${entry.system}:${entry.time}`}>
-          {diagnostics.systems[entry.system]} · {time(entry.time)}
+          {diagnostics.systems[entry.system]} · {formatDateTime(entry.time)}
         </li>)}
       </ul> : <Text>{diagnostics.empty}</Text>}
       <Link href="/estante">{messages.reader.shelf}</Link>

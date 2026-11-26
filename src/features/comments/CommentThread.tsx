@@ -10,6 +10,7 @@ import { Notice } from "@/design-system/components/Notice";
 import { Text } from "@/design-system/components/Text";
 import { TextArea } from "@/design-system/components/TextArea";
 import type { ReaderIdentity } from "@/lib/books/local";
+import { isOnline, onReconnect } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import type { Annotation } from "@/lib/sync/annotations";
 import type { Comment } from "./types";
@@ -96,16 +97,16 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
     if (!annotation.note || annotation.name !== undefined) return;
     let active = true;
     function lookup() {
-      if (!navigator.onLine) return;
+      if (!isOnline()) return;
       void getNoteAuthor(identity, annotation.id).then(profile => {
         if (profile && active) setAuthor(profile);
       }).catch(() => undefined);
     }
     lookup();
-    window.addEventListener("online", lookup);
+    const stopReconnect = onReconnect(lookup);
     return () => {
       active = false;
-      window.removeEventListener("online", lookup);
+      stopReconnect();
     };
   }, [annotation.id, annotation.name, annotation.note, identity]);
 

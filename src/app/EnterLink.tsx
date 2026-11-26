@@ -3,20 +3,12 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { LinkButton } from "@/design-system/components/LinkButton";
 import { Notice } from "@/design-system/components/Notice";
+import { useOnline } from "@/lib/online";
 import { invitePath, normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
 
-function subscribe(callback: () => void) {
-  window.addEventListener("online", callback);
-  window.addEventListener("offline", callback);
-  return () => {
-    window.removeEventListener("online", callback);
-    window.removeEventListener("offline", callback);
-  };
-}
-
 export function EnterLink() {
-  const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
+  const online = useOnline();
   const rawInvite = useSyncExternalStore(() => () => {}, () => new URLSearchParams(window.location.search).get("invite"), () => null);
   const invite = normalizeInviteCode(rawInvite);
   useEffect(() => {

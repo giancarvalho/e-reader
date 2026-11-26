@@ -1,9 +1,4 @@
 {
-  "src/app/EnterLink.tsx": {
-    "project/no-raw-connectivity": {
-      "count": 5
-    }
-  },
   "src/app/auth/google/start/route.ts": {
     "import/no-restricted-paths": {
       "count": 1
@@ -37,22 +32,6 @@
   "src/features/comments/CommentThread.tsx": {
     "import/no-restricted-paths": {
       "count": 2
-    },
-    "project/no-raw-connectivity": {
-      "count": 3
-    }
-  },
-  "src/features/diagnostics/DiagnosticsPage.tsx": {
-    "no-restricted-properties": {
-      "count": 1
-    },
-    "project/no-raw-connectivity": {
-      "count": 5
-    }
-  },
-  "src/features/dictionary/DictionaryPanel.tsx": {
-    "project/no-raw-connectivity": {
-      "count": 1
     }
   },
   "src/features/dictionary/OfflineDictionaries.tsx": {
@@ -61,29 +40,13 @@
     }
   },
   "src/features/reader/ReaderCanvas.tsx": {
-    "no-restricted-properties": {
-      "count": 1
-    },
     "project/no-raw-controls": {
       "count": 3
     }
   },
-  "src/features/reader/ReaderPage.tsx": {
-    "project/no-raw-connectivity": {
-      "count": 4
-    }
-  },
   "src/features/shelf/ShelfClient.tsx": {
-    "no-restricted-properties": {
-      "count": 1
-    },
     "project/no-raw-controls": {
       "count": 1
-    }
-  },
-  "src/lib/sync/use-book-sync.ts": {
-    "project/no-raw-connectivity": {
-      "count": 7
     }
   }
 }
