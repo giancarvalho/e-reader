@@ -16,8 +16,9 @@ import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
 import type { Annotation, AnnotationColor } from "@/lib/sync/annotations";
 import { messages } from "@/lib/messages/pt-br";
 import { ReaderCanvas } from "./ReaderCanvas";
+import { SelectionHandles } from "./SelectionHandles";
 import styles from "./reader.module.css";
-import type { ReaderSelection } from "./useReaderView";
+import type { ReaderSelection } from "./reader-selection";
 
 type Chapter = { index: number; label: string };
 
@@ -51,6 +52,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
     return result;
   }, [comments.rows]);
   const [selection, setSelection] = useState<ReaderSelection>();
+  const [adjusting, setAdjusting] = useState(false);
   const activeChange = change?.row.cfi === selection?.cfi ? change : undefined;
   const selectedHighlight = activeChange?.row ?? rows.find(row => row.cfi === selection?.cfi && row.author_id === identity.user);
   const word = selection && dictionaryWord(selection.quote);
@@ -61,6 +63,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   const { annotations } = messages;
 
   function cancel() {
+    setAdjusting(false);
     setSelection(undefined);
     setLookup(undefined);
     setEditing(undefined);
@@ -69,6 +72,7 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
   }
 
   function select(value?: ReaderSelection) {
+    setAdjusting(false);
     if (value) {
       setChange(undefined);
       setColorFailed(false);
@@ -144,7 +148,8 @@ export function ReadingWorkspace({ title, identity, language, file, cfi, prefere
           return true;
         }}
       >
-        {selection && <Popover label={annotations.selection} anchor={selection.anchor} variant="toolbar" onClose={cancel}>
+        {selection && <SelectionHandles selection={selection} onAdjusting={setAdjusting} />}
+        {selection && !adjusting && <Popover label={annotations.selection} anchor={selection.anchor} variant="toolbar" onClose={cancel}>
           <div className={styles.selectionMenu}>
             <div className={styles.selectionColors}>
               <AnnotationColors color={selectedHighlight?.color} disabled={quickBusy} onSelect={color => void selectColor(color)} />

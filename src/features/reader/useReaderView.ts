@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import type { AnnotationSelection } from "@/features/annotations";
 import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
 import type { Annotation } from "@/lib/sync/annotations";
 import type { TocEntry } from "@/vendor/foliate/epub";
 import type { View } from "@/vendor/foliate/view";
-import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, textRange, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
+import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
-import { bindWordPress, pressInProgress } from "./word-press";
-
-export type ReaderSelection = AnnotationSelection & { anchor: () => ReturnType<typeof annotationAnchor> };
+import { bindWordPress } from "./word-press";
+import { trackReaderSelection, type ReaderSelection } from "./reader-selection";
 
 type Options = {
   file: Blob;
@@ -83,13 +81,11 @@ export function useReaderView({
     let recording = false;
     let readingPositionChanged = false;
     let selectionTimer: number | undefined;
-    let selectionSettle: number | undefined;
     let pointerId: number | undefined;
     let words: AbortController | undefined;
-    let previousSelection = "";
-    let selectionShown = false;
     let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
     const overlaysReceiveTaps = new WeakSet<Document>();
+    const selection = trackReaderSelection(() => view, content, () => !cancelled && pointerId === undefined, value => reportSelection(value));
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     function applyMotion() {
       view?.renderer?.toggleAttribute("animated", !reducedMotion.matches);
@@ -100,9 +96,9 @@ export function useReaderView({
     }
 
     function readKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && selectionShown) {
+      if (event.key === "Escape" && selection.shown) {
         event.preventDefault();
-        clearSelection(true);
+        selection.clear(true);
         return;
       }
       if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
@@ -126,7 +122,7 @@ export function useReaderView({
         if (cancelled || currentTap.annotationHit || event.button !== 0) return;
         if (dismissAnnotation() || event.defaultPrevented || event.detail > 1 || interactive ||
           doc.getSelection()?.toString() || !area?.width || !bounds) return;
-        if (selectionShown) return;
+        if (selection.shown) return;
         const fraction = (bounds.left + event.clientX - area.left) / area.width;
         if (fraction < 0.22) turn("prev");
         else if (fraction > 0.78) turn("next");
@@ -136,45 +132,7 @@ export function useReaderView({
 
     window.addEventListener("keydown", readKey);
 
-    function inspectSelection() {
-      if (!view?.renderer || pointerId !== undefined || document.visibilityState !== "visible") return;
-      for (const { doc, index } of view.renderer.getContents()) {
-        if (pressInProgress(doc)) return;
-        const selected = doc.getSelection();
-        const quote = selected?.toString().trim().slice(0, 4000);
-        if (!quote || !selected?.rangeCount) continue;
-        try {
-          const range = textRange(doc, selected.getRangeAt(0));
-          const cfi = view.getCFI(index, range);
-          if (cfi.length <= 4096 && cfi !== previousSelection) {
-            previousSelection = cfi;
-            window.clearTimeout(selectionSettle);
-            selectionSettle = window.setTimeout(() => {
-              if (!cancelled && pointerId === undefined && !pressInProgress(doc) && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
-                selectionShown = true;
-                reportSelection({ cfi, quote, sample: doc.body?.textContent?.slice(0, 5000),
-                  anchor: () => annotationAnchor(content, range, { wholeRange: true }) });
-              }
-            }, 180);
-          }
-        } catch {
-          // A selection can disappear while the paginator changes chapters.
-        }
-        return;
-      }
-      clearSelection();
-    }
-
-    function clearSelection(removeRanges = false) {
-      previousSelection = "";
-      window.clearTimeout(selectionSettle);
-      if (selectionShown) reportSelection();
-      selectionShown = false;
-      if (removeRanges) {
-        for (const { doc } of view?.renderer.getContents() ?? []) doc.getSelection()?.removeAllRanges();
-      }
-    }
-    clearReaderSelection.current = clearSelection;
+    clearReaderSelection.current = selection.clear;
     lastCfi.current = initialCfi;
 
     function openAnnotation(id: string, range?: Range, point?: { x: number; y: number }) {
@@ -204,24 +162,23 @@ export function useReaderView({
         words = new AbortController();
         bindWordPress(doc, words.signal, () => {
           pointerId = undefined;
-          inspectSelection();
+          selection.inspect();
         });
         doc.addEventListener("pointerdown", event => {
           pointerId = event.pointerId;
-          previousSelection = "";
-          window.clearTimeout(selectionSettle);
+          selection.pause();
         });
         const endPointer = (event: PointerEvent) => {
           if (pointerId !== event.pointerId) return;
           pointerId = undefined;
-          inspectSelection();
+          selection.inspect();
         };
         doc.addEventListener("pointerup", endPointer);
         doc.addEventListener("pointercancel", endPointer);
         doc.addEventListener("pointerout", event => {
           if (!event.relatedTarget) endPointer(event);
         });
-        doc.addEventListener("selectionchange", inspectSelection);
+        doc.addEventListener("selectionchange", selection.inspect);
         doc.addEventListener("keydown", readKey);
         doc.addEventListener("click", readTap, true);
       });
@@ -263,13 +220,13 @@ export function useReaderView({
         // The paginator can snap to the same page after an ordinary touch.
         if (reason === "navigation" || reason === "page" || (reason === "snap" && readingPositionChanged)) {
           dismissAnnotation();
-          if (selectionShown) clearSelection(true);
+          if (selection.shown) selection.clear(true);
         }
       });
       applyMotion();
       reducedMotion.addEventListener("change", applyMotion);
       // A sandboxed iframe can omit selectionchange events in WebKit.
-      selectionTimer = window.setInterval(inspectSelection, 200);
+      selectionTimer = window.setInterval(selection.inspect, 200);
       setToc(book.toc ?? []);
       applied.current = appearance.current;
       view.renderer.setStyles(readerStyles(applied.current));
@@ -280,7 +237,7 @@ export function useReaderView({
 
     void open().catch(() => {
       window.clearInterval(selectionTimer);
-      window.clearTimeout(selectionSettle);
+      selection.pause();
       words?.abort();
       view?.close();
       view?.remove();
@@ -293,7 +250,7 @@ export function useReaderView({
       window.removeEventListener("keydown", readKey);
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
-      window.clearTimeout(selectionSettle);
+      selection.pause();
       words?.abort();
       view?.close();
       view?.remove();

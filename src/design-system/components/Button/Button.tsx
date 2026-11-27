@@ -1,12 +1,12 @@
 import type { ComponentProps } from "react";
 import styles from "./Button.module.css";
 
-type ButtonVariant = "primary" | "secondary" | "quiet" | "icon";
+type ButtonVariant = "primary" | "secondary" | "quiet" | "icon" | "handle";
 type ButtonProps = Omit<ComponentProps<"button">, "className" | "aria-label"> & {
   loading?: boolean;
 } & (
-  | { variant?: Exclude<ButtonVariant, "icon">; "aria-label"?: string }
-  | { variant: "icon"; "aria-label": string }
+  | { variant?: Exclude<ButtonVariant, "icon" | "handle">; "aria-label"?: string }
+  | { variant: "icon" | "handle"; "aria-label": string }
 );
 
 export function Button({

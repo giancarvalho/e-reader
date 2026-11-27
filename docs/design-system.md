@@ -12,7 +12,7 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 
 | Componente | Use para | Observações |
 |---|---|---|
-| `Button` | Qualquer ação clicável. Variantes `primary`, `secondary`, `quiet`, `icon`; estados `disabled` e `loading` | `icon` exige `aria-label`. Alvo de toque de 44 px já incluído |
+| `Button` | Qualquer ação clicável. Variantes `primary`, `secondary`, `quiet`, `icon` e `handle` para as alças de seleção do leitor. | `icon` e `handle` exigem `aria-label`. Alvo de toque de 44 px já incluído. |
 | `Page` | A coluna centralizada de uma tela, com largura máxima e área segura do iPhone. `variant` `default`, `intro` (mais espaço acima, para formulários e conta) ou `banner` (faixa compacta); `as` `main`, `div`, `header` ou `section` | Toda tela nova começa nela. Não repita largura, `margin-inline: auto` nem `env(safe-area-inset-*)` em CSS de feature |
 | `Icon` | Ícone decorativo (`close`, `reply`, `trash`, `conversation`, `more`, `send`); herda a cor do texto e fica oculto para leitores de tela | Para ícone clicável, use `IconButton`. Ícone novo entra em `Icon.tsx` |
 | `IconButton` | Botão só com ícone. `icon` e `label` obrigatórios (o rótulo é o nome acessível); repassa `aria-expanded`, `type`, `disabled`, `loading` | Substitui o caractere `×` e qualquer `<Button variant="icon">` com SVG solto |

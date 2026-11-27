@@ -1,35 +1,42 @@
 const holdMs = 2_000;
 const movementTolerance = 10;
 const interactive = "a, button, input, select, textarea, [contenteditable]";
-const wordPattern = /[\p{L}\p{M}]+(?:[-‐‑'’][\p{L}\p{M}]+)*/gu;
+export const wordPattern = /[\p{L}\p{M}]+(?:[-‐‑'’][\p{L}\p{M}]+)*/gu;
 
 export function pressInProgress(doc: Document) {
-  return doc.documentElement.hasAttribute("data-reader-word-press");
+  return doc.documentElement.matches("[data-reader-word-press], [data-reader-range-adjusting]");
 }
 
-function wordAtPoint(doc: Document, x: number, y: number) {
+export function wordAtPoint(doc: Document, x: number, y: number, snap = false) {
   const caret = doc.caretPositionFromPoint?.(x, y);
   const legacy = caret ? null : doc.caretRangeFromPoint?.(x, y);
   const node = caret?.offsetNode ?? legacy?.startContainer;
   const offset = caret?.offset ?? legacy?.startOffset;
   if (!node || node.nodeType !== Node.TEXT_NODE || offset === undefined) return;
 
+  let nearest: Range | undefined;
+  let distance = Infinity;
   for (const match of (node.textContent ?? "").matchAll(wordPattern)) {
     const start = match.index;
     const end = start + match[0].length;
-    if (offset < start || offset > end) continue;
+    const gap = Math.max(start - offset, offset - end, 0);
+    if (snap ? gap >= distance : gap > 0) continue;
 
     const word = doc.createRange();
     word.setStart(node, start);
     word.setEnd(node, end);
 
-    if (Array.from(word.getClientRects()).some(rect =>
+    if (snap) {
+      nearest = word;
+      distance = gap;
+    } else if (Array.from(word.getClientRects()).some(rect =>
       x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom,
     )) return word;
   }
+  return nearest;
 }
 
-function select(doc: Document, range: Range) {
+export function applyTextSelection(doc: Document, range: Range) {
   const selection = doc.getSelection();
   selection?.removeAllRanges();
   selection?.addRange(range);
@@ -76,7 +83,7 @@ export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () 
       if (press !== current || doc.visibilityState !== "visible") return;
       current.selecting = true;
       root.dataset.readerWordPress = "selecting";
-      select(doc, word);
+      applyTextSelection(doc, word);
     }, holdMs);
   }, options);
 
@@ -103,7 +110,7 @@ export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () 
     const last = first === anchor ? next : anchor;
     const range = first.cloneRange();
     range.setEnd(last.endContainer, last.endOffset);
-    select(doc, range);
+    applyTextSelection(doc, range);
   }, options);
 
   doc.addEventListener("touchend", event => {

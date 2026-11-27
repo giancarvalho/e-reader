@@ -12,7 +12,8 @@ import { ReaderAppearance } from "./ReaderAppearance";
 import { TocList } from "./ReaderToc";
 import { ReaderBottomBar, ReaderTopBar } from "./ReaderToolbars";
 import styles from "./reader.module.css";
-import { useReaderView, type ReaderSelection } from "./useReaderView";
+import { useReaderView } from "./useReaderView";
+import type { ReaderSelection } from "./reader-selection";
 
 type Props = {
   title: string;

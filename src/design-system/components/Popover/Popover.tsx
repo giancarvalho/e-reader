@@ -37,7 +37,7 @@ export function Popover({ label, onClose, anchor, variant = "panel", children }:
       node.style.maxHeight = Math.max(0, height - 2 * inset) + "px";
       const box = node.getBoundingClientRect();
       node.style.left = Math.max(left + inset, Math.min((position?.x ?? left + width / 2) - box.width / 2, left + width - box.width - inset)) + "px";
-      const below = (position?.bottom ?? top + height) + inset;
+      const below = (position?.bottom ?? top + height) + inset * (variant === "toolbar" ? 3 : 1);
       const above = (position?.top ?? top + height) - box.height - inset;
       const fitsAbove = above >= top + inset;
       const fitsBelow = below + box.height <= top + height - inset;

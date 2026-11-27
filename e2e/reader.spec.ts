@@ -150,6 +150,18 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const pressSelection = () => frame.evaluate(() => document.getSelection()?.toString() ?? "");
     const start = () => cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [word] });
     const release = () => cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    const startHandle = page.getByRole("button", { name: "Ajustar início da seleção" });
+    const endHandle = page.getByRole("button", { name: "Ajustar fim da seleção" });
+    async function dragHandle(handle: typeof startHandle, target: typeof word) {
+      const handleBounds = await handle.boundingBox();
+      if (!handleBounds) throw new Error("Missing selection handle");
+      const caretX = await handle.evaluate(button => Number.parseFloat(button.style.left));
+      const origin = { x: handleBounds.x + handleBounds.width / 2,
+        y: handleBounds.y + handleBounds.height / 2, id: 1 };
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [origin] });
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ ...origin, x: origin.x + target.x - caretX }] });
+      await release();
+    }
 
     await start();
     await page.waitForTimeout(1_000);
@@ -168,6 +180,15 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     expect(menuBounds!.y).toBeGreaterThan(word.y);
     expect(menuBounds!.y - word.y).toBeLessThan(44);
     await expect(dictionary).toHaveCount(0);
+    await dragHandle(startHandle, begin);
+    await expect.poll(pressSelection).toBe("Segundo capítulo");
+    await expect(menu.getByRole("button", { name: "Definir", exact: true })).toHaveCount(0);
+    await dragHandle(endHandle, begin);
+    await expect.poll(pressSelection).toBe("Segundo");
+    await endHandle.press("ArrowRight");
+    await expect.poll(pressSelection).toBe("Segundo capítulo");
+    await startHandle.press("ArrowRight");
+    await expect.poll(pressSelection).toBe("capítulo");
     await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
