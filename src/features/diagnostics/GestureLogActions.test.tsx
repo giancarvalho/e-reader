@@ -7,6 +7,12 @@ import { GestureLogActions } from "./GestureLogActions";
 
 const { gestures } = messages.diagnostics;
 
+// jsdom does not implement the modal dialog API that Sheet uses.
+Object.defineProperties(HTMLDialogElement.prototype, {
+  showModal: { configurable: true, value(this: HTMLDialogElement) { this.open = true; } },
+  close: { configurable: true, value(this: HTMLDialogElement) { this.open = false; } },
+});
+
 afterEach(() => {
   cleanup();
   clearGestureLog();
