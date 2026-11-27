@@ -8,8 +8,9 @@ import type { View } from "@/vendor/foliate/view";
 import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
-import { tapZone } from "./page-gestures";
-import { bindWordPress, recentPress, type PressRecord } from "./word-press";
+import { logGesture, type GestureData } from "@/lib/gesture-log";
+import { chapterLayout, createPageTap } from "./page-tap";
+import { bindWordPress } from "./word-press";
 import { trackReaderSelection, type ReaderSelection } from "./reader-selection";
 
 type Options = {
@@ -84,8 +85,6 @@ export function useReaderView({
     let selectionTimer: number | undefined;
     let pointerId: number | undefined;
     let words: AbortController | undefined;
-    let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
-    let touchTapTimer: number | undefined;
     const overlaysReceiveTaps = new WeakSet<Document>();
     const selection = trackReaderSelection(() => view, content, () => !cancelled && pointerId === undefined, value => reportSelection(value));
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -94,7 +93,11 @@ export function useReaderView({
     }
 
     function turn(direction: "prev" | "next") {
-      if (recording) void view?.[direction]().catch(() => setFailed(true));
+      logGesture("turn", { direction, recording });
+      if (recording) void view?.[direction]().catch(() => {
+        logGesture("turn-failed", { direction });
+        setFailed(true);
+      });
     }
 
     function readKey(event: KeyboardEvent) {
@@ -112,48 +115,14 @@ export function useReaderView({
       }
     }
 
-    function applyZone(doc: Document, clientX: number) {
-      const area = content?.getBoundingClientRect();
-      const bounds = doc.defaultView?.frameElement?.getBoundingClientRect();
-      if (dismissAnnotation() || doc.getSelection()?.toString() || !area?.width || !bounds || selection.shown) return false;
-      const zone = tapZone((bounds.left + clientX - area.left) / area.width);
-      if (zone === "toggle") toggleControls();
-      else turn(zone);
-      return true;
-    }
-
-    function readTap(event: MouseEvent) {
-      const doc = event.currentTarget as Document;
-      const press = recentPress(doc);
-      if (press) {
-        // The touch that produced this click already decided what it was.
-        window.clearTimeout(touchTapTimer);
-        if (press.outcome !== "tap") return;
-      }
-      const currentTap = { event, annotationHit: false };
-      tap = currentTap;
-      const interactive = (event.target as Element | null)?.closest?.("a, button, input, select, textarea");
-      window.setTimeout(() => {
-        if (tap === currentTap) tap = undefined;
-        if (cancelled || currentTap.annotationHit || event.button !== 0) return;
-        // A mouse double click is a text gesture; quick touch taps are separate page turns.
-        if (event.defaultPrevented || (!press && event.detail > 1) || interactive) {
-          dismissAnnotation();
-          return;
-        }
-        applyZone(doc, event.clientX);
-      }, 0);
-    }
-
-    // iOS Safari does not reliably dispatch `click` for taps on plain text inside the chapter frame,
-    // so a quick touch acts on its own if no click follows.
-    function readTouchTap(press: PressRecord, target: Element | null, doc: Document) {
-      window.clearTimeout(touchTapTimer);
-      if (press.outcome !== "tap" || target?.closest?.("a, button, input, select, textarea")) return;
-      touchTapTimer = window.setTimeout(() => {
-        if (!cancelled) applyZone(doc, press.x);
-      }, 350);
-    }
+    const pageTap = createPageTap({
+      content,
+      isCancelled: () => cancelled,
+      selectionShown: () => selection.shown,
+      dismissAnnotation: () => dismissAnnotation(),
+      toggleControls: () => toggleControls(),
+      turn,
+    });
 
     window.addEventListener("keydown", readKey);
 
@@ -183,12 +152,18 @@ export function useReaderView({
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
         if (!chapterReceivesEvents(doc)) overlaysReceiveTaps.add(doc);
         pointerId = undefined;
+        logGesture("chapter-load", chapterLayout(doc, content));
         words?.abort();
         words = new AbortController();
         bindWordPress(doc, words.signal, () => {
           pointerId = undefined;
           selection.inspect();
-        }, (press, target) => readTouchTap(press, target, doc));
+        }, (press, target) => pageTap.readTouchTap(press, target, doc));
+        for (const type of ["pointerdown", "pointerup", "pointercancel"] as const) {
+          doc.addEventListener(type, event => logGesture(type, {
+            pointerType: event.pointerType, x: Math.round(event.clientX), y: Math.round(event.clientY), primary: event.isPrimary,
+          }));
+        }
         doc.addEventListener("pointerdown", event => {
           pointerId = event.pointerId;
           selection.pause();
@@ -205,12 +180,13 @@ export function useReaderView({
         });
         doc.addEventListener("selectionchange", selection.inspect);
         doc.addEventListener("keydown", readKey);
-        doc.addEventListener("click", readTap, true);
+        doc.addEventListener("click", pageTap.readTap, true);
       });
       view.addEventListener("draw-annotation", event => {
         drawAnnotation((event as CustomEvent<DrawDetail>).detail, Overlayer, overlaysReceiveTaps, openAnnotation);
       });
       view.addEventListener("show-annotation", event => {
+        const tap = pageTap.current;
         if (tap) tap.annotationHit = true;
         const { value, range } = (event as CustomEvent<{ value: string; range?: Range }>).detail;
         const point = tap && { x: tap.event.clientX, y: tap.event.clientY };
@@ -240,8 +216,13 @@ export function useReaderView({
         return;
       }
       viewRef.current = view;
+      view.renderer.addEventListener("gesture-log", event => {
+        const { k, d } = (event as CustomEvent<{ k: string; d?: GestureData }>).detail;
+        logGesture(k, d);
+      });
       view.renderer.addEventListener("relocate", event => {
         const { reason } = (event as CustomEvent<{ reason: string }>).detail;
+        logGesture("relocate", { reason, positionChanged: readingPositionChanged });
         // The paginator can snap to the same page after an ordinary touch.
         if (reason === "navigation" || reason === "page" || (reason === "snap" && readingPositionChanged)) {
           dismissAnnotation();
@@ -262,7 +243,7 @@ export function useReaderView({
 
     void open().catch(() => {
       window.clearInterval(selectionTimer);
-      window.clearTimeout(touchTapTimer);
+      pageTap.stop();
       selection.pause();
       words?.abort();
       view?.close();
@@ -276,7 +257,7 @@ export function useReaderView({
       window.removeEventListener("keydown", readKey);
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
-      window.clearTimeout(touchTapTimer);
+      pageTap.stop();
       selection.pause();
       words?.abort();
       view?.close();

@@ -811,6 +811,10 @@ export class Paginator extends HTMLElement {
             this.#locked = false
         }
     }
+    // Lets the host app record touch decisions without coupling this vendored file to it.
+    #log(k, d) {
+        this.dispatchEvent(new CustomEvent('gesture-log', { detail: { k, d } }))
+    }
     #touchIsZoomed() {
         return Math.abs((globalThis.visualViewport?.scale ?? 1) - 1) > 0.01
     }
@@ -818,16 +822,27 @@ export class Paginator extends HTMLElement {
         const previous = this.#touchState
         this.#touchState = null
         if (e.touches.length !== 1) {
+            this.#log('pg-start-ignored', { reason: 'multi-touch', touches: e.touches.length })
             if (previous?.dragging) void this.#snapTouch(previous.page, 0)
             return
         }
-        if (!this.#view || !this.#scrollBounds || this.scrolled || this.#locked || this.#touchIsZoomed()) return
+        if (!this.#view || !this.#scrollBounds || this.scrolled || this.#locked || this.#touchIsZoomed()) {
+            this.#log('pg-start-ignored', {
+                reason: !this.#view || !this.#scrollBounds ? 'not-ready' : this.scrolled ? 'scrolled'
+                    : this.#locked ? 'locked' : 'zoomed',
+            })
+            return
+        }
         const touch = e.touches[0]
         // The first pixels of each edge belong to the system "back" gesture (iOS Safari).
         // Keep in sync with systemEdgePx in features/reader/page-gestures.ts.
         const frameLeft = e.target?.ownerDocument?.defaultView?.frameElement?.getBoundingClientRect().left ?? 0
         const edgeX = touch.clientX + frameLeft
-        if (!this.#vertical && (edgeX < 24 || edgeX > globalThis.innerWidth - 24)) return
+        if (!this.#vertical && (edgeX < 24 || edgeX > globalThis.innerWidth - 24)) {
+            this.#log('pg-start-ignored', { reason: 'system-edge', edgeX: Math.round(edgeX), width: globalThis.innerWidth })
+            return
+        }
+        this.#log('pg-start', { edgeX: Math.round(edgeX), page: this.page })
         this.#touchState = {
             id: touch.identifier, page: this.page, time: e.timeStamp,
             x: touch.screenX, y: touch.screenY,
@@ -844,9 +859,13 @@ export class Paginator extends HTMLElement {
         if (!state.dragging) {
             const dx = Math.abs(x - state.x), dy = Math.abs(y - state.y)
             const [along, across] = this.#vertical ? [dy, dx] : [dx, dy]
-            if (across > 10 && across > along) this.#touchState = null
+            if (across > 10 && across > along) {
+                this.#log('pg-cross-axis', { along: Math.round(along), across: Math.round(across) })
+                this.#touchState = null
+            }
             if (along <= 10 || along <= across) return
             state.dragging = true
+            this.#log('pg-drag-start', { along: Math.round(along), across: Math.round(across) })
         }
         e.preventDefault()
         this.scrollBy(state.lastX - x, state.lastY - y)
@@ -857,6 +876,7 @@ export class Paginator extends HTMLElement {
         const state = this.#touchState
         if (!state) return
         if (e.type === 'touchcancel') {
+            this.#log('pg-cancel', { dragging: state.dragging })
             this.#touchState = null
             if (state.dragging) void this.#snapTouch(state.page, 0)
             return
@@ -864,7 +884,10 @@ export class Paginator extends HTMLElement {
         const touch = Array.from(e.changedTouches).find(touch => touch.identifier === state.id)
         if (!touch) return
         this.#touchState = null
-        if (!state.dragging) return
+        if (!state.dragging) {
+            this.#log('pg-end', { dragging: false })
+            return
+        }
 
         const distance = this.#vertical ? state.y - touch.screenY : state.x - touch.screenX
         const travel = Math.abs(distance)
@@ -874,6 +897,9 @@ export class Paginator extends HTMLElement {
         const flick = travel >= 20 && travel / duration >= 0.35
         const direction = !this.#touchIsZoomed() && (travel >= threshold || flick)
             ? Math.sign(this.#rtl ? -distance : distance) : 0
+        this.#log('pg-end', {
+            dragging: true, travel: Math.round(travel), ms: Math.round(duration), flick, direction,
+        })
         void this.#snapTouch(state.page, direction)
     }
     // allows one to process rects as if they were LTR and horizontal

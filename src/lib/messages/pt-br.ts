@@ -165,6 +165,17 @@ export const messages = {
     update: "Atualizar agora",
     systems: { reader: "Estado da leitura", annotations: "Grifos", comments: "Comentários", download: "Download do EPUB" },
     states: { ok: "Funcionando", error: "Falha" },
+    gestures: {
+      title: "Registro de gestos",
+      hint: "Guarda neste aparelho só o tipo, a posição e a hora dos toques na leitura, nunca o texto do livro. Copie e envie para ajudar a achar problemas de toque.",
+      events: "eventos registrados",
+      copy: "Copiar registro",
+      copied: "Registro copiado.",
+      clear: "Limpar registro",
+      cleared: "Registro limpo.",
+      field: "Registro de gestos para copiar",
+      none: "Nenhum gesto registrado ainda. Leia algumas páginas e volte aqui.",
+    },
   },
   dictionary: {
     offlineTitle: "Dicionários offline",

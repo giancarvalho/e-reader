@@ -59,6 +59,11 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   o gesto de voltar do sistema. Toques em sequência rápida são páginas
   independentes. Se o navegador não enviar `click` após um toque rápido (iOS), o
   próprio toque aplica a zona depois de 350 ms.
+- Registro de gestos (`src/lib/gesture-log.ts`): o leitor e o paginador gravam no
+  `localStorage` (`e-reader-gesture-log`, até 400 eventos) só tipo de evento,
+  coordenadas, tempos e decisões, nunca texto nem posição do livro. A página da
+  conta tem **Copiar registro** (com ambiente do aparelho) e **Limpar registro**,
+  para diagnosticar toques em aparelho real sem ferramentas de desenvolvedor.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
   leitor segue as preferências individuais do EPUB.

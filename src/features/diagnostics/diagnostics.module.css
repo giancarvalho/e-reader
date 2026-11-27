@@ -11,3 +11,15 @@
 .summary dd {
   margin: 0;
 }
+
+.gestureLog {
+  display: grid;
+  gap: var(--space-12);
+  padding: var(--space-16);
+}
+
+.gestureActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}

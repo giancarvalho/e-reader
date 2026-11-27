@@ -24,13 +24,13 @@ afterEach(() => {
 
 it("falls back to the window when the visual viewport is unavailable", () => {
   Object.defineProperty(window, "visualViewport", { configurable: true, value: undefined });
-  expect(getViewport()).toEqual({ left: 0, top: 0, width: window.innerWidth, height: window.innerHeight, bottomInset: 0 });
+  expect(getViewport()).toEqual({ left: 0, top: 0, width: window.innerWidth, height: window.innerHeight, bottomInset: 0, scale: 1 });
 });
 
 it("reports the area left above the keyboard", () => {
   Object.defineProperty(window, "innerHeight", { configurable: true, value: 800 });
   mockVisualViewport({ offsetLeft: 0, offsetTop: 0, width: 390, height: 500 });
-  expect(getViewport()).toEqual({ left: 0, top: 0, width: 390, height: 500, bottomInset: 300 });
+  expect(getViewport()).toEqual({ left: 0, top: 0, width: 390, height: 500, bottomInset: 300, scale: 1 });
 });
 
 it("never reports a negative inset", () => {

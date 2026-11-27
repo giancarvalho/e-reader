@@ -4,6 +4,10 @@ O diagnóstico fica na conta e na estante offline. Registra apenas as categorias
 de erro, os horários e o estado do último sync ou download. O painel mostra
 a versão do deploy e se o service worker controla a página.
 
+A conta também guarda um registro de gestos de toque (tipo, posição, tempo e
+decisão de cada toque na leitura, sem texto do livro). Use **Copiar registro**
+na conta para enviar o relatório ao investigar problemas de toque no iPhone.
+
 ## Restaurar um backup local
 
 Com o Supabase local iniciado, execute `scripts/ops/check-local-restore.sh`.

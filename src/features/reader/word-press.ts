@@ -1,3 +1,4 @@
+import { logGesture } from "@/lib/gesture-log";
 import { classifyPress, holdMs, movementTolerance, type PressOutcome } from "./page-gestures";
 
 const interactive = "a, button, input, select, textarea, [contenteditable]";
@@ -42,6 +43,10 @@ export function applyTextSelection(doc: Document, range: Range) {
   selection?.addRange(range);
 }
 
+function tagOf(target: EventTarget | null) {
+  return (target as Element | null)?.tagName?.toLowerCase();
+}
+
 export type PressRecord = { outcome: PressOutcome; endedAt: number; x: number; y: number };
 const lastPress = new WeakMap<Document, PressRecord>();
 
@@ -57,6 +62,7 @@ type Press = {
   y: number;
   startedAt: number;
   travel: number;
+  moveLogged?: boolean;
   word?: Range;
   selecting: boolean;
   timer?: number;
@@ -81,6 +87,9 @@ export function bindWordPress(
 
   doc.addEventListener("touchstart", event => {
     if (event.touches.length !== 1 || (event.target as Element | null)?.closest?.(interactive)) {
+      logGesture("touchstart-ignored", {
+        touches: event.touches.length, interactive: Boolean((event.target as Element | null)?.closest?.(interactive)),
+      });
       if (press?.selecting) doc.getSelection()?.removeAllRanges();
       reset();
       return;
@@ -96,10 +105,14 @@ export function bindWordPress(
     };
     press = current;
     root.dataset.readerWordPress = "pending";
+    logGesture("touchstart", {
+      x: Math.round(x), y: Math.round(y), target: tagOf(event.target), word: Boolean(word), cancelable: event.cancelable,
+    });
 
     if (word) current.timer = window.setTimeout(() => {
       if (press !== current || doc.visibilityState !== "visible") return;
       current.selecting = true;
+      logGesture("hold", { ms: Math.round(performance.now() - current.startedAt) });
       root.dataset.readerWordPress = "selecting";
       applyTextSelection(doc, word);
     }, holdMs);
@@ -113,7 +126,11 @@ export function bindWordPress(
 
     current.travel = Math.max(current.travel, Math.hypot(touch.clientX - current.x, touch.clientY - current.y));
     if (!current.selecting || !current.word) {
-      if (current.travel > movementTolerance) window.clearTimeout(current.timer);
+      if (current.travel > movementTolerance) {
+        if (!current.moveLogged) logGesture("touchmove-past-tolerance", { travel: Math.round(current.travel), cancelable: event.cancelable });
+        current.moveLogged = true;
+        window.clearTimeout(current.timer);
+      }
       return;
     }
 
@@ -137,6 +154,10 @@ export function bindWordPress(
     const outcome = current.selecting ? "hold" : classifyPress(performance.now() - current.startedAt, current.travel);
     const record = { outcome, endedAt: performance.now(), x: current.x, y: current.y };
     lastPress.set(doc, record);
+    logGesture("touchend", {
+      outcome, ms: Math.round(record.endedAt - current.startedAt), travel: Math.round(current.travel),
+      selecting: current.selecting, defaultPrevented: event.defaultPrevented,
+    });
     onPress?.(record, event.target as Element | null);
     if (current.selecting) {
       event.preventDefault();
@@ -146,11 +167,16 @@ export function bindWordPress(
   }, options);
 
   doc.addEventListener("touchcancel", () => {
+    logGesture("touchcancel", {
+      ms: press ? Math.round(performance.now() - press.startedAt) : undefined,
+      travel: press ? Math.round(press.travel) : undefined, selecting: press?.selecting,
+    });
     if (press?.selecting) doc.getSelection()?.removeAllRanges();
     reset();
   }, options);
 
   doc.addEventListener("contextmenu", event => {
+    logGesture("contextmenu", { press: Boolean(press) });
     if (press) event.preventDefault();
   }, options);
 

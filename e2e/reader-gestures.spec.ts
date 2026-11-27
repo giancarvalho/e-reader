@@ -43,6 +43,16 @@ test("a quick tap in the middle toggles the bars and on the sides turns the page
   await expect.poll(() => visibleChapter(page)).toBe("Segundo capítulo");
   await press(page, 0.15, 80);
   await expect.poll(() => visibleChapter(page)).toBe("Primeiro capítulo");
+
+  // The on-device gesture log records what happened, without any book text.
+  const kinds = async () => page.evaluate(() => {
+    const entries: { k: string }[] = JSON.parse(localStorage.getItem("e-reader-gesture-log") ?? "[]");
+    return { kinds: entries.map(entry => entry.k), text: JSON.stringify(entries) };
+  });
+  await expect.poll(async () => (await kinds()).kinds.includes("tap-zone")).toBe(true);
+  const { kinds: seen, text } = await kinds();
+  for (const kind of ["chapter-load", "touchstart", "touchend", "turn"]) expect(seen).toContain(kind);
+  expect(text).not.toContain("capítulo");
 });
 
 test("a hesitant press near the edge neither turns the page nor toggles the bars", async ({ page }) => {
