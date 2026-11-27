@@ -34,6 +34,8 @@ O catálogo visual dos componentes, nos temas Dia e Noite, roda em
 | `Avatar` | Foto ou iniciais de uma pessoa | |
 | `BookCard`, `BookCover` | Livro na estante. Traz fundo, raio e margem próprios; `featured` usa o título de página em vez do de seção | `BookCover` é composto por `BookCard` |
 
+As telas de conta também usam a variante row de Link para linhas com ícone, rótulo e indicador final, a variante surface de Section para agrupá-las e a variante label de Heading para títulos de navegação.
+
 ## Utilitários
 
 - `src/design-system/viewport.ts`: `getViewport()` devolve a área realmente visível (posição, tamanho e o espaço coberto pelo teclado, `bottomInset`); `observeViewport(callback)` avisa quando ela muda. `Sheet` e o balão de comentário usam; todo painel flutuante novo deve usar (regra 12).

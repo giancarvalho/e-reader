@@ -25,7 +25,7 @@ export function SignOutForm() {
 
   return (
     <form action={clearAndSignOut}>
-      <Button type="submit" loading={pending}>{messages.auth.signOut}</Button>
+      <Button variant="quiet" type="submit" loading={pending}>{messages.auth.signOut}</Button>
       {failed && <Notice>{messages.auth.signOutFailed}</Notice>}
     </form>
   );

@@ -15,3 +15,10 @@
   border: var(--focus-ring) solid var(--color-surface);
   border-radius: var(--radius-control);
 }
+
+.section[data-variant="surface"] {
+  gap: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+}

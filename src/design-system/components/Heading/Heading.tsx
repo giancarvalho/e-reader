@@ -8,7 +8,7 @@ type HeadingProps = {
    * `page` is the editorial title of a screen or a featured item. `section`
    * titles a group inside a screen. `display` is the large title of the home.
    */
-  variant?: "page" | "section" | "display";
+  variant?: "page" | "section" | "display" | "label";
 };
 
 export function Heading({ children, as: Tag = "h1", variant = "page" }: HeadingProps) {

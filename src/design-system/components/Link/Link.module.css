@@ -23,3 +23,20 @@
   outline: var(--focus-ring) solid var(--color-accent-text);
   outline-offset: var(--focus-ring);
 }
+
+.link[data-variant="row"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-12);
+  min-block-size: var(--touch-target);
+  padding: var(--space-8) var(--space-12);
+  color: var(--color-ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.link[data-variant="row"] + .link[data-variant="row"] { border-block-start: var(--border-divider); }
+.link[data-variant="row"] svg { color: var(--color-muted); }
+.link[data-variant="row"]:hover { text-decoration: underline; }
+.link[data-variant="row"]:focus-visible { outline-offset: calc(-1 * var(--focus-ring)); }

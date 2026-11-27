@@ -13,3 +13,8 @@
   letter-spacing: var(--tracking-display);
   text-wrap: balance;
 }
+
+.heading[data-variant="label"] {
+  font: var(--font-label) var(--font-ui);
+  color: var(--color-muted);
+}

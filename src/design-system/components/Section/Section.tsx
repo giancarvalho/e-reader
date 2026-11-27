@@ -7,7 +7,7 @@ type SectionProps = {
   /** The section heading, rendered as an h2. Sections without a title are labelled by their content. */
   title?: string;
   /** `divided` is separated from what comes before by a rule; `outlined` is a bordered card. */
-  variant?: "divided" | "outlined";
+  variant?: "divided" | "outlined" | "surface";
 };
 
 export function Section({ title, variant = "divided", children }: SectionProps) {

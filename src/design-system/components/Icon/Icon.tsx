@@ -1,4 +1,9 @@
 const paths = {
+  back: "m14 6-6 6 6 6",
+  next: "m10 6 6 6-6 6",
+  books: "M4 19V5h4v14zm6 0V5h4v14zm6-13 3-1 3 13-3 1z",
+  dictionary: "M4 19V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 1 0-4h13M8 8h7m-7 4h5",
+  diagnostics: "M3 12h4l3-6 4 12 3-6h4",
   close: "M6 6l12 12M18 6L6 18",
   reply: "M9 10l-5 4 5 4M4 14h10a5 5 0 0 0 0-10",
   trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5",
