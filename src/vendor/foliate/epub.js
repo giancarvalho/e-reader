@@ -817,6 +817,13 @@ class Loader {
             if (doc.querySelector('parsererror')) throw new Error('Invalid EPUB document')
             for (const node of doc.querySelectorAll('script, iframe, frame, object, embed, base, meta[http-equiv]'))
                 node.remove()
+            // The chapter frame may run scripts so that WebKit delivers input events to the app
+            // (see paginator.js), so every other way to run EPUB code must be inert as well.
+            for (const el of doc.querySelectorAll('*')) {
+                for (const attr of Array.from(el.attributes)) {
+                    if (/^on/i.test(attr.name) || /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name)
+                }
+            }
             if (mediaType !== MIME.SVG) {
                 const namespace = 'http://www.w3.org/1999/xhtml'
                 const head = doc.getElementsByTagNameNS(namespace, 'head')[0]

@@ -8,7 +8,9 @@ import { Text } from "@/design-system/components/Text";
 import { formatDateTime } from "@/lib/format";
 import { isOnline, onConnectivityChange } from "@/lib/online";
 import { observeDiagnostics, readDiagnostics } from "@/lib/diagnostics";
+import type { GestureData } from "@/lib/gesture-log";
 import { messages } from "@/lib/messages/pt-br";
+import { CopyDiagnostics } from "./CopyDiagnostics";
 import styles from "./diagnostics.module.css";
 
 export function DiagnosticsPage() {
@@ -36,6 +38,13 @@ export function DiagnosticsPage() {
   }, []);
 
   const version = process.env.NEXT_PUBLIC_APP_VERSION || diagnostics.local;
+  const status: GestureData = {
+    version,
+    online,
+    serviceWorker: online === undefined ? undefined : worker,
+    ...Object.fromEntries(Object.values(snapshot?.last ?? {}).map(entry => [entry.system, `${entry.state} at ${entry.time}`])),
+    recentFailures: snapshot?.errors.map(entry => `${entry.system} at ${entry.time}`).join("; ") || "none",
+  };
   return (
     <Page>
       <Heading>{diagnostics.title}</Heading>
@@ -58,6 +67,7 @@ export function DiagnosticsPage() {
           {diagnostics.systems[entry.system]} · {formatDateTime(entry.time)}
         </li>)}
       </ul> : <Text>{diagnostics.empty}</Text>}
+      <CopyDiagnostics status={status} />
       <Link href="/estante">{messages.reader.shelf}</Link>
     </Page>
   );

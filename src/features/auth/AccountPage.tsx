@@ -1,4 +1,3 @@
-import { GestureLogActions } from "@/features/diagnostics";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Icon } from "@/design-system/components/Icon";
 import { Link } from "@/design-system/components/Link";
@@ -65,7 +64,6 @@ export function AccountContent({ name, photo, signOutFailed }: {
               <Icon name="diagnostics" /><span>{diagnostics.title}</span><Icon name="next" />
             </Link>
           </Section>
-          <Section variant="surface"><GestureLogActions /></Section>
         </section>
 
         <footer className={styles.accountFooter}>

@@ -150,9 +150,10 @@ export function useReaderView({
       view.addEventListener("load", event => {
         if (cancelled) return;
         const { doc } = (event as CustomEvent<{ doc: Document }>).detail;
-        if (!chapterReceivesEvents(doc)) overlaysReceiveTaps.add(doc);
+        const receivesEvents = chapterReceivesEvents(doc);
+        if (!receivesEvents) overlaysReceiveTaps.add(doc);
         pointerId = undefined;
-        logGesture("chapter-load", chapterLayout(doc, content));
+        logGesture("chapter-load", { ...chapterLayout(doc, content), receivesEvents });
         words?.abort();
         words = new AbortController();
         bindWordPress(doc, words.signal, () => {
