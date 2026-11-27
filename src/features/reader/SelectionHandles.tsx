@@ -81,8 +81,7 @@ export function SelectionHandles({ selection, onAdjusting }: {
     if (!drag || event.pointerId !== drag.pointer) return;
     active.current = null;
     const doc = rangeDocument(range);
-    if (event.type === "pointerup") commit(drag.draft);
-    else {
+    if (event.type !== "pointerup" || !commit(drag.draft)) {
       applyTextSelection(doc, range);
       place(range);
     }
@@ -97,8 +96,9 @@ export function SelectionHandles({ selection, onAdjusting }: {
     const word = nextWord(range, edge, (event.key === "ArrowRight") !== rtl);
     const next = word && withMovedEdge(range, edge, word);
     if (!next) return;
-    applyTextSelection(rangeDocument(range), next);
-    commit(next);
+    const doc = rangeDocument(range);
+    applyTextSelection(doc, next);
+    if (!commit(next)) applyTextSelection(doc, range);
   }
 
   return (

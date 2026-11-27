@@ -7,8 +7,12 @@ export type ReaderSelection = AnnotationSelection & {
   range: Range;
   anchor: () => ReturnType<typeof annotationAnchor>;
   frameArea: () => DOMRect | undefined;
-  commit: (range: Range) => void;
+  commit: (range: Range) => boolean;
 };
+
+function selectedQuote(doc: Document) {
+  return doc.getSelection()?.toString().trim().slice(0, 4000);
+}
 
 export function trackReaderSelection(
   readView: () => View | undefined,
@@ -38,20 +42,28 @@ export function trackReaderSelection(
     return content?.getBoundingClientRect();
   }
 
-  function publish(view: View, doc: Document, index: number, range: Range, cfi: string) {
+  function publish(view: View, doc: Document, index: number, range: Range, cfi: string, quote: string) {
     shown = true;
     report({
-      cfi, quote: range.toString().trim().slice(0, 4000), range,
+      cfi, quote, range,
       sample: doc.body?.textContent?.slice(0, 5000),
       anchor: () => annotationAnchor(content, range, { wholeRange: true }),
       frameArea,
       commit(next) {
-        if (!canInspect() || view.renderer.getContents()[0]?.doc !== doc) return;
-        const nextCfi = view.getCFI(index, next);
-        if (nextCfi === previous || nextCfi.length > 4096) return;
-        pause();
-        previous = nextCfi;
-        publish(view, doc, index, next, nextCfi);
+        const text = selectedQuote(doc);
+        if (!text || !canInspect() || !view.renderer.getContents().some(item => item.doc === doc)) return false;
+        try {
+          const nextCfi = view.getCFI(index, next);
+          if (nextCfi.length > 4096) return false;
+          if (nextCfi !== previous) {
+            pause();
+            previous = nextCfi;
+            publish(view, doc, index, next, nextCfi, text);
+          }
+          return true;
+        } catch {
+          return false;
+        }
       },
     });
   }
@@ -62,7 +74,7 @@ export function trackReaderSelection(
     for (const { doc, index } of view.renderer.getContents()) {
       if (pressInProgress(doc)) return;
       const selected = doc.getSelection();
-      const quote = selected?.toString().trim().slice(0, 4000);
+      const quote = selectedQuote(doc);
       if (!quote || !selected?.rangeCount) continue;
       try {
         const range = textRange(doc, selected.getRangeAt(0)).cloneRange();
@@ -71,8 +83,8 @@ export function trackReaderSelection(
           pause();
           previous = cfi;
           timer = window.setTimeout(() => {
-            if (canInspect() && !pressInProgress(doc) && doc.getSelection()?.toString().trim().slice(0, 4000) === quote) {
-              publish(view, doc, index, range, cfi);
+            if (canInspect() && !pressInProgress(doc) && selectedQuote(doc) === quote) {
+              publish(view, doc, index, range, cfi, quote);
             }
           }, 180);
         }
