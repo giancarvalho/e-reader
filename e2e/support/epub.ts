@@ -17,7 +17,7 @@ export const bytes = zipSync({
     <item id="two" href="two.xhtml" media-type="application/xhtml+xml"/></manifest>
     <spine><itemref idref="one"/><itemref idref="two"/></spine></package>`),
   "nav.xhtml": strToU8(xhtml('<nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc"><ol><li><a href="one.xhtml">Um</a></li><li><a href="two.xhtml">Dois</a></li></ol></nav>')),
-  "one.xhtml": strToU8(xhtml('<p>Primeiro capítulo</p><script>parent.document.body.dataset.epubScript = "executed"</script><img src="https://example.invalid/tracker.png" alt=""/>')),
+  "one.xhtml": strToU8(xhtml('<p>Primeiro capítulo</p><script>parent.document.body.dataset.epubScript = "executed"</script><img src="https://example.invalid/tracker.png" alt="" onerror="parent.document.body.dataset.epubScript = &quot;handler&quot;"/>')),
   "two.xhtml": strToU8(xhtml("<p>Segundo capítulo</p>")),
 });
 

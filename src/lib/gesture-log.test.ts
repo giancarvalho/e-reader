@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { clearGestureLog, formatGestureReport, logGesture, readGestureLog } from "./gesture-log";
+import { clearGestureLog, formatDiagnosticReport, logGesture, readGestureLog } from "./gesture-log";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -33,17 +33,28 @@ it("clears memory and storage", () => {
   expect(localStorage.getItem("e-reader-gesture-log")).toBeNull();
 });
 
-it("formats a readable report with relative times and the environment", () => {
+it("formats a readable report with status, device and relative event times", () => {
   vi.setSystemTime(1_000);
   logGesture("touchstart", { x: 1, y: 2 });
   vi.setSystemTime(1_250);
   logGesture("touchend", { outcome: "dead" });
-  const report = formatGestureReport(readGestureLog(), { app: "abc", standalone: true, missing: undefined }, new Date(2_000));
+  const report = formatDiagnosticReport(
+    { version: "abc", worker: true, missing: undefined },
+    readGestureLog(),
+    { standalone: true },
+    new Date(2_000),
+  );
 
+  expect(report).toContain("E-reader diagnostic");
   expect(report).toContain("generated: 1970-01-01T00:00:02.000Z");
-  expect(report).toContain("app: abc");
-  expect(report).toContain("standalone: true");
+  expect(report).toContain("--- status\nversion: abc\nworker: true");
   expect(report).not.toContain("missing");
+  expect(report).toContain("--- device\nstandalone: true");
+  expect(report).toContain("--- gestures: 2 events from");
   expect(report).toContain("+      0ms touchstart x=1 y=2");
   expect(report).toContain("+    250ms touchend outcome=dead");
+});
+
+it("reports an empty gesture log without failing", () => {
+  expect(formatDiagnosticReport({ version: "abc" }, [], {})).toContain("--- gestures: 0 events");
 });

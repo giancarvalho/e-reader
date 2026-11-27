@@ -239,7 +239,11 @@ class View {
             display: 'none',
             width: '100%', height: '100%',
         })
-        this.#iframe.setAttribute('sandbox', 'allow-same-origin')
+        // WebKit never runs listeners that the app attaches to a document whose frame cannot run
+        // scripts, which silently disables every tap and swipe on iOS. Scripts are therefore allowed
+        // in the sandbox, and the EPUB loader (epub.js) makes the content inert: it removes script
+        // elements and event-handler attributes and injects a default-src 'none' CSP.
+        this.#iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts')
         this.#iframe.setAttribute('scrolling', 'no')
     }
     get element() {
@@ -834,12 +838,12 @@ export class Paginator extends HTMLElement {
             return
         }
         const touch = e.touches[0]
-        // The first pixels of each edge belong to the system "back" gesture (iOS Safari).
+        // The first pixels of the left edge belong to the system "back" gesture (iOS Safari).
         // Keep in sync with systemEdgePx in features/reader/page-gestures.ts.
         const frameLeft = e.target?.ownerDocument?.defaultView?.frameElement?.getBoundingClientRect().left ?? 0
         const edgeX = touch.clientX + frameLeft
-        if (!this.#vertical && (edgeX < 24 || edgeX > globalThis.innerWidth - 24)) {
-            this.#log('pg-start-ignored', { reason: 'system-edge', edgeX: Math.round(edgeX), width: globalThis.innerWidth })
+        if (!this.#vertical && edgeX < 24) {
+            this.#log('pg-start-ignored', { reason: 'system-edge', edgeX: Math.round(edgeX) })
             return
         }
         this.#log('pg-start', { edgeX: Math.round(edgeX), page: this.page })

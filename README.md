@@ -66,8 +66,9 @@ texto, aparece para todo o grupo e funciona offline.
 | Segurar entre 0,25 e 1 segundo | Nada acontece, para uma hesitação nunca virar a página |
 
 As regras estão em [`src/features/reader/page-gestures.ts`](src/features/reader/page-gestures.ts).
-Para diagnosticar problemas de toque num aparelho real, a página da conta tem
-**Copiar registro**, que guarda só tipo, posição e hora dos toques, nunca o texto do livro.
+Para diagnosticar problemas de toque num aparelho real, a página de **Diagnóstico** tem
+**Copiar diagnóstico**, que reúne o estado do app, o aparelho e o registro dos toques
+(só tipo, posição e hora, nunca o texto do livro).
 
 ## Princípios
 

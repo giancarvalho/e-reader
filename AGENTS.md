@@ -61,9 +61,18 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   próprio toque aplica a zona depois de 350 ms.
 - Registro de gestos (`src/lib/gesture-log.ts`): o leitor e o paginador gravam no
   `localStorage` (`e-reader-gesture-log`, até 400 eventos) só tipo de evento,
-  coordenadas, tempos e decisões, nunca texto nem posição do livro. A página da
-  conta tem **Copiar registro** (com ambiente do aparelho) e **Limpar registro**,
-  para diagnosticar toques em aparelho real sem ferramentas de desenvolvedor.
+  coordenadas, tempos e decisões, nunca texto nem posição do livro. A página de
+  **Diagnóstico** tem **Copiar diagnóstico**, que junta o estado do app (versão,
+  conexão, service worker, falhas), o aparelho e esse registro, para investigar
+  problemas de toque em aparelho real sem ferramentas de desenvolvedor.
+- Capítulo do EPUB: o iframe usa `sandbox="allow-same-origin allow-scripts"`
+  porque o WebKit (iOS) não executa os ouvintes que o app registra num documento
+  cujo frame não pode rodar scripts, o que desativava todo toque no texto. Por
+  isso o carregador (`src/vendor/foliate/epub.js`) deixa o conteúdo inerte:
+  remove `script`, `iframe`, `object`, `embed`, `base` e `meta[http-equiv]`,
+  remove atributos `on*` e URLs `javascript:`, e injeta a CSP
+  `default-src 'none'`. O e2e confere que um `onerror` do EPUB nunca executa.
+  Não afrouxe nenhuma dessas camadas sem rever as outras.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
   leitor segue as preferências individuais do EPUB.

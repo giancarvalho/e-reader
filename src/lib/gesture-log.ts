@@ -81,7 +81,7 @@ export function describeViewport() {
   return `${Math.round(width)}x${Math.round(height)}@${scale}`;
 }
 
-export function gestureEnvironment(): GestureData {
+export function deviceEnvironment(): GestureData {
   const standalone = (navigator as Navigator & { standalone?: boolean }).standalone
     ?? window.matchMedia?.("(display-mode: standalone)").matches;
   return {
@@ -99,19 +99,24 @@ export function gestureEnvironment(): GestureData {
   };
 }
 
-export function formatGestureReport(entries: GestureEntry[], environment: GestureData, now = new Date()) {
-  const header = Object.entries(environment)
+function lines(data: GestureData) {
+  return Object.entries(data)
     .filter(([, value]) => value !== undefined)
     .map(([name, value]) => `${name}: ${value}`);
+}
+
+export function formatDiagnosticReport(status: GestureData, entries: GestureEntry[], device: GestureData, now = new Date()) {
   const first = entries[0]?.t ?? 0;
-  const lines = entries.map(({ t, k, d }) =>
+  const events = entries.map(({ t, k, d }) =>
     `+${String(t - first).padStart(7)}ms ${k}${d ? ` ${Object.entries(d).map(([name, value]) => `${name}=${value}`).join(" ")}` : ""}`);
   return [
-    "E-reader gesture log",
+    "E-reader diagnostic",
     `generated: ${now.toISOString()}`,
-    ...header,
-    `events: ${entries.length}${entries[0] ? ` (from ${new Date(first).toISOString()})` : ""}`,
-    "---",
-    ...lines,
+    "--- status",
+    ...lines(status),
+    "--- device",
+    ...lines(device),
+    `--- gestures: ${entries.length}${entries[0] ? ` events from ${new Date(first).toISOString()}` : " events"}`,
+    ...events,
   ].join("\n");
 }
