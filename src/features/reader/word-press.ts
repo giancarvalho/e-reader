@@ -1,5 +1,5 @@
-const holdMs = 2_000;
-const movementTolerance = 10;
+import { classifyPress, holdMs, movementTolerance, type PressOutcome } from "./page-gestures";
+
 const interactive = "a, button, input, select, textarea, [contenteditable]";
 export const wordPattern = /[\p{L}\p{M}]+(?:[-‐‑'’][\p{L}\p{M}]+)*/gu;
 
@@ -42,16 +42,32 @@ export function applyTextSelection(doc: Document, range: Range) {
   selection?.addRange(range);
 }
 
+export type PressRecord = { outcome: PressOutcome; endedAt: number; x: number; y: number };
+const lastPress = new WeakMap<Document, PressRecord>();
+
+/** The touch that just ended, if any. A following `click` belongs to it and must obey its outcome. */
+export function recentPress(doc: Document, windowMs = 800) {
+  const record = lastPress.get(doc);
+  return record && performance.now() - record.endedAt <= windowMs ? record : undefined;
+}
+
 type Press = {
   id: number;
   x: number;
   y: number;
+  startedAt: number;
+  travel: number;
   word?: Range;
   selecting: boolean;
   timer?: number;
 };
 
-export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () => void) {
+export function bindWordPress(
+  doc: Document,
+  signal: AbortSignal,
+  onRelease: () => void,
+  onPress?: (press: PressRecord, target: Element | null) => void,
+) {
   let press: Press | undefined;
   const root = doc.documentElement;
 
@@ -75,7 +91,9 @@ export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () 
     const x = touch.clientX;
     const y = touch.clientY;
     const word = wordAtPoint(doc, x, y);
-    const current: Press = { id: touch.identifier, x, y, word, selecting: false };
+    const current: Press = {
+      id: touch.identifier, x, y, word, selecting: false, startedAt: performance.now(), travel: 0,
+    };
     press = current;
     root.dataset.readerWordPress = "pending";
 
@@ -93,10 +111,9 @@ export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () 
     const touch = Array.from(event.touches).find(item => item.identifier === current.id);
     if (!touch) return;
 
+    current.travel = Math.max(current.travel, Math.hypot(touch.clientX - current.x, touch.clientY - current.y));
     if (!current.selecting || !current.word) {
-      if (Math.hypot(touch.clientX - current.x, touch.clientY - current.y) > movementTolerance) {
-        window.clearTimeout(current.timer);
-      }
+      if (current.travel > movementTolerance) window.clearTimeout(current.timer);
       return;
     }
 
@@ -117,6 +134,10 @@ export function bindWordPress(doc: Document, signal: AbortSignal, onRelease: () 
     const current = press;
     if (!current || !Array.from(event.changedTouches).some(touch => touch.identifier === current.id)) return;
     reset();
+    const outcome = current.selecting ? "hold" : classifyPress(performance.now() - current.startedAt, current.travel);
+    const record = { outcome, endedAt: performance.now(), x: current.x, y: current.y };
+    lastPress.set(doc, record);
+    onPress?.(record, event.target as Element | null);
     if (current.selecting) {
       event.preventDefault();
       event.stopImmediatePropagation();

@@ -8,7 +8,8 @@ import type { View } from "@/vendor/foliate/view";
 import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
-import { bindWordPress } from "./word-press";
+import { tapZone } from "./page-gestures";
+import { bindWordPress, recentPress, type PressRecord } from "./word-press";
 import { trackReaderSelection, type ReaderSelection } from "./reader-selection";
 
 type Options = {
@@ -84,6 +85,7 @@ export function useReaderView({
     let pointerId: number | undefined;
     let words: AbortController | undefined;
     let tap: { event: MouseEvent; annotationHit: boolean } | undefined;
+    let touchTapTimer: number | undefined;
     const overlaysReceiveTaps = new WeakSet<Document>();
     const selection = trackReaderSelection(() => view, content, () => !cancelled && pointerId === undefined, value => reportSelection(value));
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -110,24 +112,47 @@ export function useReaderView({
       }
     }
 
-    function readTap(event: MouseEvent) {
-      const currentTap = { event, annotationHit: false };
-      tap = currentTap;
-      const doc = event.currentTarget as Document;
+    function applyZone(doc: Document, clientX: number) {
       const area = content?.getBoundingClientRect();
       const bounds = doc.defaultView?.frameElement?.getBoundingClientRect();
+      if (dismissAnnotation() || doc.getSelection()?.toString() || !area?.width || !bounds || selection.shown) return false;
+      const zone = tapZone((bounds.left + clientX - area.left) / area.width);
+      if (zone === "toggle") toggleControls();
+      else turn(zone);
+      return true;
+    }
+
+    function readTap(event: MouseEvent) {
+      const doc = event.currentTarget as Document;
+      const press = recentPress(doc);
+      if (press) {
+        // The touch that produced this click already decided what it was.
+        window.clearTimeout(touchTapTimer);
+        if (press.outcome !== "tap") return;
+      }
+      const currentTap = { event, annotationHit: false };
+      tap = currentTap;
       const interactive = (event.target as Element | null)?.closest?.("a, button, input, select, textarea");
       window.setTimeout(() => {
         if (tap === currentTap) tap = undefined;
         if (cancelled || currentTap.annotationHit || event.button !== 0) return;
-        if (dismissAnnotation() || event.defaultPrevented || event.detail > 1 || interactive ||
-          doc.getSelection()?.toString() || !area?.width || !bounds) return;
-        if (selection.shown) return;
-        const fraction = (bounds.left + event.clientX - area.left) / area.width;
-        if (fraction < 0.22) turn("prev");
-        else if (fraction > 0.78) turn("next");
-        else toggleControls();
+        // A mouse double click is a text gesture; quick touch taps are separate page turns.
+        if (event.defaultPrevented || (!press && event.detail > 1) || interactive) {
+          dismissAnnotation();
+          return;
+        }
+        applyZone(doc, event.clientX);
       }, 0);
+    }
+
+    // iOS Safari does not reliably dispatch `click` for taps on plain text inside the chapter frame,
+    // so a quick touch acts on its own if no click follows.
+    function readTouchTap(press: PressRecord, target: Element | null, doc: Document) {
+      window.clearTimeout(touchTapTimer);
+      if (press.outcome !== "tap" || target?.closest?.("a, button, input, select, textarea")) return;
+      touchTapTimer = window.setTimeout(() => {
+        if (!cancelled) applyZone(doc, press.x);
+      }, 350);
     }
 
     window.addEventListener("keydown", readKey);
@@ -163,7 +188,7 @@ export function useReaderView({
         bindWordPress(doc, words.signal, () => {
           pointerId = undefined;
           selection.inspect();
-        });
+        }, (press, target) => readTouchTap(press, target, doc));
         doc.addEventListener("pointerdown", event => {
           pointerId = event.pointerId;
           selection.pause();
@@ -237,6 +262,7 @@ export function useReaderView({
 
     void open().catch(() => {
       window.clearInterval(selectionTimer);
+      window.clearTimeout(touchTapTimer);
       selection.pause();
       words?.abort();
       view?.close();
@@ -250,6 +276,7 @@ export function useReaderView({
       window.removeEventListener("keydown", readKey);
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
+      window.clearTimeout(touchTapTimer);
       selection.pause();
       words?.abort();
       view?.close();

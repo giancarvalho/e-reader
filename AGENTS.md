@@ -51,6 +51,14 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
 - A seleção do leitor mantém alças nas duas extremidades depois do toque
   prolongado. Arrastar uma alça ou usar as setas com ela em foco ajusta o trecho
   por palavra. A ação Definir aparece quando o trecho contém uma única palavra.
+- Gestos de página (`src/features/reader/page-gestures.ts`): toque de até 250 ms
+  decide pela zona (30% esquerda volta, 40% centro mostra/esconde as barras, 30%
+  direita avança); entre 250 ms e 1 s nada acontece; segurar 1 s sem mover
+  seleciona a palavra e abre as alças, e soltar depois disso nunca vira página.
+  Arrastar vira página, mas arrastos que começam nos 24 px das bordas ficam para
+  o gesto de voltar do sistema. Toques em sequência rápida são páginas
+  independentes. Se o navegador não enviar `click` após um toque rápido (iOS), o
+  próprio toque aplica a zona depois de 350 ms.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
   leitor segue as preferências individuais do EPUB.

@@ -823,6 +823,11 @@ export class Paginator extends HTMLElement {
         }
         if (!this.#view || !this.#scrollBounds || this.scrolled || this.#locked || this.#touchIsZoomed()) return
         const touch = e.touches[0]
+        // The first pixels of each edge belong to the system "back" gesture (iOS Safari).
+        // Keep in sync with systemEdgePx in features/reader/page-gestures.ts.
+        const frameLeft = e.target?.ownerDocument?.defaultView?.frameElement?.getBoundingClientRect().left ?? 0
+        const edgeX = touch.clientX + frameLeft
+        if (!this.#vertical && (edgeX < 24 || edgeX > globalThis.innerWidth - 24)) return
         this.#touchState = {
             id: touch.identifier, page: this.page, time: e.timeStamp,
             x: touch.screenX, y: touch.screenY,
