@@ -4,9 +4,9 @@ O diagnóstico fica na conta e na estante offline. Registra apenas as categorias
 de erro, os horários e o estado do último sync ou download. O painel mostra
 a versão do deploy e se o service worker controla a página.
 
-A conta também guarda um registro de gestos de toque (tipo, posição, tempo e
-decisão de cada toque na leitura, sem texto do livro). Use **Copiar registro**
-na conta para enviar o relatório ao investigar problemas de toque no iPhone.
+A página de Diagnóstico tem **Copiar diagnóstico**, que reúne o estado do app, o
+aparelho e um registro dos toques na leitura (tipo, posição, tempo e decisão, sem
+texto do livro). Use-o para enviar o relatório ao investigar problemas no iPhone.
 
 ## Restaurar um backup local
 
