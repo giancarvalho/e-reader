@@ -37,7 +37,12 @@ export function wordAtPoint(doc: Document, x: number, y: number, snap = false) {
   return nearest;
 }
 
+/**
+ * Touch screens only allow text selection while the app owns one (see `readerStyles`).
+ * Otherwise the browser's own long press selects a word well before the 1 s hold.
+ */
 export function applyTextSelection(doc: Document, range: Range) {
+  doc.documentElement.dataset.readerSelectable = "";
   const selection = doc.getSelection();
   selection?.removeAllRanges();
   selection?.addRange(range);
@@ -179,6 +184,10 @@ export function bindWordPress(
     logGesture("contextmenu", { press: Boolean(press) });
     if (press) event.preventDefault();
   }, options);
+
+  doc.addEventListener("selectionchange", () => {
+    if (doc.getSelection()?.isCollapsed ?? true) root.removeAttribute("data-reader-selectable");
+  }, { signal });
 
   signal.addEventListener("abort", reset, { once: true });
 }
