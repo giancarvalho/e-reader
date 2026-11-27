@@ -34,6 +34,19 @@
 
 .selectionMenu { display: grid; }
 
+.selectionHandles > button {
+  position: fixed;
+  z-index: 39;
+  visibility: hidden;
+  translate: calc(-1 * var(--handle-center)) calc(-1 * var(--space-8));
+  touch-action: none;
+  cursor: grab;
+}
+
+.selectionHandles > button[data-outward="left"] { --handle-center: 75%; }
+.selectionHandles > button[data-outward="right"] { --handle-center: 25%; }
+.selectionHandles > button:active { cursor: grabbing; }
+
 .selectionColors {
   display: flex;
   flex-wrap: wrap;

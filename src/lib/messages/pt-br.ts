@@ -105,6 +105,7 @@ export const messages = {
   },
   annotations: {
     selection: "Ações do trecho selecionado",
+    selectionHandle: { start: "Ajustar início da seleção", end: "Ajustar fim da seleção" },
     savedActions: "Ações do grifo salvo",
     addNote: "Adicionar nota",
     define: "Definir",

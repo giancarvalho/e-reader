@@ -48,6 +48,9 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
 
 ## Contratos da experiência de leitura
 
+- A seleção do leitor mantém alças nas duas extremidades depois do toque
+  prolongado. Arrastar uma alça ou usar as setas com ela em foco ajusta o trecho
+  por palavra. A ação Definir aparece quando o trecho contém uma única palavra.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
   leitor segue as preferências individuais do EPUB.

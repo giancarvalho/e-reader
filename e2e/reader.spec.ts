@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Frame, type Locator } from "@playwright/test";
 import { downloadPortugueseDictionary } from "./support/dictionary";
 import { bytes, hash } from "./support/epub";
 
@@ -117,6 +117,19 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
     await expect(dictionary).toHaveCount(0);
+    if (browserName === "webkit") {
+      const [begin] = await chapterWordPoints(frame);
+      const startHandle = page.getByRole("button", { name: "Ajustar início da seleção" });
+      const { x, y, caretX } = await handlePoint(startHandle);
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + begin.x - caretX, y);
+      await page.mouse.up();
+      const selected = () => frame.evaluate(() => document.getSelection()?.toString());
+      await expect.poll(selected).toBe("Segundo capítulo");
+      await startHandle.press("ArrowRight");
+      await expect.poll(selected).toBe("capítulo");
+    }
     await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByText("CC BY-SA 4.0", { exact: true })).toHaveCount(0);
@@ -134,22 +147,23 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     if (!frame) throw new Error("Missing chapter frame");
     const bounds = await (await frame.frameElement()).boundingBox();
     if (!bounds) throw new Error("Missing chapter bounds");
-    const points = await frame.getByText("Segundo capítulo").evaluate(element => {
-      const range = element.ownerDocument.createRange();
-      const text = element.firstChild!;
-      return [[0, 7], [8, 16]].map(([start, end]) => {
-        range.setStart(text, start);
-        range.setEnd(text, end);
-        const { left, top, width, height } = range.getBoundingClientRect();
-        return { x: left + width / 2, y: top + height / 2 };
-      });
-    });
-    const [begin, word] = points.map(point => ({ x: point.x + bounds.x, y: point.y + bounds.y, id: 1 }));
+    const [begin, word] = await chapterWordPoints(frame);
     const cdp = await context.newCDPSession(page);
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
     const pressSelection = () => frame.evaluate(() => document.getSelection()?.toString() ?? "");
     const start = () => cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [word] });
     const release = () => cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    const startHandle = page.getByRole("button", { name: "Ajustar início da seleção" });
+    const endHandle = page.getByRole("button", { name: "Ajustar fim da seleção" });
+    async function dragHandle(handle: typeof startHandle, target: typeof word) {
+      const { x, y, caretX } = await handlePoint(handle);
+      const origin = { x, y, id: 1 };
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [origin] });
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{
+        ...origin, x: origin.x + target.x - caretX, y: origin.y + target.y - word.y,
+      }] });
+      await release();
+    }
 
     await start();
     await page.waitForTimeout(1_000);
@@ -168,6 +182,30 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     expect(menuBounds!.y).toBeGreaterThan(word.y);
     expect(menuBounds!.y - word.y).toBeLessThan(44);
     await expect(dictionary).toHaveCount(0);
+    await dragHandle(startHandle, begin);
+    await expect.poll(pressSelection).toBe("Segundo capítulo");
+    await expect(menu.getByRole("button", { name: "Definir", exact: true })).toHaveCount(0);
+    await dragHandle(endHandle, begin);
+    await expect.poll(pressSelection).toBe("Segundo");
+    await endHandle.press("ArrowRight");
+    await expect.poll(pressSelection).toBe("Segundo capítulo");
+    await startHandle.press("ArrowRight");
+    await expect.poll(pressSelection).toBe("capítulo");
+    const nextLine = await frame.getByText("Segundo capítulo").evaluate(element => {
+      const doc = element.ownerDocument;
+      const paragraph = doc.createElementNS(element.namespaceURI, "p");
+      paragraph.textContent = "Outra";
+      element.after(paragraph);
+      const range = doc.createRange();
+      range.selectNodeContents(paragraph);
+      const { left, top, width, height } = range.getBoundingClientRect();
+      return { x: left + width / 2, y: top + height / 2 };
+    });
+    await dragHandle(endHandle, { ...word, x: nextLine.x + bounds.x, y: nextLine.y + bounds.y });
+    await expect.poll(pressSelection).toMatch(/^capítulo\s+Outra$/);
+    await expect(menu.getByRole("button", { name: "Definir", exact: true })).toHaveCount(0);
+    await endHandle.press("ArrowLeft");
+    await expect.poll(pressSelection).toBe("capítulo");
     await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
@@ -356,4 +394,27 @@ function selectChapterWord(element: Element) {
   range.setEnd(text, "Segundo capítulo".length);
   selection?.removeAllRanges();
   selection?.addRange(range);
+}
+
+async function handlePoint(handle: Locator) {
+  const bounds = await handle.boundingBox();
+  if (!bounds) throw new Error("Missing selection handle");
+  const caretX = await handle.evaluate(button => Number.parseFloat(button.style.left));
+  return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2, caretX };
+}
+
+async function chapterWordPoints(frame: Frame) {
+  const bounds = await (await frame.frameElement()).boundingBox();
+  if (!bounds) throw new Error("Missing chapter bounds");
+  const points = await frame.getByText("Segundo capítulo").evaluate(element => {
+    const range = element.ownerDocument.createRange();
+    const text = element.firstChild!;
+    return [[0, 7], [8, 16]].map(([start, end]) => {
+      range.setStart(text, start);
+      range.setEnd(text, end);
+      const { left, top, width, height } = range.getBoundingClientRect();
+      return { x: left + width / 2, y: top + height / 2 };
+    });
+  });
+  return points.map(point => ({ x: point.x + bounds.x, y: point.y + bounds.y, id: 1 }));
 }

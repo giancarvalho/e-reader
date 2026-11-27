@@ -46,3 +46,26 @@
   cursor: default;
   opacity: var(--control-disabled-opacity);
 }
+
+.button[data-variant="handle"] {
+  padding: 0;
+  color: var(--color-accent-text);
+  background: transparent;
+}
+
+.button[data-variant="handle"]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: var(--space-8);
+  inset-inline-start: var(--handle-center, 50%);
+  translate: -50% 0;
+  inline-size: var(--space-16);
+  block-size: var(--space-16);
+  border: var(--focus-ring) solid var(--color-bg);
+  border-radius: var(--radius-round);
+  background: currentcolor;
+}
+
+.button[data-variant="handle"]:hover:not(:disabled) {
+  background: transparent;
+}
