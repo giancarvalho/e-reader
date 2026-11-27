@@ -46,11 +46,36 @@ autorizados, sem nova confirmação. A CI também exige typecheck e os demais te
 automáticos aplicáveis. Registre separadamente a aceitação em aparelho real e
 qualquer dependência pendente que bloqueie uma tarefa posterior.
 
+### Exceção temporária de CI (até 1 de dezembro de 2026)
+
+O GitHub Actions está sem minutos ou runners (jobs terminam em segundos, sem
+runner atribuído). **Até 1 de dezembro de 2026**, o merge de um PR está
+autorizado sem a CI rodar, desde que todos os checks locais que o ambiente
+permite passem: `npm run lint`, `npm run typecheck`, `npm run dup`,
+`npm run test:unit` e os testes de integração e e2e que puderem rodar. Registre
+no PR o que rodou, o que não pôde rodar (por exemplo WebKit ou Supabase local) e
+por quê. Falhou algum check local? Não mergeie. Depois que a CI voltar,
+reexecute-a nos merges feitos sob esta exceção. **A partir de 1 de dezembro de
+2026 esta exceção expira** e valem de novo os checks verdes no PR.
+
 ## Contratos da experiência de leitura
 
 - A seleção do leitor mantém alças nas duas extremidades depois do toque
   prolongado. Arrastar uma alça ou usar as setas com ela em foco ajusta o trecho
   por palavra. A ação Definir aparece quando o trecho contém uma única palavra.
+- Gestos de página (`src/features/reader/page-gestures.ts`): toque de até 250 ms
+  decide pela zona (30% esquerda volta, 40% centro mostra/esconde as barras, 30%
+  direita avança); entre 250 ms e 1 s nada acontece; segurar 1 s sem mover
+  seleciona a palavra e abre as alças, e soltar depois disso nunca vira página.
+  Arrastar vira página, mas arrastos que começam nos 24 px das bordas ficam para
+  o gesto de voltar do sistema. Toques em sequência rápida são páginas
+  independentes. Se o navegador não enviar `click` após um toque rápido (iOS), o
+  próprio toque aplica a zona depois de 350 ms.
+- Registro de gestos (`src/lib/gesture-log.ts`): o leitor e o paginador gravam no
+  `localStorage` (`e-reader-gesture-log`, até 400 eventos) só tipo de evento,
+  coordenadas, tempos e decisões, nunca texto nem posição do livro. A página da
+  conta tem **Copiar registro** (com ambiente do aparelho) e **Limpar registro**,
+  para diagnosticar toques em aparelho real sem ferramentas de desenvolvedor.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
   leitor segue as preferências individuais do EPUB.

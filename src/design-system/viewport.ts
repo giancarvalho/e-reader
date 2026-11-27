@@ -11,6 +11,8 @@ export type Viewport = {
   height: number;
   /** The space covered at the bottom, such as by the keyboard. */
   bottomInset: number;
+  /** Pinch-zoom factor, 1 when not zoomed. */
+  scale: number;
 };
 
 /** Whether the browser provides the visual viewport API. */
@@ -20,13 +22,14 @@ export function hasVisualViewport() {
 
 export function getViewport(): Viewport {
   const visual = window.visualViewport;
-  if (!visual) return { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight, bottomInset: 0 };
+  if (!visual) return { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight, bottomInset: 0, scale: 1 };
   return {
     left: visual.offsetLeft,
     top: visual.offsetTop,
     width: visual.width,
     height: visual.height,
     bottomInset: Math.max(0, window.innerHeight - visual.height - visual.offsetTop),
+    scale: visual.scale ?? 1,
   };
 }
 
