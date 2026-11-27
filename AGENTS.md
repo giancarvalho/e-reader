@@ -46,6 +46,18 @@ autorizados, sem nova confirmação. A CI também exige typecheck e os demais te
 automáticos aplicáveis. Registre separadamente a aceitação em aparelho real e
 qualquer dependência pendente que bloqueie uma tarefa posterior.
 
+### Exceção temporária de CI (até 1 de dezembro de 2026)
+
+O GitHub Actions está sem minutos ou runners (jobs terminam em segundos, sem
+runner atribuído). **Até 1 de dezembro de 2026**, o merge de um PR está
+autorizado sem a CI rodar, desde que todos os checks locais que o ambiente
+permite passem: `npm run lint`, `npm run typecheck`, `npm run dup`,
+`npm run test:unit` e os testes de integração e e2e que puderem rodar. Registre
+no PR o que rodou, o que não pôde rodar (por exemplo WebKit ou Supabase local) e
+por quê. Falhou algum check local? Não mergeie. Depois que a CI voltar,
+reexecute-a nos merges feitos sob esta exceção. **A partir de 1 de dezembro de
+2026 esta exceção expira** e valem de novo os checks verdes no PR.
+
 ## Contratos da experiência de leitura
 
 - A seleção do leitor mantém alças nas duas extremidades depois do toque
