@@ -250,13 +250,13 @@ export function ReaderCanvas({
             : undefined;
           if (lastRect) {
             const mark = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            const x = Math.max(lastRect.left, lastRect.right - 10);
-            const y = Math.max(lastRect.top, lastRect.bottom - 9);
+            const x = Math.max(lastRect.left, lastRect.right - 6);
+            const y = lastRect.top - 7;
             mark.setAttribute("data-comment-marker", "");
-            mark.setAttribute("d", `M${x} ${y} h9 v6 h-4 l-3 3 v-3 h-2 Z`);
+            mark.setAttribute("d", `M${x} ${y} h6 v3.5 h-2.5 l-2 1.5 v-1.5 H${x} Z`);
             mark.setAttribute("fill", "var(--color-bg)");
             mark.setAttribute("stroke", "var(--color-ink)");
-            mark.setAttribute("stroke-width", "1");
+            mark.setAttribute("stroke-width", "0.75");
             overlay = document.createElementNS("http://www.w3.org/2000/svg", "g");
             overlay.append(group, mark);
           }

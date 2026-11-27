@@ -303,6 +303,16 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await thread.getByRole("button", { name: "Enviar resposta" }).click();
   await expect(thread.getByText("Resposta offline")).toBeVisible();
   await expect.poll(markers).toBe(1);
+  await expect.poll(() => page.locator("foliate-view").evaluate(element => {
+    const view = element as HTMLElement & { renderer: { getContents: () => { overlayer?: { element: SVGElement } }[] } };
+    const marker = view.renderer.getContents()
+      .map(({ overlayer }) => overlayer?.element.querySelector<SVGPathElement>("[data-comment-marker]"))
+      .find(path => path);
+    const rect = marker?.parentElement?.querySelector("rect:last-child");
+    if (!marker || !rect) return false;
+    const box = marker.getBBox();
+    return box.width <= 6 && box.y + box.height < Number(rect.getAttribute("y"));
+  })).toBe(true);
   await page.mouse.click(2, 2);
   await expect(thread).toHaveCount(0);
   expect(await readingPosition()).toBe(before);
