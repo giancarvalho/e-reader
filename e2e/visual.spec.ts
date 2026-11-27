@@ -80,6 +80,7 @@ async function openReaderWithWordSelected(page: Page) {
     range.setStart(text, "Primeiro ".length);
     range.setEnd(text, "Primeiro capítulo".length);
     const selection = element.ownerDocument.getSelection();
+    element.ownerDocument.documentElement.dataset.readerSelectable = ""; // as the app does when it selects
     selection?.removeAllRanges();
     selection?.addRange(range);
   });
