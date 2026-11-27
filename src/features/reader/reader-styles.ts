@@ -21,7 +21,12 @@ export function readerStyles(preferences: ReaderPreferences) {
     html[data-reader-word-press="pending"], html[data-reader-word-press="pending"] * {
       -webkit-user-select: none !important; user-select: none !important;
     }
-    @media (pointer: coarse) { html { -webkit-touch-callout: none; } }
+    @media (pointer: coarse) {
+      html { -webkit-touch-callout: none; }
+      html:not([data-reader-selectable]), html:not([data-reader-selectable]) * {
+        -webkit-user-select: none !important; user-select: none !important;
+      }
+    }
     html, body { ${colors} color-scheme: ${preferences.theme === "auto" ? "light dark" : scheme}; }
     body { font: ${preferences.size}px/1.55 ${preferences.font === "serif" ? "serif" : "sans-serif"} !important; }
     p, li, blockquote { color: inherit !important; font-family: inherit !important; font-size: 1em !important; }

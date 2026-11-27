@@ -247,6 +247,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     const selection = element.ownerDocument.getSelection();
     const range = element.ownerDocument.createRange();
     range.selectNodeContents(element);
+    element.ownerDocument.documentElement.dataset.readerSelectable = ""; // as the app does when it selects
     selection?.removeAllRanges();
     selection?.addRange(range);
   });
@@ -392,6 +393,7 @@ function selectChapterWord(element: Element) {
   const range = element.ownerDocument.createRange();
   range.setStart(text, "Segundo ".length);
   range.setEnd(text, "Segundo capítulo".length);
+  element.ownerDocument.documentElement.dataset.readerSelectable = ""; // as the app does when it selects
   selection?.removeAllRanges();
   selection?.addRange(range);
 }
