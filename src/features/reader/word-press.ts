@@ -1,6 +1,8 @@
 import { logGesture } from "@/lib/gesture-log";
 import { classifyPress, holdMs, movementTolerance, type PressOutcome } from "./page-gestures";
 
+/** How long a selection must stay empty before the chapter blocks native selection again. */
+const selectableReleaseMs = 150;
 const interactive = "a, button, input, select, textarea, [contenteditable]";
 export const wordPattern = /[\p{L}\p{M}]+(?:[-‐‑'’][\p{L}\p{M}]+)*/gu;
 
@@ -43,6 +45,8 @@ export function wordAtPoint(doc: Document, x: number, y: number, snap = false) {
  */
 export function applyTextSelection(doc: Document, range: Range) {
   doc.documentElement.dataset.readerSelectable = "";
+  // WebKit validates a new range against the style in force. Without this, it still sees `user-select: none`.
+  void doc.defaultView?.getComputedStyle(doc.documentElement).userSelect;
   const selection = doc.getSelection();
   selection?.removeAllRanges();
   selection?.addRange(range);
@@ -185,9 +189,17 @@ export function bindWordPress(
     if (press) event.preventDefault();
   }, options);
 
+  let release: number | undefined;
   doc.addEventListener("selectionchange", () => {
-    if (doc.getSelection()?.isCollapsed ?? true) root.removeAttribute("data-reader-selectable");
+    window.clearTimeout(release);
+    // WebKit can report a collapsed selection for a moment while it swaps ranges.
+    release = window.setTimeout(() => {
+      if (doc.getSelection()?.isCollapsed ?? true) root.removeAttribute("data-reader-selectable");
+    }, selectableReleaseMs);
   }, { signal });
 
-  signal.addEventListener("abort", reset, { once: true });
+  signal.addEventListener("abort", () => {
+    window.clearTimeout(release);
+    reset();
+  }, { once: true });
 }
