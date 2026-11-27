@@ -1,16 +1,3 @@
-.panel,
-.list {
-  display: grid;
-  gap: var(--space-8);
-  overflow-wrap: anywhere;
-}
-
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
 .author {
   display: flex;
   align-items: center;
@@ -35,22 +22,6 @@
   overscroll-behavior: contain;
 }
 
-.bubble {
-  position: fixed;
-  z-index: 40;
-  display: flex;
-  box-sizing: border-box;
-  inline-size: min(calc(100% - 2 * var(--space-12)), 22rem);
-  overflow: auto;
-  overscroll-behavior: contain;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  border: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
-  border-radius: var(--space-16);
-  padding: var(--space-8) var(--space-12) var(--space-12);
-  box-shadow: 0 var(--space-8) var(--space-24) rgb(0 0 0 / 20%);
-}
-
 .toolbar {
   display: flex;
   justify-content: flex-end;
@@ -63,12 +34,8 @@
   gap: var(--space-8);
 }
 .toolbar { margin-inline-start: auto; }
-.toolbar button[data-variant="icon"], .panel button[data-variant="icon"] { color: var(--color-muted); }
+.toolbar button[data-variant="icon"], .replies button[data-variant="icon"] { color: var(--color-muted); }
 .menu { align-self: end; }
-.panel {
-  padding-block-start: var(--space-8);
-  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
-}
 .composer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -2,18 +2,6 @@
   min-block-size: 100dvh;
 }
 
-.header {
-  display: grid;
-  gap: var(--space-8);
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  padding: var(--space-24);
-}
-
-.header a, .state a {
-  color: var(--color-accent-text);
-}
-
 .reader {
   position: fixed;
   inset: 0;
@@ -34,107 +22,29 @@
 
 .canvas { display: block; block-size: 100%; }
 
-.toolbarTop, .toolbarBottom, .progressOnly {
-  position: absolute;
-  inset-inline: 0;
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  box-sizing: border-box;
-}
-
-.toolbarTop, .toolbarBottom {
-  background: var(--color-bg);
-}
-
-.toolbarTop {
-  inset-block-start: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  padding: max(var(--space-8), env(safe-area-inset-top)) var(--space-8) var(--space-8);
-  border-block-end: var(--focus-ring) solid var(--color-surface);
-}
-
-.toolbarTop h1 {
-  overflow: hidden;
-  margin: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: var(--font-label) var(--font-ui);
-  text-align: center;
-}
-
-.back {
-  display: grid;
-  place-items: center;
-  min-inline-size: var(--touch-target);
-  min-block-size: var(--touch-target);
-  color: var(--color-accent-text);
-  text-decoration: none;
-  font: var(--font-heading) var(--font-reading);
-}
-
-.toolbarBottom, .progressOnly {
-  inset-block-end: 0;
-  padding-block-end: env(safe-area-inset-bottom);
-}
-
-.toolbarBottom { border-block-start: var(--focus-ring) solid var(--color-surface); }
-.tools { display: flex; justify-content: space-between; }
-.tools button { padding-inline: var(--space-8); }
-
-.progress {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  width: 100%;
-  min-block-size: var(--touch-target);
-  padding-inline: var(--space-24);
-  border: 0;
-  background: transparent;
-  color: var(--color-muted);
-  font: var(--font-label) var(--font-ui);
-  cursor: pointer;
-}
-
-.progress span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.reader[data-theme="custom"] .progressOnly .progress { color: var(--color-ink); background: var(--color-bg); }
-.reader :is(.progress, .back):focus-visible { outline: var(--focus-ring) solid var(--color-accent-text); outline-offset: calc(-1 * var(--focus-ring)); }
-
 .settings, .state { display: grid; gap: var(--space-16); }
 .settings fieldset { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
 .settings legend { margin-block-end: var(--space-8); }
 .options, .size { display: flex; flex-wrap: wrap; gap: var(--space-8); align-items: center; }
-.size output { min-inline-size: var(--touch-target); text-align: center; }
-.toc { list-style: none; margin: 0; padding-inline-start: var(--space-12); }
+.size output { min-inline-size: var(--space-48); text-align: center; }
+.toc { padding-inline-start: var(--space-12); }
 .toc button { text-align: start; }
 .state { position: absolute; inset-block-start: var(--space-24); inset-inline: var(--space-24); }
 .progressError { position: fixed; inset-inline: var(--space-16); inset-block-start: var(--space-8); z-index: 1; background: var(--color-bg); }
 
-.selectionMenu, .savedNotice {
-  position: absolute;
-  inset-inline: var(--space-8);
-  inset-block-end: calc(var(--touch-target) + env(safe-area-inset-bottom));
-  z-index: 2;
+.selectionMenu { display: grid; }
+
+.selectionColors {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  box-sizing: border-box;
-  inline-size: fit-content;
-  max-inline-size: calc(100% - 2 * var(--space-8));
-  margin-inline: auto;
-  padding: var(--space-8);
-  border: var(--focus-ring) solid var(--color-surface);
-  border-radius: var(--radius-control);
-  background: var(--color-bg);
+  border-block-end: var(--border-divider);
+  margin-block-end: var(--space-8);
 }
 
-.selectionMenu button { padding-inline: var(--space-8); }
+.selectionMenu > button {
+  justify-content: start;
+  text-align: start;
+}
+

@@ -1,0 +1,24 @@
+.section {
+  display: grid;
+  gap: var(--space-8);
+  min-inline-size: 0;
+}
+
+.section[data-variant="divided"] {
+  border-block-start: var(--focus-ring) solid var(--color-surface);
+  padding-block-start: var(--space-16);
+}
+
+.section[data-variant="outlined"] {
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: var(--focus-ring) solid var(--color-surface);
+  border-radius: var(--radius-control);
+}
+
+.section[data-variant="surface"] {
+  gap: 0;
+  background: var(--color-surface);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+}

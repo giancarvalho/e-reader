@@ -1,17 +1,18 @@
+import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
+import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
-import { OfflineDictionaries } from "@/features/dictionary/OfflineDictionaries";
+import { OfflineDictionaries } from "@/features/dictionary";
 import { messages } from "@/lib/messages/pt-br";
-import styles from "@/features/dictionary/dictionary.module.css";
 
 export default function DictionariesPage() {
   const { dictionary, reader } = messages;
   return (
-    <main className={styles.page}>
-      <a href="/estante">{reader.shelf}</a>
+    <Page>
+      <Link href="/estante">{reader.shelf}</Link>
       <Heading>{dictionary.offlineTitle}</Heading>
       <Text tone="muted">{dictionary.offlineHint}</Text>
       <OfflineDictionaries />
-    </main>
+    </Page>
   );
 }

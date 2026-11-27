@@ -2,3 +2,19 @@
   margin: 0;
   font: var(--font-heading) var(--font-reading);
 }
+
+.heading[data-variant="section"] {
+  font: var(--font-reading-body) var(--font-reading);
+  font-weight: 650;
+}
+
+.heading[data-variant="display"] {
+  font: var(--font-display) var(--font-reading);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+
+.heading[data-variant="label"] {
+  font: var(--font-label) var(--font-ui);
+  color: var(--color-muted);
+}

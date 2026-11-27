@@ -1,5 +1,5 @@
 import { invitePath, normalizeInviteCode, pendingInviteCookie, pendingInviteOptions, signInPath } from "../../lib/access/invite";
-import { redeemInvite } from "../access/redeemInvite";
+import { redeemInvite } from "@/features/access/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthConfig } from "../../lib/supabase/config";
 import { createAuthClient } from "@/lib/supabase/server";

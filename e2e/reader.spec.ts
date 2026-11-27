@@ -1,29 +1,8 @@
-import { createHash } from "node:crypto";
 import { expect, test, type Locator } from "@playwright/test";
-import { strToU8, zipSync } from "fflate";
-
-const xhtml = (body: string) =>
-  `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Leitura</title></head><body>${body}</body></html>`;
-
-const bytes = zipSync({
-  mimetype: strToU8("application/epub+zip"),
-  "META-INF/container.xml": strToU8(
-    '<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="book.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
-  ),
-  "book.opf": strToU8(`<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="book">
-    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="book">example-reader</dc:identifier>
-    <dc:title>Livro de teste</dc:title><dc:language>pt</dc:language></metadata>
-    <manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-    <item id="one" href="one.xhtml" media-type="application/xhtml+xml"/>
-    <item id="two" href="two.xhtml" media-type="application/xhtml+xml"/></manifest>
-    <spine><itemref idref="one"/><itemref idref="two"/></spine></package>`),
-  "nav.xhtml": strToU8(xhtml('<nav xmlns:epub="http://www.idpf.org/2007/ops" epub:type="toc"><ol><li><a href="one.xhtml">Um</a></li><li><a href="two.xhtml">Dois</a></li></ol></nav>')),
-  "one.xhtml": strToU8(xhtml('<p>Primeiro capítulo</p><script>parent.document.body.dataset.epubScript = "executed"</script><img src="https://example.invalid/tracker.png" alt=""/>')),
-  "two.xhtml": strToU8(xhtml("<p>Segundo capítulo</p>")),
-});
+import { downloadPortugueseDictionary } from "./support/dictionary";
+import { bytes, hash } from "./support/epub";
 
 test("opens a local EPUB, navigates its index and restores the last chapter offline", async ({ page, context, browserName }) => {
-  const hash = createHash("sha256").update(bytes).digest("hex");
   const remote: string[] = [];
   page.on("request", request => {
     if (request.url().includes("example.invalid")) remote.push(request.url());
@@ -56,12 +35,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     db.close();
   }, { bytes: Array.from(bytes), hash });
 
-  if (process.env.TEST_DICTIONARY) {
-    await page.goto("/dicionarios");
-    const portuguese = page.locator("section").filter({ has: page.getByRole("heading", { name: "Português" }) });
-    await portuguese.getByRole("button", { name: "Baixar dicionário" }).click();
-    await expect(portuguese.getByText("Dicionário completo disponível neste aparelho.")).toBeVisible();
-  }
+  if (process.env.TEST_DICTIONARY) await downloadPortugueseDictionary(page);
 
   await page.goto(`/ler#${hash}`);
   const controls = () => page.getByRole("button", { name: "Mostrar controles de leitura" }).click();
@@ -141,6 +115,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await expect(dictionary.getByText("CC BY-SA 4.0", { exact: true })).toHaveCount(0);
     await expect(dictionary.getByRole("link", { name: "Wikcionário", exact: true })).toHaveAttribute("href", "https://pt.wiktionary.org/wiki/cap%C3%ADtulo");
@@ -184,6 +161,14 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     await expect.poll(pressSelection).toBe("capítulo");
     await expect(dictionary).toHaveCount(0);
     await release();
+    const menu = page.getByRole("group", { name: "Ações do trecho selecionado" });
+    await expect(menu.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    const menuBounds = await menu.boundingBox();
+    expect(menuBounds).not.toBeNull();
+    expect(menuBounds!.y).toBeGreaterThan(word.y);
+    expect(menuBounds!.y - word.y).toBeLessThan(44);
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
     await expect.poll(pressSelection).toBe("");
@@ -211,6 +196,9 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     if (!frame) throw new Error("Missing chapter frame");
     await frame.getByText("Segundo capítulo").evaluate(selectChapterWord);
     const dictionary = page.getByRole("dialog", { name: "capítulo" });
+    await expect(page.getByRole("button", { name: "Verde", exact: true })).toBeVisible();
+    await expect(dictionary).toHaveCount(0);
+    await page.getByRole("button", { name: "Definir", exact: true }).click();
     await expect(dictionary.getByText("Uma divisão de um livro.")).toBeVisible();
     await dictionary.getByRole("button", { name: "Fechar dicionário" }).click();
     if (browserName !== "webkit") expect(dictionaryRequests).toBe(0);
@@ -228,14 +216,18 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   const green = page.getByRole("button", { name: "Verde", exact: true });
   const blue = page.getByRole("button", { name: "Azul", exact: true });
   const note = page.getByRole("button", { name: "Adicionar nota", exact: true });
-  await expect(note).toBeDisabled();
+  const notePanel = page.getByRole("dialog", { name: "Adicionar nota" });
+  await expect(page.getByRole("button", { name: "Definir", exact: true })).toHaveCount(0);
+  await note.click();
+  await expect(notePanel.getByText("Âmbar", { exact: true })).toBeVisible();
+  await notePanel.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await selectPhrase();
   await green.click();
   await expect(green).toHaveAttribute("aria-pressed", "true");
   await blue.click();
   await expect(blue).toHaveAttribute("aria-pressed", "true");
   await expect(green).toHaveAttribute("aria-pressed", "false");
   await note.click();
-  const notePanel = page.getByRole("dialog", { name: "Adicionar nota" });
   await expect(notePanel.getByText("Azul", { exact: true })).toBeVisible();
   await notePanel.getByRole("textbox", { name: "Nota opcional" }).fill("Leitura sem rede");
   await notePanel.getByRole("button", { name: "Salvar nota" }).click();

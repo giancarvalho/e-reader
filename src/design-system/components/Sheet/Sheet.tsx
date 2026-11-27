@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from "react";
+import { getViewport, hasVisualViewport, observeViewport } from "../../viewport";
 import { Heading } from "../Heading";
-import { Button } from "../Button";
+import { IconButton } from "../IconButton";
 import styles from "./Sheet.module.css";
 
 function isBackdrop(event: MouseEvent<HTMLDialogElement>) {
@@ -25,19 +26,17 @@ export function Sheet({ title, closeLabel, onClose, children, variant }: {
   useEffect(() => {
     const element = dialog.current;
     if (!element) return;
-    const viewport = window.visualViewport;
     function resize() {
-      if (!viewport || !element) return;
+      if (!hasVisualViewport() || !element) return;
+      const viewport = getViewport();
       element.style.setProperty("--sheet-viewport", `${viewport.height}px`);
-      element.style.setProperty("--sheet-bottom", `${Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)}px`);
+      element.style.setProperty("--sheet-bottom", `${viewport.bottomInset}px`);
     }
     resize();
-    viewport?.addEventListener("resize", resize);
-    viewport?.addEventListener("scroll", resize);
+    const stopObserving = observeViewport(resize);
     element.showModal();
     return () => {
-      viewport?.removeEventListener("resize", resize);
-      viewport?.removeEventListener("scroll", resize);
+      stopObserving();
       element.close();
     };
   }, []);
@@ -57,7 +56,7 @@ export function Sheet({ title, closeLabel, onClose, children, variant }: {
       <div className={styles.content}>
         <div className={styles.header}>
           <div id={headingId}><Heading as="h2">{title}</Heading></div>
-          {closeLabel && <Button variant="icon" aria-label={closeLabel} onClick={onClose}>×</Button>}
+          {closeLabel && <IconButton icon="close" label={closeLabel} onClick={onClose} />}
         </div>
         {children}
       </div>

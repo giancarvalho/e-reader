@@ -1,21 +1,14 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { LinkButton } from "@/design-system/components/LinkButton";
+import { Notice } from "@/design-system/components/Notice";
+import { useOnline } from "@/lib/online";
 import { invitePath, normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
-import styles from "./page.module.css";
-
-function subscribe(callback: () => void) {
-  window.addEventListener("online", callback);
-  window.addEventListener("offline", callback);
-  return () => {
-    window.removeEventListener("online", callback);
-    window.removeEventListener("offline", callback);
-  };
-}
 
 export function EnterLink() {
-  const online = useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
+  const online = useOnline();
   const rawInvite = useSyncExternalStore(() => () => {}, () => new URLSearchParams(window.location.search).get("invite"), () => null);
   const invite = normalizeInviteCode(rawInvite);
   useEffect(() => {
@@ -48,8 +41,8 @@ export function EnterLink() {
   // Document navigation also works from the precached homepage.
   const destination = invite ? `/auth/google/start?codigo=${encodeURIComponent(invite)}` : "/auth/google/start";
   return <>
-    {rawInvite !== null && !invite && <p role="status">{messages.access.errors.invalid_code}</p>}
-    {invite && !online && <p role="status">{messages.access.errors.unavailable}</p>}
-    <a className={styles.enter} href={online ? destination : "/estante-offline"}>{messages.home.enter}</a>
+    {rawInvite !== null && !invite && <Notice>{messages.access.errors.invalid_code}</Notice>}
+    {invite && !online && <Notice>{messages.access.errors.unavailable}</Notice>}
+    <LinkButton href={online ? destination : "/estante-offline"}>{messages.home.enter}</LinkButton>
   </>;
 }

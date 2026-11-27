@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Notice } from "@/design-system/components/Notice";
 import { TextField } from "@/design-system/components/TextField";
 import { messages } from "@/lib/messages/pt-br";
 import { joinGroup } from "./actions";
@@ -27,9 +28,7 @@ export function InviteForm({ initialCode }: { initialCode?: string }) {
         error={state.error === "invalid_code" ? error : undefined}
         required
       />
-      <div role="status" className={!pending && state.error === "invalid_code" ? styles.onlyAnnouncement : undefined}>
-        {pending ? access.joining : error}
-      </div>
+      <Notice announceOnly={!pending && state.error === "invalid_code"}>{pending ? access.joining : error}</Notice>
       <Button type="submit" loading={pending}>{access.join}</Button>
     </form>
   );

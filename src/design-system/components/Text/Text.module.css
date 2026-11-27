@@ -7,6 +7,10 @@
   font: var(--font-reading-body) var(--font-reading);
 }
 
+.text[data-variant="label"] {
+  font: var(--font-label) var(--font-ui);
+}
+
 .text[data-tone="muted"] {
   color: var(--color-muted);
 }

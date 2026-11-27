@@ -1,0 +1,5 @@
+.link {
+  composes: button from "../Button/Button.module.css";
+  box-sizing: border-box;
+  text-decoration: none;
+}

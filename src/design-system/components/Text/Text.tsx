@@ -3,7 +3,7 @@ import styles from "./Text.module.css";
 
 type TextProps = {
   children: ReactNode;
-  variant?: "body" | "reading";
+  variant?: "body" | "reading" | "label";
   tone?: "default" | "muted";
 };
 

@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Heading } from "@/design-system/components/Heading";
+import { Notice } from "@/design-system/components/Notice";
+import { Page } from "@/design-system/components/Page";
+import { Link } from "@/design-system/components/Link";
 import { Text } from "@/design-system/components/Text";
 import {
   applyReaderSync, readLocalBook, readLocalShelf, readReaderState, rememberOpenedBook,
@@ -9,6 +12,7 @@ import {
 } from "@/lib/books/local";
 import { recordDiagnostic } from "@/lib/diagnostics";
 import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
+import { isOnline, onReconnect } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import { ReadingWorkspace } from "./ReadingWorkspace";
 import { syncReaderState } from "./sync";
@@ -50,7 +54,7 @@ export function ReaderPage() {
   }, []);
 
   const sync = useCallback(async () => {
-    if (!identity || !navigator.onLine || syncing.current) return;
+    if (!identity || !isOnline() || syncing.current) return;
     syncing.current = true;
     try {
       const sent = await readReaderState(identity);
@@ -80,7 +84,7 @@ export function ReaderPage() {
         };
       });
     } catch {
-      if (navigator.onLine) recordDiagnostic("reader", "error");
+      if (isOnline()) recordDiagnostic("reader", "error");
     } finally {
       syncing.current = false;
     }
@@ -94,13 +98,13 @@ export function ReaderPage() {
     function syncNow() { void sync(); }
     syncNow();
     const interval = window.setInterval(syncWhenVisible, 10_000);
-    window.addEventListener("online", syncNow);
+    const stopReconnect = onReconnect(syncNow);
     window.addEventListener("pagehide", syncNow);
     document.addEventListener("visibilitychange", syncNow);
     return () => {
       window.clearInterval(interval);
       window.clearTimeout(timer.current);
-      window.removeEventListener("online", syncNow);
+      stopReconnect();
       window.removeEventListener("pagehide", syncNow);
       document.removeEventListener("visibilitychange", syncNow);
     };
@@ -123,17 +127,17 @@ export function ReaderPage() {
 
   return (
     <main className={styles.page}>
-      {!reading && <header className={styles.header}>
+      {!reading && <Page as="header">
         {/* Use a document navigation so the service worker can provide the offline shelf. */}
-        <a href="/estante">{reader.shelf}</a>
+        <Link href="/estante">{reader.shelf}</Link>
         <Heading>{reader.title}</Heading>
-      </header>}
+      </Page>}
       {reading === null && <Text>{reader.missing}</Text>}
       {reading && <ReadingWorkspace title={reading.book.title}
         identity={reading.identity} language={reading.book.language} file={reading.file} cfi={reading.cfi} preferences={reading.preferences}
         onPosition={save} onPreferences={changePreferences}
       />}
-      {failed && <div className={styles.progressError} role="status"><Text>{reader.progressFailed}</Text></div>}
+      {failed && <div className={styles.progressError}><Notice>{reader.progressFailed}</Notice></div>}
     </main>
   );
 }

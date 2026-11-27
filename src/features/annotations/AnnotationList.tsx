@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { Disclosure } from "@/design-system/components/Disclosure";
+import { Icon } from "@/design-system/components/Icon";
+import { IconButton } from "@/design-system/components/IconButton";
+import { List, ListItem } from "@/design-system/components/List";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import type { Annotation } from "@/lib/sync/annotations";
-import { AnnotationIcon } from "./AnnotationIcon";
 import styles from "./annotations.module.css";
 
 type Chapter = { index: number; label: string };
@@ -40,13 +43,14 @@ export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, o
       </div>
         {groups.size === 0 && <Text>{annotations.empty}</Text>}
         {[...groups.entries()].sort(([a], [b]) => a === currentChapter ? -1 : b === currentChapter ? 1 : a - b).map(([index, list]) => (
-          <details key={index} open={index === currentChapter || groups.size === 1 || undefined}>
-            <summary>{chapters[list[0].id]?.label || annotations.unknownChapter} ({list.length})</summary>
-            <ul className={styles.list}>
+          <Disclosure key={index} open={index === currentChapter || groups.size === 1 || undefined}
+            summary={`${chapters[list[0].id]?.label || annotations.unknownChapter} (${list.length})`}>
+            <List>
               {list.map(row => {
                 const count = commentCounts.get(row.id) ?? 0;
                 return (
-                  <li key={row.id} className={styles.item}>
+                  <ListItem key={row.id} divided>
+                    <div className={styles.item}>
                     <div className={styles.itemText}>
                       <Button variant="quiet" onClick={() => onGo(row)}>{row.quote_text}</Button>
                       {row.note && <Text tone="muted">{row.note}</Text>}
@@ -54,20 +58,19 @@ export function AnnotationList({ rows, userId, chapters, currentChapter, onGo, o
                     <div className={styles.itemActions}>
                       <Button variant="icon" aria-label={count ? `${messages.comments.label} (${count})` : messages.comments.thread}
                         onClick={() => onThread(row)}>
-                        <AnnotationIcon name="conversation" />{count > 0 && <span aria-hidden="true">{count}</span>}
+                        <Icon name="conversation" />{count > 0 && <span aria-hidden="true">{count}</span>}
                       </Button>
-                      {row.author_id === userId && <Button variant="icon" aria-label={messages.comments.options}
-                        aria-expanded={menu === row.id} onClick={() => setMenu(menu === row.id ? undefined : row.id)}>
-                        <AnnotationIcon name="more" />
-                      </Button>}
+                      {row.author_id === userId && <IconButton icon="more" label={messages.comments.options}
+                        aria-expanded={menu === row.id} onClick={() => setMenu(menu === row.id ? undefined : row.id)} />}
                     </div>
                     {menu === row.id && row.author_id === userId &&
                       <div className={styles.itemMenu}><Button variant="quiet" onClick={() => onEdit(row)}>{annotations.edit}</Button></div>}
-                  </li>
+                    </div>
+                  </ListItem>
                 );
               })}
-            </ul>
-          </details>
+            </List>
+          </Disclosure>
         ))}
     </section>
   );

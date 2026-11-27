@@ -1,0 +1,29 @@
+const paths = {
+  back: "m14 6-6 6 6 6",
+  next: "m10 6 6 6-6 6",
+  books: "M4 19V5h4v14zm6 0V5h4v14zm6-13 3-1 3 13-3 1z",
+  dictionary: "M4 19V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 1 0-4h13M8 8h7m-7 4h5",
+  diagnostics: "M3 12h4l3-6 4 12 3-6h4",
+  close: "M6 6l12 12M18 6L6 18",
+  reply: "M9 10l-5 4 5 4M4 14h10a5 5 0 0 0 0-10",
+  trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5",
+  conversation: "M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.5-3a7.5 7.5 0 1 1 13.5-4.5Z",
+  more: "M5 12h.01m7 0h.01m7 0h.01",
+  send: "m4 4 16 8-16 8 3-8-3-8Zm3 8h13",
+} as const;
+
+export type IconName = keyof typeof paths;
+
+/**
+ * A decorative icon that inherits the surrounding text color. It is hidden from
+ * assistive technology, so the control that holds it must carry the label
+ * (see IconButton).
+ */
+export function Icon({ name }: { name: IconName }) {
+  return (
+    <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={name === "more" ? 3 : 1.65} strokeLinecap="round" strokeLinejoin="round">
+      <path d={paths[name]} />
+    </svg>
+  );
+}

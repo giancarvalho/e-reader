@@ -1,0 +1,25 @@
+{
+  "path": [
+    "src"
+  ],
+  "format": [
+    "typescript",
+    "tsx",
+    "css"
+  ],
+  "ignore": [
+    "**/vendor/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/node_modules/**"
+  ],
+  "minLines": 5,
+  "minTokens": 50,
+  "reporters": [
+    "console",
+    "json"
+  ],
+  "output": "./.jscpd-report",
+  "gitignore": true,
+  "threshold": 0.5
+}

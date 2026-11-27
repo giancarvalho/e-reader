@@ -3,10 +3,24 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
   align-items: start;
   gap: var(--space-12);
+  min-inline-size: 0;
+  padding: var(--space-12);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
 }
 
 .details {
   display: grid;
   gap: var(--space-8);
   overflow-wrap: anywhere;
+}
+
+/* The whole cover is the link, so its placeholder title must not read as an underlined text link. */
+.cover {
+  text-decoration: none;
+}
+
+.cover:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
 }

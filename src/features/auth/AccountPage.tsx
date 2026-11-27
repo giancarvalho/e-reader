@@ -1,5 +1,9 @@
 import { Avatar } from "@/design-system/components/Avatar";
-import Link from "next/link";
+import { Icon } from "@/design-system/components/Icon";
+import { Link } from "@/design-system/components/Link";
+import { Notice } from "@/design-system/components/Notice";
+import { Page } from "@/design-system/components/Page";
+import { Section } from "@/design-system/components/Section";
 import { redirect } from "next/navigation";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
@@ -30,59 +34,46 @@ export function AccountContent({ name, photo, signOutFailed }: {
   const { auth, shelf, dictionary, diagnostics } = messages;
 
   return (
-    <main className={styles.account}>
-      <header className={styles.accountHeader}>
-        <Link className={styles.backLink} href="/convite" aria-label={auth.continue}>
-          <AccountIcon name="back" />{messages.access.shelfTitle}
-        </Link>
-        <Heading>{auth.accountTitle}</Heading>
-      </header>
+    <Page>
+      <div className={styles.account}>
+        <header className={styles.accountHeader}>
+          <div className={styles.backLink}><Link href="/convite" client tone="muted" aria-label={auth.continue}>
+            <Icon name="back" />{messages.access.shelfTitle}
+          </Link></div>
+          <Heading>{auth.accountTitle}</Heading>
+        </header>
 
-      {name && <div className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></div>}
+        {name && <Section variant="surface"><div className={styles.profile}><Avatar name={name} src={photo} /><Text>{name}</Text></div></Section>}
 
-      <section className={styles.section}>
-        <Heading as="h2">{auth.storage}</Heading>
-        <div className={styles.linkGroup}>
-          <a href="/estante-offline" className={styles.accountLink}>
-            <AccountIcon name="books" /><span>{shelf.offline}</span><AccountIcon name="next" />
-          </a>
-          <a href="/dicionarios" className={styles.accountLink}>
-            <AccountIcon name="dictionary" /><span>{dictionary.offlineTitle}</span><AccountIcon name="next" />
-          </a>
-        </div>
-      </section>
+        <section className={styles.section}>
+          <Heading as="h2" variant="label">{auth.storage}</Heading>
+          <Section variant="surface">
+            <Link href="/estante-offline" variant="row">
+              <Icon name="books" /><span>{shelf.offline}</span><Icon name="next" />
+            </Link>
+            <Link href="/dicionarios" variant="row">
+              <Icon name="dictionary" /><span>{dictionary.offlineTitle}</span><Icon name="next" />
+            </Link>
+          </Section>
+        </section>
 
-      <section className={styles.section}>
-        <Heading as="h2">{auth.help}</Heading>
-        <div className={styles.linkGroup}>
-          <Link href="/diagnostico" className={styles.accountLink}>
-            <AccountIcon name="diagnostics" /><span>{diagnostics.title}</span><AccountIcon name="next" />
-          </Link>
-        </div>
-      </section>
+        <section className={styles.section}>
+          <Heading as="h2" variant="label">{auth.help}</Heading>
+          <Section variant="surface">
+            <Link href="/diagnostico" client variant="row">
+              <Icon name="diagnostics" /><span>{diagnostics.title}</span><Icon name="next" />
+            </Link>
+          </Section>
+        </section>
 
-      <footer className={styles.accountFooter}>
-        <Text tone="muted">{auth.signOutEffect}</Text>
-        {signOutFailed && <div role="status"><Text>{auth.signOutFailed}</Text></div>}
-        <SignOutForm />
-      </footer>
-    </main>
+        <footer className={styles.accountFooter}>
+          <Text tone="muted">{auth.signOutEffect}</Text>
+          <Notice>{signOutFailed ? auth.signOutFailed : undefined}</Notice>
+          <SignOutForm />
+        </footer>
+      </div>
+    </Page>
   );
-}
-
-const paths = {
-  back: "m14 6-6 6 6 6",
-  next: "m10 6 6 6-6 6",
-  books: "M4 19V5h4v14zm6 0V5h4v14zm6-13 3-1 3 13-3 1z",
-  dictionary: "M4 19V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 1 0-4h13M8 8h7m-7 4h5",
-  diagnostics: "M3 12h4l3-6 4 12 3-6h4",
-};
-
-function AccountIcon({ name }: { name: keyof typeof paths }) {
-  return <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d={paths[name]} />
-  </svg>;
 }
 
 function stringValue(value: unknown) {

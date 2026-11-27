@@ -1,28 +1,6 @@
-.panel, .account {
-  display: grid;
-  gap: var(--space-16);
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  padding-block-start: max(var(--space-48), env(safe-area-inset-top));
-  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
-  padding-inline: max(var(--space-24), env(safe-area-inset-left)) max(var(--space-24), env(safe-area-inset-right));
-}
-
-.panel a {
-  display: inline-grid;
-  place-items: center start;
-  justify-self: start;
-  min-block-size: var(--touch-target);
-  color: var(--color-accent-text);
-}
-
-.panel a:focus-visible {
-  outline: var(--focus-ring) solid var(--color-accent-text);
-}
-
 .account {
+  display: grid;
   gap: var(--space-24);
-  padding-block-start: max(var(--space-16), env(safe-area-inset-top));
 }
 
 .accountHeader, .section, .accountFooter {
@@ -31,64 +9,21 @@
 }
 
 .accountHeader { gap: var(--space-12); }
-
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  justify-self: start;
-  min-block-size: var(--touch-target);
-  color: var(--color-muted);
-  text-decoration: none;
-  font: var(--font-label) var(--font-ui);
-}
+.backLink { color: var(--color-muted); }
+.backLink a { gap: var(--space-8); text-decoration: none; }
+.backLink a:hover { text-decoration: underline; }
 
 .profile {
   display: flex;
   align-items: center;
   gap: var(--space-12);
   padding: var(--space-16);
-  border-radius: var(--space-16);
-  background: var(--color-surface);
   overflow-wrap: anywhere;
 }
 
-.profile > span { flex-shrink: 0; }
-
-.section h2 {
-  font: var(--font-label) var(--font-ui);
-  color: var(--color-muted);
-}
-
-.linkGroup {
-  display: grid;
-  background: var(--color-surface);
-  border-radius: var(--space-12);
-}
-
-.accountLink {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-12);
-  min-block-size: var(--touch-target);
-  padding: var(--space-8) var(--space-12);
-  color: var(--color-ink);
-  text-decoration: none;
-  border-radius: inherit;
-  overflow-wrap: anywhere;
-}
-
-.accountLink + .accountLink {
-  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
-}
-
-.accountLink svg { color: var(--color-muted); }
-
-.accountLink:hover, .backLink:hover { text-decoration: underline; }
-.account a:focus-visible { outline: var(--focus-ring) solid var(--color-accent-text); }
+.profile > span { flex-shrink: 0; background: var(--color-bg); }
 
 .accountFooter {
   padding-block-start: var(--space-12);
-  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
+  border-block-start: var(--border-divider);
 }

@@ -1,0 +1,19 @@
+.swatch {
+  display: inline-block;
+  box-sizing: border-box;
+  inline-size: var(--space-24);
+  block-size: var(--space-24);
+  border: var(--focus-ring) solid var(--color-muted);
+  border-radius: var(--radius-round);
+  background: var(--swatch);
+}
+
+.swatch[data-selected] {
+  outline: var(--focus-ring) solid var(--color-ink);
+  outline-offset: var(--focus-ring);
+}
+
+.swatch[data-tone="amber"] { --swatch: var(--color-amber); }
+.swatch[data-tone="green"] { --swatch: var(--highlight-green); }
+.swatch[data-tone="blue"] { --swatch: var(--highlight-blue); }
+.swatch[data-tone="pink"] { --swatch: var(--highlight-pink); }

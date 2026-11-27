@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { Button } from "@/design-system/components/Button";
+import { Link } from "@/design-system/components/Link";
+import { Page } from "@/design-system/components/Page";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
@@ -7,7 +8,6 @@ import { normalizeInviteCode } from "@/lib/access/invite";
 import { getAuthConfig } from "@/lib/supabase/config";
 import { getGoogleConfig, hasGoogleCredentials } from "./google";
 import { signInWithGoogle } from "./actions";
-import styles from "./auth.module.css";
 
 export async function SignInPage({ searchParams }: { searchParams: Promise<{ status?: string; codigo?: string }> }) {
   const config = getAuthConfig(process.env);
@@ -17,7 +17,7 @@ export async function SignInPage({ searchParams }: { searchParams: Promise<{ sta
   const { auth } = messages;
 
   return (
-    <main className={styles.panel}>
+    <Page variant="intro">
       <Heading>{auth.signInTitle}</Heading>
       {(!configured || status === "unavailable") && <Text>{auth.unavailable}</Text>}
       {configured && status === "failed" && <Text>{auth.failed}</Text>}
@@ -25,7 +25,7 @@ export async function SignInPage({ searchParams }: { searchParams: Promise<{ sta
         {invite && <input type="hidden" name="codigo" value={invite} />}
         <Button type="submit" disabled={!configured}>{auth.google}</Button>
       </form>
-      <Link href="/">{auth.back}</Link>
-    </main>
+      <Link href="/" client>{auth.back}</Link>
+    </Page>
   );
 }

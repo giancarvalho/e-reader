@@ -1,74 +1,7 @@
-.lookup, .panel, .definitions {
+.lookup, .panel {
   display: grid;
   gap: var(--space-8);
   overflow-wrap: anywhere;
 }
 
-.language, .partOfSpeech, .links {
-  font: var(--font-label) var(--font-ui);
-  color: var(--color-muted);
-}
-
-.definitions {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.definition {
-  display: grid;
-  gap: var(--space-8);
-  border-block-start: 1px solid color-mix(in srgb, var(--color-muted) 22%, transparent);
-  padding-block-start: var(--space-12);
-}
-
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--space-16);
-}
-
-.links a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: var(--touch-target);
-  color: inherit;
-  text-underline-offset: var(--focus-ring);
-}
-
-.links a:focus-visible {
-  outline: var(--focus-ring) solid var(--color-accent-text);
-  outline-offset: var(--focus-ring);
-}
-
 .more { justify-self: start; }
-
-.page, .pack {
-  display: grid;
-  gap: var(--space-12);
-}
-
-.page {
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  padding: max(var(--space-24), env(safe-area-inset-top)) var(--space-16)
-    max(var(--space-24), env(safe-area-inset-bottom));
-}
-
-.page > a, .manage {
-  color: var(--color-accent-text);
-  display: inline-grid;
-  align-items: center;
-  justify-self: start;
-  min-block-size: var(--touch-target);
-}
-
-.pack {
-  padding: var(--space-16);
-  border: var(--focus-ring) solid var(--color-surface);
-  border-radius: var(--radius-control);
-}
-
-.pack h2 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
-.packProgress { display: flex; align-items: center; gap: var(--space-8); }
-.packProgress progress { min-inline-size: 0; inline-size: 100%; accent-color: var(--color-accent-text); }

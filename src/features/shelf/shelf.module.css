@@ -1,27 +1,6 @@
-.page,
 .stack {
   display: grid;
   gap: var(--space-16);
-}
-
-.page {
-  max-inline-size: var(--layout-width);
-  margin-inline: auto;
-  padding-block-start: max(var(--space-48), env(safe-area-inset-top));
-  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
-  padding-inline: max(var(--space-24), env(safe-area-inset-left)) max(var(--space-24), env(safe-area-inset-right));
-}
-
-.page a {
-  display: inline-grid;
-  align-items: center;
-  justify-self: start;
-  min-block-size: var(--touch-target);
-  color: var(--color-accent-text);
-}
-
-.page a:focus-visible {
-  outline: var(--focus-ring) solid var(--color-accent-text);
 }
 
 .actions {
@@ -38,28 +17,4 @@
   gap: var(--space-8);
 }
 
-.page { padding-block-start: max(var(--space-24), env(safe-area-inset-top)); }
-.page h2, .page h3 { font: var(--font-reading-body) var(--font-reading); font-weight: 650; }
-.featured h3 { font: var(--font-heading) var(--font-reading); }
-
-.featured, .book {
-  min-inline-size: 0;
-  padding: var(--space-12);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
-}
-
-.featured a.read, .book a.read {
-  justify-self: stretch;
-  padding-inline: var(--space-12);
-  border-radius: var(--radius-control);
-  background: var(--color-accent-text);
-  color: var(--color-bg);
-  text-align: center;
-  font: var(--font-label) var(--font-ui);
-  text-decoration: none;
-}
-
 .books { display: grid; gap: var(--space-12); }
-.progress { display: flex; align-items: center; gap: var(--space-8); }
-.progress progress { inline-size: 100%; min-inline-size: 0; accent-color: var(--color-accent-text); }

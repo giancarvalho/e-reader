@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/design-system/components/Button";
 import { BookCard } from "@/design-system/components/BookCard";
+import { Notice } from "@/design-system/components/Notice";
+import { Progress } from "@/design-system/components/Progress";
+import { Page } from "@/design-system/components/Page";
+import { Link } from "@/design-system/components/Link";
+import { LinkButton } from "@/design-system/components/LinkButton";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
@@ -12,6 +17,7 @@ import {
   type ReaderIdentity,
   type ShelfBook, type ShelfSnapshot,
 } from "@/lib/books/local";
+import { formatPercent } from "@/lib/format";
 import { recordDiagnostic } from "@/lib/diagnostics";
 import { maxEpubBytes } from "@/lib/epub/inspect";
 import { messages } from "@/lib/messages/pt-br";
@@ -63,7 +69,7 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
           {groupName && <Text tone="muted">{groupName}</Text>}
           {offline && <Text tone="muted">{shelf.offline}</Text>}
         </div>
-        {!offline && <a href="/conta">{access.account}</a>}
+        {!offline && <Link href="/conta">{access.account}</Link>}
       </header>
       {organizer && <div className={styles.actions}>
         <Button variant="secondary" onClick={() => setAdding(true)}>{shelf.add}</Button>
@@ -78,13 +84,13 @@ export function ShelfClient({ snapshot, covers, organizer = false, offline = fal
       </Sheet>}
       {snapshot.books.length === 0 && <Text>{offline ? shelf.offlineEmpty : access.shelfEmpty}</Text>}
       {recent && <section className={styles.stack}>
-        <Heading as="h2">{shelf.resume}</Heading>{card(recent, true)}
+        <Heading as="h2" variant="section">{shelf.resume}</Heading>{card(recent, true)}
       </section>}
       {current && current !== recent && <section className={styles.stack}>
-        <Heading as="h2">{shelf.current}</Heading>{card(current, !recent)}
+        <Heading as="h2" variant="section">{shelf.current}</Heading>{card(current, !recent)}
       </section>}
       {remaining.length > 0 && <section className={styles.stack}>
-        <Heading as="h2">{shelf.collection}</Heading>
+        <Heading as="h2" variant="section">{shelf.collection}</Heading>
         <div className={styles.books}>{remaining.map(book => card(book))}</div>
       </section>}
     </>
@@ -161,22 +167,17 @@ function ShelfCard({ userId, book, remoteCover, offline, resume, featured, child
   }
 
   return (
-    <div className={featured ? styles.featured : styles.book}>
-      <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover}
+    <BookCard title={book.title} author={book.author} cover={cover ?? remoteCover} featured={featured}
         coverHref={stored ? readerHref : undefined} status={stored ? shelf.available : undefined}>
-        {progress !== undefined && <div className={styles.progress}>
-          <progress aria-label={shelf.progress} value={progress} max={1} />
-          <span>{new Intl.NumberFormat("pt-BR", { style: "percent" }).format(progress)}</span>
-        </div>}
+        {progress !== undefined && <Progress label={shelf.progress} value={progress} valueText={formatPercent(progress)} />}
         {!offline && stored === false && <>
           <Button loading={busy} onClick={() => download(true)}>{shelf.read}</Button>
           <Button variant="quiet" disabled={busy} onClick={() => download(false)}>{shelf.download}</Button>
         </>}
-        {stored && <a className={styles.read} href={readerHref}>{action}</a>}
-        {(notice || busy) && <div role="status">{busy ? shelf.downloading : notice}</div>}
+        {stored && <LinkButton href={readerHref}>{action}</LinkButton>}
+        {(notice || busy) && <Notice>{busy ? shelf.downloading : notice}</Notice>}
         {children}
-      </BookCard>
-    </div>
+    </BookCard>
   );
 }
 
@@ -222,10 +223,10 @@ export function OfflineShelf() {
   }, []);
 
   return (
-    <main className={styles.page}>
+    <Page>
       {snapshot === undefined
-        ? <div role="status"><Text>{messages.shelf.loading}</Text></div>
+        ? <Notice>{messages.shelf.loading}</Notice>
         : <ShelfClient snapshot={snapshot ?? { userId: "", books: [] }} offline />}
-    </main>
+    </Page>
   );
 }

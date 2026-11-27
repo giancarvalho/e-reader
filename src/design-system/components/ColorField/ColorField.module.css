@@ -1,0 +1,28 @@
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-block-size: var(--touch-target);
+  font: var(--font-body) var(--font-ui);
+}
+
+.control {
+  box-sizing: border-box;
+  inline-size: var(--touch-target);
+  block-size: var(--touch-target);
+  padding: 0;
+  border: var(--focus-ring) solid var(--color-muted);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.control:focus-visible {
+  outline: var(--focus-ring) solid var(--color-accent-text);
+  outline-offset: var(--focus-ring);
+}
+
+.control:disabled {
+  opacity: var(--control-disabled-opacity);
+  cursor: default;
+}

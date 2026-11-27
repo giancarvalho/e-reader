@@ -8,11 +8,14 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run lint:css",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --exclude \"**/*.integration.test.ts\" --exclude \"e2e/**\"",
     "test:integration": "vitest run integration.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint:prune": "eslint . --prune-suppressions",
+    "dup": "jscpd"
   },
   "repository": {
     "type": "git",
@@ -48,7 +51,9 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "fake-indexeddb": "^6.2.8",
+    "jscpd": "^5.4.3",
     "jsdom": "^31.0.1",
+    "stylelint": "^18.1.0",
     "typescript": "^6.0.3",
     "vitest": "^5.1.1"
   }

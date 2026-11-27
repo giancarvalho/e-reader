@@ -1,0 +1,18 @@
+.page {
+  display: grid;
+  gap: var(--space-16);
+  max-inline-size: var(--layout-width);
+  margin-inline: auto;
+  padding-block-start: max(var(--space-24), env(safe-area-inset-top));
+  padding-block-end: max(var(--space-24), env(safe-area-inset-bottom));
+  padding-inline: max(var(--space-24), env(safe-area-inset-left)) max(var(--space-24), env(safe-area-inset-right));
+}
+
+.page[data-variant="intro"] {
+  padding-block-start: max(var(--space-48), env(safe-area-inset-top));
+}
+
+.page[data-variant="banner"] {
+  padding-block: max(var(--space-8), env(safe-area-inset-top)) var(--space-16);
+  padding-inline: var(--space-16);
+}

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
+import { IconButton } from "@/design-system/components/IconButton";
+import { Swatch } from "@/design-system/components/Swatch";
+import { Notice } from "@/design-system/components/Notice";
 import { TextArea } from "@/design-system/components/TextArea";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
 import type { Annotation } from "@/lib/sync/annotations";
 import { AnnotationColors } from "./AnnotationColors";
-import { AnnotationIcon } from "./AnnotationIcon";
 import styles from "./annotations.module.css";
 
 export type AnnotationSelection = { cfi: string; quote: string; sample?: string };
@@ -44,14 +46,14 @@ export function AnnotationPanel({ annotation, noteOnly, cancel, onSave }: {
       <Text>{annotation.quote_text}</Text>
       <Text tone="muted">{annotations.shared}</Text>
       {noteOnly ? <div className={styles.selectedColor}>
-        <span className={styles.swatch} data-color={color} aria-hidden="true" />
+        <Swatch tone={color} />
         <Text>{annotations.colors[color]}</Text>
       </div> : <AnnotationColors color={color} disabled={busy} onSelect={setColor} />}
       <TextArea label={annotations.note} value={note} onChange={event => setNote(event.target.value)} maxLength={4000} />
-      {failed && <div role="alert"><Text>{annotations.saveFailed}</Text></div>}
+      {failed && <Notice live="alert">{annotations.saveFailed}</Notice>}
       <div className={styles.actions}>
         <Button loading={busy} onClick={() => void submit()}>{noteOnly ? annotations.saveNote : annotations.save}</Button>
-        {!noteOnly && <Button variant="icon" aria-label={annotations.remove} disabled={busy} onClick={() => void submit(true)}><AnnotationIcon name="trash" /></Button>}
+        {!noteOnly && <IconButton icon="trash" label={annotations.remove} disabled={busy} onClick={() => void submit(true)} />}
         <Button variant="quiet" disabled={busy} onClick={cancel}>{annotations.cancel}</Button>
       </div>
     </section>

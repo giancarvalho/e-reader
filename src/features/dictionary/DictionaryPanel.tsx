@@ -3,9 +3,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { Heading } from "@/design-system/components/Heading";
+import { Link } from "@/design-system/components/Link";
+import { List, ListItem } from "@/design-system/components/List";
+import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
 import { Text } from "@/design-system/components/Text";
 import { lookupDictionary, type DictionaryLanguage } from "@/lib/dictionary/lookup";
+import { isOnline } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./dictionary.module.css";
 
@@ -23,7 +27,7 @@ export function DictionaryPanel({ word, language, close }: Props) {
     void lookupDictionary(language, word).then(result => {
       if (active) setState(result);
     }).catch(() => {
-      if (active) setState(navigator.onLine ? "error" : "offline");
+      if (active) setState(isOnline() ? "error" : "offline");
     });
     return () => { active = false; };
   }, [attempt, language, word]);
@@ -38,10 +42,10 @@ export function DictionaryPanel({ word, language, close }: Props) {
   return (
     <Sheet variant="compact" title={word} closeLabel={dictionary.close} onClose={close}>
       <div className={styles.lookup}>
-        <span className={styles.language}>{dictionary.languages[language]}</span>
-        {isError && <div role="status">
-          <Text>{dictionary[state]}</Text>
-          <a className={styles.manage} href="/dicionarios">{dictionary.offlineTitle}</a>
+        <Text variant="label" tone="muted">{dictionary.languages[language]}</Text>
+        {isError && <div>
+          <Notice>{dictionary[state]}</Notice>
+          <Link href="/dicionarios">{dictionary.offlineTitle}</Link>
           <Button variant="quiet" onClick={() => { setState(undefined); setAttempt(value => value + 1); }}>
             {dictionary.retry}
           </Button>
@@ -50,19 +54,19 @@ export function DictionaryPanel({ word, language, close }: Props) {
         {displayed.map(entry => (
           <section className={styles.panel} key={entry.word}>
             {entry.word !== word && <Heading as="h3">{entry.word}</Heading>}
-            <ol className={styles.definitions} role="list">
+            <List as="ol">
               {(expanded ? entry.definitions : entry.definitions.slice(0, 2)).map(({ text, pos }, index) => (
-                <li className={styles.definition} key={index}>
+                <ListItem key={index} divided>
                   {Object.hasOwn(dictionary.pos, pos) && (
-                    <span className={styles.partOfSpeech}>{dictionary.pos[pos as keyof typeof dictionary.pos]}</span>
+                    <Text variant="label" tone="muted">{dictionary.pos[pos as keyof typeof dictionary.pos]}</Text>
                   )}
                   <Text variant="reading"><span lang={language}>{text}</span></Text>
-                </li>
+                </ListItem>
               ))}
-            </ol>
-            <div className={styles.links}>
-              <a href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</a>
-            </div>
+            </List>
+            <Text variant="label" tone="muted">
+              <Link tone="muted" href={origin + encodeURIComponent(entry.word)} target="_blank" rel="noreferrer">{dictionary.wiktionary}</Link>
+            </Text>
           </section>
         ))}
         {canExpand && !expanded && <div className={styles.more}>
