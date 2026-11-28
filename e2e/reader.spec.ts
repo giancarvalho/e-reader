@@ -183,7 +183,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     }
 
     await start();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(400);
     expect(await pressSelection()).toBe("");
     await release();
     await expect(dictionary).toHaveCount(0);
