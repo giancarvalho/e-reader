@@ -43,7 +43,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
 
 
   useEffect(() => {
-    if (!annotation.note || annotation.name !== undefined) return;
+    if (annotation.name !== undefined) return;
     let active = true;
     function lookup() {
       if (!isOnline()) return;
@@ -57,7 +57,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
       active = false;
       stopReconnect();
     };
-  }, [annotation.id, annotation.name, annotation.note, identity]);
+  }, [annotation.id, annotation.name, identity]);
 
   const noteAuthor = annotation.name || author?.name || (annotation.author_id === identity.user ? comments.you : comments.member);
 
@@ -84,9 +84,10 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
     <Popover label={comments.thread} onClose={close} anchor={anchor}>
       <div className={styles.thread}>
         <div className={styles.header}>
-          {annotation.note && <div className={styles.author}>
+          <div className={styles.author}>
+            {!annotation.note && <Text tone="muted">{comments.highlightedBy}</Text>}
             <Avatar src={annotation.avatar ?? author?.avatar} name={noteAuthor} /><Text>{noteAuthor}</Text>
-          </div>}
+          </div>
           <div className={styles.toolbar}>
             <IconButton ref={replyButton} icon="reply" label={comments.replyAction} aria-expanded={composing}
               onClick={() => {
