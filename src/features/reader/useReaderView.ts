@@ -8,6 +8,7 @@ import type { View } from "@/vendor/foliate/view";
 import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
+import { enterFullscreen, leaveFullscreen } from "@/lib/fullscreen";
 import { logGesture, type GestureData } from "@/lib/gesture-log";
 import { chapterLayout, createPageTap } from "./page-tap";
 import { bindWordPress } from "./word-press";
@@ -35,6 +36,10 @@ type Options = {
  * preferences, the highlights, the selection and the reading position. The
  * reader's own chrome stays in ReaderCanvas.
  */
+/** Space above and below the text (it holds the reading progress line) and the side gutters: the text fills the screen. */
+const pageMargin = "28px";
+const pageGap = "5%";
+
 export function useReaderView({
   file, initialCfi, preferences, annotations, commentCounts, annotationTarget, selectionReset,
   onPosition, onSelection, onAnnotation, onDismissAnnotation, onChapter, onChapters, onToggleControls,
@@ -87,6 +92,14 @@ export function useReaderView({
     let words: AbortController | undefined;
     const overlaysReceiveTaps = new WeakSet<Document>();
     const selection = trackReaderSelection(() => view, content, () => !cancelled && pointerId === undefined, value => reportSelection(value));
+    // Full screen is only allowed from a tap, so the first one in the reader asks for it, once per opening.
+    let askedFullscreen = false;
+    function requestFullscreenOnce() {
+      if (askedFullscreen) return;
+      askedFullscreen = true;
+      enterFullscreen();
+    }
+    window.addEventListener("pointerup", requestFullscreenOnce, { once: true });
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     function applyMotion() {
       view?.renderer?.toggleAttribute("animated", !reducedMotion.matches);
@@ -174,6 +187,7 @@ export function useReaderView({
           pointerId = undefined;
           selection.inspect();
         };
+        doc.addEventListener("pointerup", requestFullscreenOnce, { once: true });
         doc.addEventListener("pointerup", endPointer);
         doc.addEventListener("pointercancel", endPointer);
         doc.addEventListener("pointerout", event => {
@@ -236,6 +250,9 @@ export function useReaderView({
       selectionTimer = window.setInterval(selection.inspect, 200);
       setToc(book.toc ?? []);
       applied.current = appearance.current;
+      // The text uses almost the whole screen; the top and bottom margins only hold the reading progress line.
+      view.renderer.setAttribute("margin", pageMargin);
+      view.renderer.setAttribute("gap", pageGap);
       view.renderer.setStyles(readerStyles(applied.current));
       await view.init({ lastLocation: initialCfi, showTextStart: true });
       recording = true;
@@ -256,6 +273,8 @@ export function useReaderView({
       cancelled = true;
       clearReaderSelection.current = null;
       window.removeEventListener("keydown", readKey);
+      window.removeEventListener("pointerup", requestFullscreenOnce);
+      leaveFullscreen();
       reducedMotion.removeEventListener("change", applyMotion);
       window.clearInterval(selectionTimer);
       pageTap.stop();

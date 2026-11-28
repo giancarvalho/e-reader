@@ -122,6 +122,8 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
     });
   })).toBe("#333333");
   await closePanel();
+  // The bars now sit over the text, so hide them before touching the first lines.
+  await page.getByRole("button", { name: "Ocultar controles de leitura" }).click();
 
   if (process.env.TEST_DICTIONARY) {
     const frame = page.frames().find(entry => entry.url().startsWith("blob:"));

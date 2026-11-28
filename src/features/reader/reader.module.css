@@ -16,7 +16,7 @@
   max-inline-size: var(--layout-width);
   margin-inline: auto;
   box-sizing: border-box;
-  padding-block: env(safe-area-inset-top) max(var(--touch-target), env(safe-area-inset-bottom));
+  padding-block: env(safe-area-inset-top) env(safe-area-inset-bottom);
   padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
 }
 

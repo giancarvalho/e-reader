@@ -53,26 +53,43 @@
 .tools { display: flex; justify-content: space-between; }
 .tools button { padding-inline: var(--space-8); }
 
+/* A quiet line in the page margin: the chapter in the middle, how far along on the right. It never takes taps. */
 .progress {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  width: 100%;
-  min-block-size: var(--touch-target);
-  padding-inline: var(--space-24);
-  border: 0;
-  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+  align-items: baseline;
+  box-sizing: border-box;
+  padding: var(--space-8) 5%;
   color: var(--color-muted);
-  font: var(--font-label) var(--font-ui);
-  cursor: pointer;
+  font: var(--font-caption) var(--font-ui);
+  pointer-events: none;
 }
 
-.progress span:first-child {
+.progress span {
+  grid-column: 3;
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress span:first-child:not(:last-child) {
+  grid-column: 2;
+  justify-self: stretch;
   overflow: hidden;
+  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-[data-theme="custom"] .progressOnly .progress { color: var(--color-ink); background: var(--color-bg); }
-.progress:focus-visible, .back:focus-visible { outline: var(--focus-ring) solid var(--color-accent-text); outline-offset: calc(-1 * var(--focus-ring)); }
+.toggle {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inline-size: var(--focus-ring);
+  block-size: var(--focus-ring);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  opacity: 0;
+}
+
+.toggle:focus-visible ~ .progress, .back:focus-visible { outline: var(--focus-ring) solid var(--color-accent-text); outline-offset: calc(-1 * var(--focus-ring)); }

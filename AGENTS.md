@@ -72,6 +72,16 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   o gesto de voltar do sistema. Toques em sequência rápida são páginas
   independentes. Se o navegador não enviar `click` após um toque rápido (iOS), o
   próprio toque aplica a zona depois de 350 ms.
+- Layout do leitor: o texto ocupa quase toda a tela (margens de 28 px em cima
+  e embaixo e 5% nas laterais, definidas em `useReaderView.ts`). As barras de
+  cima e de baixo aparecem **sobre** o texto quando os controles são abertos e
+  não reservam espaço. Com os controles fechados, só resta uma linha discreta
+  na margem de baixo, sem receber toques: o capítulo ao centro e a porcentagem à
+  direita. Um botão invisível (focável, para teclado e leitor de tela) mostra
+  e esconde os controles; para quem toca, valem as zonas da página. Na primeira
+  interação o leitor pede tela cheia (`src/lib/fullscreen.ts`) e a deixa ao
+  sair; o iPhone não tem essa API, e o app instalado já abre sem barras do
+  navegador.
 - Registro de gestos (`src/lib/gesture-log.ts`): o leitor e o paginador gravam no
   `localStorage` (`e-reader-gesture-log`, até 400 eventos) só tipo de evento,
   coordenadas, tempos e decisões, nunca texto nem posição do livro. A página de
