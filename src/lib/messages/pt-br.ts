@@ -140,6 +140,7 @@ export const messages = {
     empty: "Ainda não há respostas.",
     you: "Você",
     member: "Membro do grupo",
+    highlightedBy: "Grifado por",
     remove: "Apagar comentário",
     replyAction: "Responder",
     reply: "Escreva uma resposta",
