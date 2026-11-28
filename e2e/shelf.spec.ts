@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("reopens a downloaded book listing from IndexedDB without a network", async ({ page, context, browserName }) => {
   test.skip(browserName === "webkit", "Installed iOS offline behavior is tested on a device.");
   await page.goto("/estante-offline");
-  await page.getByText("Conecte-se para baixar livros neste aparelho.").waitFor();
+  await page.getByText("Entre com sua conta quando estiver online para ver a estante deste aparelho.").waitFor();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.evaluate(async () => {
     const open = indexedDB.open("e-reader-library");
