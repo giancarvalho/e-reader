@@ -9,11 +9,11 @@ describe("classifyPress", () => {
 
   it("does nothing between a tap and a hold", () => {
     expect(classifyPress(251, 0)).toBe("dead");
-    expect(classifyPress(999, 4)).toBe("dead");
+    expect(classifyPress(499, 4)).toBe("dead");
   });
 
-  it("selects after one second without movement", () => {
-    expect(classifyPress(1_000, 0)).toBe("hold");
+  it("selects after half a second without movement", () => {
+    expect(classifyPress(500, 0)).toBe("hold");
     expect(classifyPress(1_800, 9)).toBe("hold");
   });
 

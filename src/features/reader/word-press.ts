@@ -39,9 +39,26 @@ export function wordAtPoint(doc: Document, x: number, y: number, snap = false) {
   return nearest;
 }
 
+/** How far (px) from the finger the nearest word may be and still count as pressed: half a 44 px touch target. */
+export const pressSlopPx = 22;
+
+/**
+ * The word under the finger or, when the finger lands between words or lines, the nearest one within `pressSlopPx`.
+ * A strict hit test misses roughly half of the paragraph area (word gaps, line spacing).
+ */
+export function wordNearPoint(doc: Document, x: number, y: number) {
+  const exact = wordAtPoint(doc, x, y);
+  if (exact) return exact;
+  const near = wordAtPoint(doc, x, y, true);
+  if (!near) return;
+  const distance = Math.min(...Array.from(near.getClientRects(), rect =>
+    Math.hypot(Math.max(rect.left - x, x - rect.right, 0), Math.max(rect.top - y, y - rect.bottom, 0))));
+  return distance <= pressSlopPx ? near : undefined;
+}
+
 /**
  * Touch screens only allow text selection while the app owns one (see `readerStyles`).
- * Otherwise the browser's own long press selects a word well before the 1 s hold.
+ * Otherwise the browser's own long press selects a word well before the hold.
  */
 export function applyTextSelection(doc: Document, range: Range) {
   doc.documentElement.dataset.readerSelectable = "";
@@ -50,6 +67,17 @@ export function applyTextSelection(doc: Document, range: Range) {
   const selection = doc.getSelection();
   selection?.removeAllRanges();
   selection?.addRange(range);
+}
+
+/** Checks after a hold ends, to see on a real device whether the system kept the selection. */
+const selectionSampleMs = [0, 300, 1_200];
+
+function logSelection(doc: Document, when: string) {
+  const selection = doc.getSelection();
+  logGesture("selection-state", {
+    when, collapsed: selection?.isCollapsed ?? true, length: selection?.toString().length ?? 0,
+    selectable: doc.documentElement.hasAttribute("data-reader-selectable"),
+  });
 }
 
 function tagOf(target: EventTarget | null) {
@@ -108,7 +136,7 @@ export function bindWordPress(
     const touch = event.touches[0];
     const x = touch.clientX;
     const y = touch.clientY;
-    const word = wordAtPoint(doc, x, y);
+    const word = wordNearPoint(doc, x, y);
     const current: Press = {
       id: touch.identifier, x, y, word, selecting: false, startedAt: performance.now(), travel: 0,
     };
@@ -165,15 +193,28 @@ export function bindWordPress(
     lastPress.set(doc, record);
     logGesture("touchend", {
       outcome, ms: Math.round(record.endedAt - current.startedAt), travel: Math.round(current.travel),
-      selecting: current.selecting, defaultPrevented: event.defaultPrevented,
+      selecting: current.selecting, cancelable: event.cancelable,
     });
     onPress?.(record, event.target as Element | null);
     if (current.selecting) {
       event.preventDefault();
       event.stopImmediatePropagation();
       onRelease();
+      for (const delay of selectionSampleMs) window.setTimeout(() => {
+        if (!signal.aborted) logSelection(doc, `release+${delay}`);
+      }, delay);
     }
   }, options);
+
+  // iOS sends mouse events and a click about 40 ms after a long press, even when `touchend` was cancelled.
+  // Their default action collapses the selection the hold just made, so the hold owns them.
+  for (const type of ["mousedown", "mouseup"] as const) {
+    doc.addEventListener(type, event => {
+      if (recentPress(doc)?.outcome !== "hold") return;
+      event.preventDefault();
+      logGesture("mouse-guard", { type });
+    }, options);
+  }
 
   doc.addEventListener("touchcancel", () => {
     logGesture("touchcancel", {
@@ -190,7 +231,12 @@ export function bindWordPress(
   }, options);
 
   let release: number | undefined;
+  let wasCollapsed = true;
   doc.addEventListener("selectionchange", () => {
+    // Only transitions are logged: they show what the system did to the selection, without text.
+    const collapsed = doc.getSelection()?.isCollapsed ?? true;
+    if (collapsed !== wasCollapsed) logSelection(doc, collapsed ? "collapsed" : "expanded");
+    wasCollapsed = collapsed;
     window.clearTimeout(release);
     // WebKit can report a collapsed selection for a moment while it swaps ranges.
     release = window.setTimeout(() => {

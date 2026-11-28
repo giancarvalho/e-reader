@@ -63,7 +63,7 @@ test("a quick tap in the middle toggles the bars and on the sides turns the page
 test("a hesitant press near the edge neither turns the page nor toggles the bars", async ({ page, browserName }) => {
   test.skip(browserName === "webkit", "press duration needs CDP touch input");
   await openBook(page);
-  await press(page, 0.9, 600);
+  await press(page, 0.9, 400);
   await page.waitForTimeout(700);
   expect(await visibleChapter(page)).toBe("Primeiro capítulo");
   await expect(page.getByRole("button", { name: "Mostrar controles de leitura" })).toBeVisible();

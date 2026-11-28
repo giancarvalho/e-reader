@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { strToU8, zipSync } from "fflate";
+import { strToU8, unzipSync, zipSync } from "fflate";
 
 const xhtml = (body: string) =>
   `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Leitura</title></head><body>${body}</body></html>`;
@@ -22,3 +22,16 @@ export const bytes = zipSync({
 });
 
 export const hash = createHash("sha256").update(bytes).digest("hex");
+
+// A single chapter with many lines, for gestures that need real text under the finger.
+const longText = Array.from({ length: 40 }, (_, index) =>
+  `<p>Capítulo ${index}: a casa ficava no alto da colina, e de lá se via o rio descer devagar entre os campos de milho até desaparecer na névoa da manhã.</p>`).join("");
+export const longBook = (() => {
+  const files = unzipSync(bytes);
+  const opf = new TextDecoder().decode(files["book.opf"])
+    .replace("example-reader", "long-reader")
+    .replace('<item id="two" href="two.xhtml" media-type="application/xhtml+xml"/>', "")
+    .replace('<itemref idref="two"/>', "");
+  const long = zipSync({ ...files, "book.opf": strToU8(opf), "one.xhtml": strToU8(xhtml(longText)) });
+  return { bytes: long, hash: createHash("sha256").update(long).digest("hex") };
+})();
