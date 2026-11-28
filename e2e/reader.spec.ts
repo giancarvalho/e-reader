@@ -9,7 +9,7 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   });
 
   await page.goto("/estante-offline");
-  await page.getByText("Conecte-se para baixar livros neste aparelho.").waitFor();
+  await page.getByText("Entre com sua conta quando estiver online para ver a estante deste aparelho.").waitFor();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.evaluate(async ({ bytes, hash }) => {
     const request = indexedDB.open("e-reader-library");

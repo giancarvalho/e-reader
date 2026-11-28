@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { LinkButton } from "@/design-system/components/LinkButton";
 import { Notice } from "@/design-system/components/Notice";
+import { readLocalShelf } from "@/lib/books/local";
 import { useOnline } from "@/lib/online";
 import { invitePath, normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
@@ -11,6 +12,15 @@ export function EnterLink() {
   const online = useOnline();
   const rawInvite = useSyncExternalStore(() => () => {}, () => new URLSearchParams(window.location.search).get("invite"), () => null);
   const invite = normalizeInviteCode(rawInvite);
+  // Offline, only a device that already holds a signed-in shelf can open it.
+  const [hasShelf, setHasShelf] = useState<boolean>();
+  useEffect(() => {
+    if (online !== false) return;
+    let active = true;
+    void readLocalShelf().then(shelf => { if (active) setHasShelf(Boolean(shelf)); })
+      .catch(() => { if (active) setHasShelf(false); });
+    return () => { active = false; };
+  }, [online]);
   useEffect(() => {
     if (!online || !invite) return;
     const controller = new AbortController();
@@ -43,6 +53,9 @@ export function EnterLink() {
   return <>
     {rawInvite !== null && !invite && <Notice>{messages.access.errors.invalid_code}</Notice>}
     {invite && !online && <Notice>{messages.access.errors.unavailable}</Notice>}
-    <LinkButton href={online ? destination : "/estante-offline"}>{messages.home.enter}</LinkButton>
+    {online
+      ? <LinkButton href={destination}>{messages.home.enter}</LinkButton>
+      : hasShelf ? <LinkButton href="/estante-offline">{messages.home.enter}</LinkButton>
+        : hasShelf === false && <Notice>{messages.home.offlineSignIn}</Notice>}
   </>;
 }
