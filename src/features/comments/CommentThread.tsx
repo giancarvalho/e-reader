@@ -85,8 +85,11 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
       <div className={styles.thread}>
         <div className={styles.header}>
           <div className={styles.author}>
-            {!annotation.note && <Text tone="muted">{comments.highlightedBy}</Text>}
-            <Avatar src={annotation.avatar ?? author?.avatar} name={noteAuthor} /><Text>{noteAuthor}</Text>
+            <Avatar src={annotation.avatar ?? author?.avatar} name={noteAuthor} />
+            <div className={styles.authorText}>
+              {!annotation.note && <Text tone="muted" variant="label">{comments.highlightedBy}</Text>}
+              <Text>{noteAuthor}</Text>
+            </div>
           </div>
           <div className={styles.toolbar}>
             <IconButton ref={replyButton} icon="reply" label={comments.replyAction} aria-expanded={composing}

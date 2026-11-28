@@ -6,6 +6,8 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
+  // The default reloads the page on every `online` event, which aborts taps and drops open notes. Screens react through `useOnline`.
+  reloadOnOnline: false,
   additionalPrecacheEntries: [
     "/", "/estante-offline", "/ler", "/diagnostico", "/dicionarios", "/creditos", "/manifest.webmanifest",
     "/icons/book-192.png", "/icons/book-512.png",

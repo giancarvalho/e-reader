@@ -222,11 +222,12 @@ export function OfflineShelf() {
     return () => { active = false; };
   }, []);
 
+  // Without a local shelf nobody has signed in on this device (or they signed out), so there is nothing to open.
   return (
     <Page>
       {snapshot === undefined
         ? <Notice>{messages.shelf.loading}</Notice>
-        : <ShelfClient snapshot={snapshot ?? { userId: "", books: [] }} offline />}
+        : snapshot ? <ShelfClient snapshot={snapshot} offline /> : <Notice>{messages.shelf.offlineSignIn}</Notice>}
     </Page>
   );
 }

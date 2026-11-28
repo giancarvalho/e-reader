@@ -4,6 +4,7 @@ export const messages = {
   home: {
     subtitle: "Um livro. Muitas leituras.",
     enter: "Entrar",
+    offlineSignIn: "Sem conexão. Entre quando estiver online para abrir sua estante.",
     credits: "Créditos e licenças",
     creditsDictionary: "As definições em português e inglês foram extraídas e adaptadas dos Wikcionários, incluindo seleção e formatação. O link para o verbete original dá acesso ao histórico e às contribuições. As definições adaptadas são distribuídas sob CC BY-SA 4.0.",
     wiktionaryPortuguese: "Wikcionário em português",
@@ -73,6 +74,7 @@ export const messages = {
     editFailed: "Não foi possível atualizar a estante.",
     offline: "Estante offline",
     offlineEmpty: "Conecte-se para baixar livros neste aparelho.",
+    offlineSignIn: "Entre com sua conta quando estiver online para ver a estante deste aparelho.",
   },
   reader: {
     title: "Leitor",

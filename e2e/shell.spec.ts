@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { seedLibrary } from "./support/library";
 
 test("starts the installed app at the reading shelf", async ({ request }) => {
   const manifest = await request.get("/manifest.webmanifest");
@@ -38,7 +39,7 @@ test("persists the global theme when it overrides the system theme", async ({ pa
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 245, 236)");
 });
 
-test("reopens the public shell offline after installation", async ({ page, context, browserName }) => {
+test("offers no shelf offline to someone who never signed in", async ({ page, context, browserName }) => {
   test.skip(browserName === "webkit", "Installed iOS PWA offline behavior is covered on a real device.");
   await page.goto("/");
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
@@ -46,8 +47,31 @@ test("reopens the public shell offline after installation", async ({ page, conte
   await page.reload();
   await expect(page.getByRole("heading", { name: "Shared Margins" })).toBeVisible();
   await expect(page.locator("body")).toHaveCSS("font-family", /Inter Variable/);
+  await expect(page.getByText("Sem conexão. Entre quando estiver online para abrir sua estante.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Entrar", exact: true })).toHaveCount(0);
+});
+
+test("reopens the offline shelf from the public shell for someone who signed in before", async ({ page, context, browserName }) => {
+  test.skip(browserName === "webkit", "Installed iOS PWA offline behavior is covered on a real device.");
+  await seedLibrary(page);
+  await page.goto("/");
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Shared Margins" })).toBeVisible();
   const enter = page.getByRole("link", { name: "Entrar", exact: true });
   await expect(enter).toHaveAttribute("href", "/estante-offline");
   await enter.click();
   await expect(page.getByText("Estante offline", { exact: true })).toBeVisible();
+  await expect(page.getByText("Livro de teste").first()).toBeVisible();
+});
+
+test("keeps the page when the connection comes back", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "Installed iOS PWA offline behavior is covered on a real device.");
+  await page.goto("/");
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await page.evaluate(() => { (window as unknown as { kept: boolean }).kept = true; });
+  await page.evaluate(() => window.dispatchEvent(new Event("online")));
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as unknown as { kept?: boolean }).kept)).toBe(true);
 });
