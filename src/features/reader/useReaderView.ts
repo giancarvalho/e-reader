@@ -8,7 +8,7 @@ import type { View } from "@/vendor/foliate/view";
 import { annotationAnchor, chapterReceivesEvents, drawAnnotation, drawing, type DrawDetail, type DrawnAnnotation } from "./annotation-overlay";
 import { readerStyles } from "./reader-styles";
 import styles from "./reader.module.css";
-import { enterFullscreen, leaveFullscreen } from "@/lib/fullscreen";
+import { enterFullscreen, leaveFullscreen, readFullscreenPreference } from "@/lib/fullscreen";
 import { logGesture, type GestureData } from "@/lib/gesture-log";
 import { chapterLayout, createPageTap } from "./page-tap";
 import { bindWordPress } from "./word-press";
@@ -97,7 +97,7 @@ export function useReaderView({
     function requestFullscreenOnce() {
       if (askedFullscreen) return;
       askedFullscreen = true;
-      enterFullscreen();
+      if (readFullscreenPreference()) enterFullscreen();
     }
     window.addEventListener("pointerup", requestFullscreenOnce, { once: true });
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
