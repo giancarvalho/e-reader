@@ -43,7 +43,8 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
 
 
   useEffect(() => {
-    if (annotation.name !== undefined) return;
+    // Your own highlights always read "Você", so there is nothing to look up.
+    if (annotation.name !== undefined || annotation.author_id === identity.user) return;
     let active = true;
     function lookup() {
       if (!isOnline()) return;
@@ -57,9 +58,9 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
       active = false;
       stopReconnect();
     };
-  }, [annotation.id, annotation.name, identity]);
+  }, [annotation.id, annotation.name, annotation.author_id, identity]);
 
-  const noteAuthor = annotation.name || author?.name || (annotation.author_id === identity.user ? comments.you : comments.member);
+  const noteAuthor = annotation.author_id === identity.user ? comments.you : annotation.name || author?.name || comments.member;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -111,7 +112,7 @@ export function CommentThread({ identity, annotation, rows, save, close, anchor,
           {thread.length > 0 && <List>
             {thread.map(row => {
               const own = row.author_id === identity.user;
-              const name = row.name || (own ? comments.you : comments.member);
+              const name = own ? comments.you : row.name || comments.member;
               return (
                 <ListItem key={row.id} divided>
                   <div className={styles.header}>
