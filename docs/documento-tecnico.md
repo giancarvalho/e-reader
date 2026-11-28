@@ -137,7 +137,7 @@ Cores de grifo (iguais nos dois temas, aplicadas com transparência): âmbar, ve
 
 **Temas**
 
-- O tema vive em `data-theme` no elemento raiz: `auto`, `day`, `night` ou `custom`. `auto` é o padrão e segue `prefers-color-scheme`, reagindo em tempo real.
+- O tema do aplicativo vive em `data-theme` no elemento raiz (`auto`, `day` ou `night`; `auto` segue `prefers-color-scheme`). O leitor tem temas próprios na sua seção: `day`, `sunset`, `night`, `midnight` e `custom`, sem `auto`; quem usava o automático foi convertido uma vez para Dia ou Noite.
 - `custom` define só `--color-bg` e `--color-ink`; o restante deriva deles com `color-mix`. Se o contraste ficar abaixo de 4,5:1, a interface mostra um aviso e não bloqueia.
 - O tamanho (`--reader-font-size`, 12 a 36 px) e a família do texto do livro (`--reader-font-family`: serifa ou sem serifa) são preferências do leitor, independentes do tema.
 - Os contrastes de todos os pares de token têm teste automatizado nos temas Dia e Noite.

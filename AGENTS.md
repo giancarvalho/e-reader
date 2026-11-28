@@ -97,8 +97,17 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   `default-src 'none'`. O e2e confere que um `onerror` do EPUB nunca executa.
   Não afrouxe nenhuma dessas camadas sem rever as outras.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
-  `localStorage`. Sem escolha, segue o sistema. O `data-theme` na seção do
-  leitor segue as preferências individuais do EPUB.
+  `localStorage`. Sem escolha, segue o sistema.
+- Temas do leitor (`user_preferences.theme`): `day` (Dia), `sunset` (Pôr do
+  Sol), `night` (Noite), `midnight` (Meia-Noite, preto puro com texto amarelado
+  suave) e `custom` (Personalizado). Não existe mais o tema automático: quem o
+  usava é convertido uma vez para Dia ou Noite, conforme o sistema, e o antigo
+  Sépia (um `custom` com cores fixas) virou `sunset`. O banco ainda aceita
+  `auto` só para cópias antigas do app. O `data-theme` da seção do leitor define
+  os tokens de cor de **todo** o leitor (capítulo, barras e painéis); no
+  `custom`, só `--color-bg` e `--color-ink` são gravados e o restante deriva
+  deles. Enquanto o leitor está aberto, o fundo do `html` e o `theme-color`
+  seguem a cor do leitor.
 - Convites compartilhados usam `/?invite=CODIGO`. A home envia
   `POST /auth/invite` na mesma origem com JSON `{ code }`. O endpoint usa a
   sessão do leitor, devolve `401` para iniciar o fluxo de login da home e

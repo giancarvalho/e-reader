@@ -11,7 +11,7 @@ import {
   saveReaderPreferences, saveReadingPosition, type ReaderIdentity, type ShelfBook,
 } from "@/lib/books/local";
 import { recordDiagnostic } from "@/lib/diagnostics";
-import { defaultPreferences, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
+import { initialPreferences, normalizePreferences, prefersDark, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import { isOnline, onReconnect } from "@/lib/online";
 import { messages } from "@/lib/messages/pt-br";
 import { ReadingWorkspace } from "./ReadingWorkspace";
@@ -44,10 +44,11 @@ export function ReaderPage() {
       const identity = { user, group: book.group_id, hash: book.id };
       const [asset, state] = await Promise.all([readLocalBook(user, book), readReaderState(identity)]);
       if (asset) void rememberOpenedBook(identity).catch(() => undefined);
-      return asset ? {
-        identity, book, file: asset.file, cfi: state.position?.value.cfi,
-        preferences: state.preferences?.value ?? defaultPreferences,
-      } : null;
+      const stored = state.preferences?.value;
+      const preferences = stored ? normalizePreferences(stored, prefersDark()) : initialPreferences();
+      // Themes that no longer exist ("auto") are converted once and saved, so they do not follow the device again.
+      if (stored && preferences.theme !== stored.theme) void saveReaderPreferences(user, preferences).catch(() => undefined);
+      return asset ? { identity, book, file: asset.file, cfi: state.position?.value.cfi, preferences } : null;
     }
     void load().then(result => { if (active) setReading(result); }).catch(() => { if (active) setReading(null); });
     return () => { active = false; };
@@ -80,7 +81,8 @@ export function ReaderPage() {
         return {
           ...current,
           cfi: remotePosition ? received.position?.value.cfi : current.cfi,
-          preferences: remotePreferences ? received.preferences?.value ?? current.preferences : current.preferences,
+          preferences: remotePreferences && received.preferences
+            ? normalizePreferences(received.preferences.value, prefersDark()) : current.preferences,
         };
       });
     } catch {
