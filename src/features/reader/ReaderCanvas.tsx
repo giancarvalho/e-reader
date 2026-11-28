@@ -52,12 +52,28 @@ export function ReaderCanvas({
 
   useEffect(() => {
     const surface = readerSurface.current;
-    if (!surface || preferences.theme === "auto") return;
-    const theme = document.createElement("meta");
-    theme.name = "theme-color";
-    theme.content = getComputedStyle(surface).backgroundColor;
-    document.head.prepend(theme);
-    return () => { theme.remove(); };
+    if (!surface) return;
+    const root = document.documentElement;
+    const previous = root.style.backgroundColor;
+    let theme: HTMLMetaElement | undefined;
+    function paint() {
+      const color = getComputedStyle(surface!).backgroundColor;
+      // The page behind the reader (system bars, overscroll, the gesture area) must match the reader's own theme.
+      root.style.backgroundColor = color;
+      if (preferences.theme === "auto") return;
+      theme ??= document.createElement("meta");
+      theme.name = "theme-color";
+      theme.content = color;
+      if (!theme.isConnected) document.head.prepend(theme);
+    }
+    paint();
+    const scheme = matchMedia("(prefers-color-scheme: dark)");
+    scheme.addEventListener("change", paint);
+    return () => {
+      scheme.removeEventListener("change", paint);
+      theme?.remove();
+      root.style.backgroundColor = previous;
+    };
   }, [preferences.theme, preferences.background]);
 
   async function navigate(operation: () => Promise<void> | undefined) {
