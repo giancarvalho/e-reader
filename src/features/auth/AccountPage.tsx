@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { Heading } from "@/design-system/components/Heading";
 import { Text } from "@/design-system/components/Text";
 import { messages } from "@/lib/messages/pt-br";
+import { appVersion } from "@/lib/version";
 import { getRequestAuth } from "@/lib/supabase/server";
 import { SignOutForm } from "./SignOutForm";
 import styles from "./auth.module.css";
@@ -70,6 +71,7 @@ export function AccountContent({ name, photo, signOutFailed }: {
           <Text tone="muted">{auth.signOutEffect}</Text>
           <Notice>{signOutFailed ? auth.signOutFailed : undefined}</Notice>
           <SignOutForm />
+          <Text tone="muted">{auth.version} {appVersion}</Text>
         </footer>
       </div>
     </Page>

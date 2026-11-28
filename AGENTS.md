@@ -46,6 +46,19 @@ autorizados, sem nova confirmação. A CI também exige typecheck e os demais te
 automáticos aplicáveis. Registre separadamente a aceitação em aparelho real e
 qualquer dependência pendente que bloqueie uma tarefa posterior.
 
+## Versão do app
+
+- O número de versão (`MAIOR.MENOR.CORREÇÃO`) fica em `version` no
+  `package.json` e aparece só na página da conta ("Versão X.Y.Z"), lido por
+  `src/lib/version.ts`. O identificador de build do diagnóstico é outra coisa.
+- Todo PR que vai para a `main` sobe a versão com
+  `npm version <minor|patch> --no-git-tag-version`: funcionalidade nova é
+  `minor` (zera a correção), correção e ajuste são `patch`. Se a `main`
+  andou e o `package.json` conflitou, mescle a `main` e suba a partir da
+  versão dela.
+- Depois de cada merge na `main`, quem mergeou informa ao Gian a versão que
+  entrou no ar.
+
 ## Contratos da experiência de leitura
 
 - A seleção do leitor mantém alças nas duas extremidades depois do toque
