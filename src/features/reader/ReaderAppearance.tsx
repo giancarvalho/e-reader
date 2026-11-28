@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { ColorField } from "@/design-system/components/ColorField";
 import { Text } from "@/design-system/components/Text";
 import { contrastRatio, readerThemes, type ReaderPreferences } from "@/lib/reader/model";
+import { enterFullscreen, fullscreenSupported, leaveFullscreen, readFullscreenPreference, saveFullscreenPreference } from "@/lib/fullscreen";
 import { messages } from "@/lib/messages/pt-br";
 import styles from "./reader.module.css";
 
@@ -9,6 +13,15 @@ export function ReaderAppearance({ preferences, change }: {
   preferences: ReaderPreferences; change: (value: ReaderPreferences) => void;
 }) {
   const { reader } = messages;
+  const [fullscreen, setFullscreen] = useState(readFullscreenPreference);
+  function toggleFullscreen() {
+    const next = !fullscreen;
+    setFullscreen(next);
+    saveFullscreenPreference(next);
+    // Turning it on counts as the tap the browser requires, so it enters at once.
+    if (next) enterFullscreen();
+    else leaveFullscreen();
+  }
   function size(value: number) {
     change({ ...preferences, size: Math.min(36, Math.max(12, value)) });
   }
@@ -42,6 +55,14 @@ export function ReaderAppearance({ preferences, change }: {
           </Button>)}
         </div>
       </fieldset>
+      {fullscreenSupported() && <fieldset>
+        <legend>{reader.fullscreen}</legend>
+        <div className={styles.options}>
+          <Button variant={fullscreen ? "primary" : "secondary"} aria-pressed={fullscreen} onClick={toggleFullscreen}>
+            {fullscreen ? reader.fullscreenOn : reader.fullscreenOff}
+          </Button>
+        </div>
+      </fieldset>}
       {preferences.theme === "custom" && <>
         <ColorField label={reader.background} value={preferences.background}
           onChange={event => change({ ...preferences, background: event.target.value })} />
