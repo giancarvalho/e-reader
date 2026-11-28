@@ -32,3 +32,9 @@ it("shows the author of a highlight with a note without the label", () => {
   expect(screen.queryByText("Grifado por")).toBeNull();
   expect(screen.getByText("Ana Lima")).toBeTruthy();
 });
+
+it("always says Você for your own highlight, even when the server sent a name", () => {
+  open({ ...annotation, author_id: "me", name: "Gian Carvalho" });
+  expect(screen.getByText("Você")).toBeTruthy();
+  expect(screen.queryByText("Gian Carvalho")).toBeNull();
+});
