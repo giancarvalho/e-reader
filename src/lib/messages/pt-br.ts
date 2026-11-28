@@ -173,6 +173,26 @@ export const messages = {
     copied: "Diagnóstico copiado.",
     copyField: "Diagnóstico para copiar",
   },
+  install: {
+    title: "Instalar o app",
+    intro: "Com o app na Tela de Início, você lê em tela cheia e também sem internet.",
+    install: "Instalar",
+    notNow: "Agora não",
+    iosSteps: [
+      "Toque em Compartilhar, o ícone de um quadrado com uma seta para cima, na barra do navegador.",
+      "Role a lista e toque em Adicionar à Tela de Início.",
+      "Toque em Adicionar. O app aparece na Tela de Início.",
+    ],
+    androidSteps: [
+      "Abra o menu do navegador (⋮).",
+      "Toque em Instalar app ou Adicionar à tela inicial.",
+      "Confirme em Instalar.",
+    ],
+    embedded: "Esta página está aberta dentro de outro app. Abra o link no Safari ou no Chrome para instalar.",
+    installed: "O app já está instalado neste aparelho.",
+    unavailable: "Abra o Shared Margins no navegador do celular (Safari ou Chrome) para instalar o app.",
+    back: "Voltar para a conta",
+  },
   dictionary: {
     offlineTitle: "Dicionários offline",
     offlineHint: "Baixe o dicionário completo de cada idioma para consultar palavras em modo avião.",

@@ -10,6 +10,7 @@ const paths = {
   conversation: "M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.5-3a7.5 7.5 0 1 1 13.5-4.5Z",
   more: "M5 12h.01m7 0h.01m7 0h.01",
   send: "m4 4 16 8-16 8 3-8-3-8Zm3 8h13",
+  install: "M12 4v11m-4-4 4 4 4-4M5 20h14",
 } as const;
 
 export type IconName = keyof typeof paths;

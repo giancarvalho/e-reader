@@ -6,6 +6,7 @@ import { Text } from "@/design-system/components/Text";
 import { normalizeInviteCode } from "@/lib/access/invite";
 import { messages } from "@/lib/messages/pt-br";
 import type { ShelfBook } from "@/lib/books/local";
+import { InstallHint } from "@/features/install";
 import { ShelfClient } from "./ShelfClient";
 
 export async function ShelfPage() {
@@ -41,6 +42,7 @@ export async function ShelfPage() {
     <Page>
       <ShelfClient snapshot={{ userId: access.userId, books }} covers={covers} organizer={access.organizer}
         groupName={group.data?.name} inviteCode={normalizeInviteCode(invite?.data?.code)} />
+      <InstallHint />
     </Page>
   );
 }

@@ -100,6 +100,9 @@ interface, busca no livro, leitura em voz alta, notificações e EPUBs de layout
 
 > No iPhone, o app precisa ser **instalado na Tela de Início** (Compartilhar → Adicionar
 > à Tela de Início) para o modo offline e a sessão persistente funcionarem.
+> O próprio app mostra como instalar na primeira vez que a estante abre no navegador do
+> celular (botão **Instalar** no Android, passo a passo no iPhone), e a página da conta
+> tem **Instalar o app** para ver de novo.
 
 ## Tecnologias
 

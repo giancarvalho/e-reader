@@ -1,3 +1,4 @@
+import { InstallAppRow } from "@/features/install";
 import { Avatar } from "@/design-system/components/Avatar";
 import { Icon } from "@/design-system/components/Icon";
 import { Link } from "@/design-system/components/Link";
@@ -61,6 +62,7 @@ export function AccountContent({ name, photo, signOutFailed }: {
         <section className={styles.section}>
           <Heading as="h2" variant="label">{auth.help}</Heading>
           <Section variant="surface">
+            <InstallAppRow />
             <Link href="/diagnostico" client variant="row">
               <Icon name="diagnostics" /><span>{diagnostics.title}</span><Icon name="next" />
             </Link>

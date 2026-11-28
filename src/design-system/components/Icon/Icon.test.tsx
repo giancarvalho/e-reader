@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icon";
 
 afterEach(cleanup);
 
-const names: IconName[] = ["close", "reply", "trash", "conversation", "more", "send"];
+const names: IconName[] = ["close", "reply", "trash", "conversation", "more", "send", "install"];
 
 it.each(names)("draws the %s icon as a decorative svg", name => {
   const { container } = render(<Icon name={name} />);

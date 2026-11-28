@@ -96,6 +96,17 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   remove atributos `on*` e URLs `javascript:`, e injeta a CSP
   `default-src 'none'`. O e2e confere que um `onerror` do EPUB nunca executa.
   Não afrouxe nenhuma dessas camadas sem rever as outras.
+- Instalação do PWA (`src/lib/install`, `src/features/install`): no navegador do
+  celular, a primeira abertura da estante logada mostra, uma vez por aparelho
+  (`localStorage` `install-hint-seen`), um painel com como instalar. No Android
+  com `beforeinstallprompt` há o botão **Instalar** (o evento é guardado desde o
+  layout, porque dispara uma vez só); sem o evento, passos pelo menu do
+  navegador. No iPhone não existe API: passos Compartilhar > Adicionar à Tela de
+  Início. Navegadores embutidos (Instagram, WhatsApp) pedem para abrir no Safari
+  ou no Chrome. Nada aparece com o app já instalado (`display-mode` ou
+  `navigator.standalone`) nem no desktop. A conta tem a linha **Instalar o app**,
+  que leva a `/instalar` (rota pública). O painel fica na estante online, não na
+  offline.
 - O tema do aplicativo usa `html[data-theme]` e a chave `app-theme` no
   `localStorage`. Sem escolha, segue o sistema.
 - Temas do leitor (`user_preferences.theme`): `day` (Dia), `sunset` (Pôr do
