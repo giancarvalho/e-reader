@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/design-system/components/Button";
 import { ColorField } from "@/design-system/components/ColorField";
 import { Text } from "@/design-system/components/Text";
@@ -11,7 +14,9 @@ export function ReaderAppearance({ preferences, change }: {
   preferences: ReaderPreferences; change: (value: ReaderPreferences) => void;
 }) {
   const { reader } = messages;
-  const theme = preferences.theme === "custom" && preferences.background === sepia.background && preferences.ink === sepia.ink
+  // Sepia is stored as a custom theme with fixed colors, so choosing "custom" from sepia keeps the same colors.
+  const [choseCustom, setChoseCustom] = useState(false);
+  const theme = preferences.theme === "custom" && !choseCustom && preferences.background === sepia.background && preferences.ink === sepia.ink
     ? "sepia" : preferences.theme;
   function size(value: number) {
     change({ ...preferences, size: Math.min(36, Math.max(12, value)) });
@@ -41,7 +46,10 @@ export function ReaderAppearance({ preferences, change }: {
         <div className={styles.options}>
           {(["auto", "day", "sepia", "night", "custom"] as const).map(value => <Button key={value}
             variant={theme === value ? "primary" : "secondary"} aria-pressed={theme === value}
-            onClick={() => change(value === "sepia" ? { ...preferences, ...sepia, theme: "custom" } : { ...preferences, theme: value })}>
+            onClick={() => {
+              setChoseCustom(value === "custom");
+              change(value === "sepia" ? { ...preferences, ...sepia, theme: "custom" } : { ...preferences, theme: value });
+            }}>
             {reader[value]}
           </Button>)}
         </div>
