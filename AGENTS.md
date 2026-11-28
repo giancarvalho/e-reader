@@ -89,8 +89,11 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   direita. Um botão invisível (focável, para teclado e leitor de tela) mostra
   e esconde os controles; para quem toca, valem as zonas da página. Na primeira
   interação o leitor pede tela cheia (`src/lib/fullscreen.ts`) e a deixa ao
-  sair; o iPhone não tem essa API, e o app instalado já abre sem barras do
-  navegador.
+  sair. O painel Aparência tem o botão **Tela cheia** (Ligada por padrão) que
+  desliga essa entrada automática e lembra a escolha neste aparelho
+  (`localStorage` `reader-fullscreen`); ao ligar, entra na hora. O botão só
+  existe onde há a Fullscreen API: o iPhone não tem, e o app instalado já abre
+  sem barras do navegador.
 - Registro de gestos (`src/lib/gesture-log.ts`): o leitor e o paginador gravam no
   `localStorage` (`e-reader-gesture-log`, até 400 eventos) só tipo de evento,
   coordenadas, tempos e decisões, nunca texto nem posição do livro. A página de

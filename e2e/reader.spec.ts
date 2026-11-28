@@ -93,6 +93,8 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
 
   await controls();
   await page.getByRole("button", { name: "Aparência", exact: true }).click();
+  // Only browsers with the Fullscreen API offer the option.
+  if (browserName === "chromium") await expect(page.getByRole("button", { name: "Ligada", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Noite", exact: true }).click();
   await expect(page.locator("section[data-theme=night]")).toBeVisible();
   await expect(page.locator('head meta[name="theme-color"]').first()).toHaveAttribute("content", "rgb(23, 19, 15)");
