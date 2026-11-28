@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { applyTextSelection, bindWordPress } from "./word-press";
 import { readerStyles } from "./reader-styles";
 
@@ -10,7 +10,8 @@ function chapter() {
 }
 
 describe("native touch selection", () => {
-  it("marks the chapter selectable only while the app owns a selection", async () => {
+  it("marks the chapter selectable only while the app owns a selection", () => {
+    vi.useFakeTimers();
     const doc = chapter();
     const control = new AbortController();
     bindWordPress(doc, control.signal, () => {});
@@ -24,8 +25,11 @@ describe("native touch selection", () => {
 
     doc.getSelection()?.removeAllRanges();
     doc.dispatchEvent(new Event("selectionchange"));
+    expect(doc.documentElement.hasAttribute("data-reader-selectable")).toBe(true);
+    vi.advanceTimersByTime(200);
     expect(doc.documentElement.hasAttribute("data-reader-selectable")).toBe(false);
     control.abort();
+    vi.useRealTimers();
   });
 
   it("blocks browser selection on touch screens unless the app selected", () => {
