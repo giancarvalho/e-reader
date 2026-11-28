@@ -1,9 +1,10 @@
 import type { Page } from "@playwright/test";
-import { bytes, hash } from "./epub";
+import { bytes as defaultBytes, hash as defaultHash } from "./epub";
 
 // Seeds the offline library the same way the app stores it, so screens that
 // need a downloaded book can be opened without a server session.
-export async function seedLibrary(page: Page, options: { progress?: number } = {}) {
+export async function seedLibrary(page: Page, options: { progress?: number; book?: { bytes: Uint8Array; hash: string } } = {}) {
+  const { bytes, hash } = options.book ?? { bytes: defaultBytes, hash: defaultHash };
   await page.goto("/estante-offline");
   await page.getByText("Entre com sua conta quando estiver online para ver a estante deste aparelho.").waitFor();
   await page.evaluate(async ({ bytes, hash, progress }) => {

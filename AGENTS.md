@@ -72,6 +72,15 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   o gesto de voltar do sistema. Toques em sequência rápida são páginas
   independentes. Se o navegador não enviar `click` após um toque rápido (iOS), o
   próprio toque aplica a zona depois de 350 ms.
+- Seleção por toque prolongado (`src/features/reader/word-press.ts`): o dedo
+  seleciona a palavra sob ele ou, entre palavras e linhas, a mais próxima até
+  22 px (`wordNearPoint`; o teste estrito só acerta ~53% da área do parágrafo). O
+  iOS manda `mousedown`, `mouseup` e `click` ~40 ms depois de uma pressão longa,
+  e o efeito padrão deles apaga a seleção recém-criada; por isso, nos 800 ms
+  seguintes a uma pressão `hold`, `mousedown` e `mouseup` recebem
+  `preventDefault`. O log registra `selection-state` (logo após soltar, +300 ms e
+  +1,2 s), as mudanças de recolhida/expandida da seleção e cada `mouse-guard`,
+  sem texto. `e2e/reader-selection.spec.ts` cobre os dois casos no WebKit.
 - Layout do leitor: o texto ocupa quase toda a tela (margens de 28 px em cima
   e embaixo e 5% nas laterais, definidas em `useReaderView.ts`). As barras de
   cima e de baixo aparecem **sobre** o texto quando os controles são abertos e
