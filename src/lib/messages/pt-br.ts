@@ -17,6 +17,7 @@ export const messages = {
     accountTitle: "Sua conta",
     storage: "Neste aparelho",
     help: "Ajuda",
+    version: "Versão",
     signOutEffect: "Ao sair, os livros da estante ficam inacessíveis neste aparelho até você entrar novamente.",
     signOut: "Sair",
     signOutFailed: "Não foi possível sair. Tente novamente.",
