@@ -96,6 +96,8 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await page.getByRole("button", { name: "Noite", exact: true }).click();
   await expect(page.locator("section[data-theme=night]")).toBeVisible();
   await expect(page.locator('head meta[name="theme-color"]').first()).toHaveAttribute("content", "rgb(23, 19, 15)");
+  // The page behind the reader follows the reader's theme, not the app's, so no light strip shows under the bars.
+  await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor)).toBe("rgb(23, 19, 15)");
   await page.getByRole("button", { name: "Personalizado", exact: true }).click();
   await page.getByLabel("Cor de fundo").fill("#333333");
   await page.getByLabel("Cor do texto").fill("#333333");
