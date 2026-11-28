@@ -98,8 +98,19 @@ test("opens a local EPUB, navigates its index and restores the last chapter offl
   await expect(page.locator('head meta[name="theme-color"]').first()).toHaveAttribute("content", "rgb(23, 19, 15)");
   // The page behind the reader follows the reader's theme, not the app's, so no light strip shows under the bars.
   await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor)).toBe("rgb(23, 19, 15)");
+  const barBackground = () => page.locator("header").first().evaluate(element => getComputedStyle(element).backgroundColor);
+  await expect(page.getByRole("button", { name: "Automático" })).toHaveCount(0);
+  await expect.poll(barBackground).toBe("rgb(23, 19, 15)");
+  await page.getByRole("button", { name: "Pôr do Sol", exact: true }).click();
+  await expect(page.locator("section[data-theme=sunset]")).toBeVisible();
+  await expect.poll(barBackground).toBe("rgb(239, 223, 194)");
+  await page.getByRole("button", { name: "Meia-Noite", exact: true }).click();
+  await expect(page.locator("section[data-theme=midnight]")).toBeVisible();
+  await expect.poll(barBackground).toBe("rgb(0, 0, 0)");
+  await expect(page.locator('head meta[name="theme-color"]').first()).toHaveAttribute("content", "rgb(0, 0, 0)");
   await page.getByRole("button", { name: "Personalizado", exact: true }).click();
   await page.getByLabel("Cor de fundo").fill("#333333");
+  await expect.poll(barBackground).toBe("rgb(51, 51, 51)");
   await page.getByLabel("Cor do texto").fill("#333333");
   await expect(page.getByText("O contraste está abaixo do recomendado para leitura.")).toBeVisible();
   await expect.poll(async () => page.evaluate(async () => {

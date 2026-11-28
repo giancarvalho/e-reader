@@ -13,6 +13,9 @@
   --color-accent: #b5532f;
   --color-accent-text: #9e4524;
   --color-amber: #c98a1b;
+  --day-accent: #b5532f;
+  --day-accent-text: #9e4524;
+  --day-amber: #c98a1b;
   --night-bg: #17130f;
   --night-surface: #221c17;
   --night-ink: #e8dfd2;
@@ -31,6 +34,43 @@
   --color-accent-text: var(--night-accent);
   --color-amber: var(--night-amber);
   color-scheme: dark;
+}
+
+/* Reader themes. Pôr do Sol is a warm light theme; Meia-Noite is pure black for OLED screens with a soft yellow ink. */
+[data-theme="sunset"] {
+  --color-bg: #efdfc2;
+  --color-surface: #e5d3ae;
+  --color-ink: #39271c;
+  --color-muted: #6a5443;
+  --color-accent: #9a4222;
+  --color-accent-text: #9a4222;
+  --color-amber: #b0710f;
+  color-scheme: light;
+}
+
+/* Meia-Noite and a dark custom theme share the night accent colors. */
+[data-theme="midnight"], [data-theme="custom"][data-tone="dark"] {
+  --color-accent: var(--night-accent);
+  --color-accent-text: var(--night-accent);
+  --color-amber: var(--night-amber);
+  color-scheme: dark;
+}
+
+[data-theme="midnight"] {
+  --color-bg: #000;
+  --color-surface: #0d0b08;
+  --color-ink: #e6d9b8;
+  --color-muted: #a99b7b;
+}
+
+/* A custom reader theme sets only its background and ink (inline); the rest follows from them. */
+[data-theme="custom"] {
+  --color-surface: color-mix(in srgb, var(--color-bg) 92%, var(--color-ink));
+  --color-muted: color-mix(in srgb, var(--color-ink) 70%, var(--color-bg));
+  --color-accent: var(--day-accent);
+  --color-accent-text: var(--day-accent-text);
+  --color-amber: var(--day-amber);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
