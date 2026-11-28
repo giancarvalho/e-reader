@@ -26,7 +26,10 @@ type BottomBarProps = {
   onOpenAnnotations: () => void;
 };
 
-/** The reading progress strip, which expands into the page-turning tools when the controls are shown. */
+/**
+ * The reading progress line sits in the page margin over the text, so the text can use the whole screen. A visually
+ * hidden button toggles the controls for keyboards and screen readers; taps on the page do it for everyone else.
+ */
 export function ReaderBottomBar({
   controls, chapter, position, hasToc, annotationCount, onToggleControls, onPrevious, onNext, onOpenToc, onOpenAnnotations,
 }: BottomBarProps) {
@@ -40,10 +43,11 @@ export function ReaderBottomBar({
         <Button variant="quiet" onClick={onOpenAnnotations}>{messages.annotations.list} ({annotationCount})</Button>
         <Button variant="icon" aria-label={reader.next} onClick={onNext}>›</Button>
       </nav>}
-      <button className={styles.progress} type="button" aria-label={controlLabel} aria-expanded={controls} onClick={onToggleControls}>
+      <button className={styles.toggle} type="button" aria-label={controlLabel} aria-expanded={controls} onClick={onToggleControls} />
+      <div className={styles.progress}>
         {chapter && <span>{chapter}</span>}
         <span>{position}</span>
-      </button>
+      </div>
     </footer>
   );
 }
