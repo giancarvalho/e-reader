@@ -84,6 +84,10 @@ it("publishes an organizer upload and delivers its bytes only to members", async
     });
     expect((await otherMember.from("progress").select("cfi").eq("user_id", userId)).data).toEqual([]);
     expect((await otherMember.from("user_preferences").select("theme").eq("user_id", userId)).data).toEqual([]);
+    for (const theme of ["day", "sunset", "night", "midnight"]) {
+      expect((await member.from("user_preferences").upsert({ user_id: userId, theme })).error).toBeNull();
+    }
+    expect((await member.from("user_preferences").upsert({ user_id: userId, theme: "neon" })).error).not.toBeNull();
 
     const annotation = {
       id: randomUUID(), group_id: group, book_id: hash, author_id: userId,

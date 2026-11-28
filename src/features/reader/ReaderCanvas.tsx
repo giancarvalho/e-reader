@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "@/design-system/components/Link";
 import { Notice } from "@/design-system/components/Notice";
 import { Sheet } from "@/design-system/components/Sheet";
 import { formatPercent } from "@/lib/format";
 import { messages } from "@/lib/messages/pt-br";
-import type { ReaderPreferences, ReadingPosition } from "@/lib/reader/model";
+import { isDarkColor, type ReaderPreferences, type ReadingPosition } from "@/lib/reader/model";
 import type { Annotation } from "@/lib/sync/annotations";
 import { ReaderAppearance } from "./ReaderAppearance";
 import { TocList } from "./ReaderToc";
@@ -60,17 +60,13 @@ export function ReaderCanvas({
       const color = getComputedStyle(surface!).backgroundColor;
       // The page behind the reader (system bars, overscroll, the gesture area) must match the reader's own theme.
       root.style.backgroundColor = color;
-      if (preferences.theme === "auto") return;
       theme ??= document.createElement("meta");
       theme.name = "theme-color";
       theme.content = color;
       if (!theme.isConnected) document.head.prepend(theme);
     }
     paint();
-    const scheme = matchMedia("(prefers-color-scheme: dark)");
-    scheme.addEventListener("change", paint);
     return () => {
-      scheme.removeEventListener("change", paint);
       theme?.remove();
       root.style.backgroundColor = previous;
     };
@@ -85,7 +81,8 @@ export function ReaderCanvas({
   }
 
   return (
-    <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} style={preferences.theme === "custom" ? { backgroundColor: preferences.background } : undefined} aria-label={title}>
+    <section ref={readerSurface} className={styles.reader} data-theme={preferences.theme} data-tone={preferences.theme === "custom" ? (isDarkColor(preferences.background) ? "dark" : "light") : undefined}
+      style={preferences.theme === "custom" ? { "--color-bg": preferences.background, "--color-ink": preferences.ink } as CSSProperties : undefined} aria-label={title}>
       {failed && <div className={styles.state}><Notice live="alert">{reader.failed}</Notice>
         <Link href="/estante">{reader.shelf}</Link></div>}
       <div ref={mount} className={styles.viewport} />

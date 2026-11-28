@@ -1,7 +1,10 @@
 export type ReadingPosition = { cfi: string; fraction: number };
 
+export const readerThemes = ["day", "sunset", "night", "midnight", "custom"] as const;
+export type ReaderTheme = (typeof readerThemes)[number];
+
 export type ReaderPreferences = {
-  theme: "auto" | "day" | "night" | "custom";
+  theme: ReaderTheme;
   font: "serif" | "sans";
   size: number;
   background: string;
@@ -9,8 +12,39 @@ export type ReaderPreferences = {
 };
 
 export const defaultPreferences: ReaderPreferences = {
-  theme: "auto", font: "serif", size: 18, background: "#FAF5EC", ink: "#2B2420",
+  theme: "day", font: "serif", size: 18, background: "#FAF5EC", ink: "#2B2420",
 };
+
+/** Colors the old Sépia preset stored as a custom theme, before it became its own theme. */
+const legacySepia = { background: "#efdfc2", ink: "#39271c" };
+
+/**
+ * Brings stored preferences up to the current themes. The removed "auto" theme becomes day or night, following
+ * the device once; Sépia, which used to be saved as a custom theme, becomes Pôr do Sol.
+ */
+export function normalizePreferences(stored: Omit<ReaderPreferences, "theme"> & { theme: string }, systemDark: boolean): ReaderPreferences {
+  const { theme } = stored;
+  if (theme === "auto") return { ...stored, theme: systemDark ? "night" : "day" };
+  if (theme === "custom" && stored.background.toLowerCase() === legacySepia.background && stored.ink.toLowerCase() === legacySepia.ink) {
+    return { ...stored, theme: "sunset" };
+  }
+  return (readerThemes as readonly string[]).includes(theme) ? { ...stored, theme: theme as ReaderTheme } : { ...stored, theme: "day" };
+}
+
+/** Whether the device is set to a dark appearance. Light when it cannot tell. */
+export function prefersDark() {
+  return typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+/** The theme a reader starts with before choosing one: day or night, following the device. */
+export function initialPreferences(): ReaderPreferences {
+  return { ...defaultPreferences, theme: prefersDark() ? "night" : "day" };
+}
+
+/** Whether a custom background is dark enough to need the light-on-dark accent. */
+export function isDarkColor(hex: string) {
+  return luminance(hex) < 0.18;
+}
 
 export type ReaderRecord<T> = {
   value: T;
