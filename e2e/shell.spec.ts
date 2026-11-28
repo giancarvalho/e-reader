@@ -51,3 +51,13 @@ test("reopens the public shell offline after installation", async ({ page, conte
   await enter.click();
   await expect(page.getByText("Estante offline", { exact: true })).toBeVisible();
 });
+
+test("keeps the page when the connection comes back", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "Installed iOS PWA offline behavior is covered on a real device.");
+  await page.goto("/");
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  await page.evaluate(() => { (window as unknown as { kept: boolean }).kept = true; });
+  await page.evaluate(() => window.dispatchEvent(new Event("online")));
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => (window as unknown as { kept?: boolean }).kept)).toBe(true);
+});
