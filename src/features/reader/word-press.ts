@@ -58,7 +58,7 @@ export function wordNearPoint(doc: Document, x: number, y: number) {
 
 /**
  * Touch screens only allow text selection while the app owns one (see `readerStyles`).
- * Otherwise the browser's own long press selects a word well before the 1 s hold.
+ * Otherwise the browser's own long press selects a word well before the hold.
  */
 export function applyTextSelection(doc: Document, range: Range) {
   doc.documentElement.dataset.readerSelectable = "";

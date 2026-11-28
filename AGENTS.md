@@ -66,7 +66,7 @@ qualquer dependência pendente que bloqueie uma tarefa posterior.
   por palavra. A ação Definir aparece quando o trecho contém uma única palavra.
 - Gestos de página (`src/features/reader/page-gestures.ts`): toque de até 250 ms
   decide pela zona (30% esquerda volta, 40% centro mostra/esconde as barras, 30%
-  direita avança); entre 250 ms e 1 s nada acontece; segurar 1 s sem mover
+  direita avança); entre 250 ms e 500 ms nada acontece; segurar 500 ms sem mover
   seleciona a palavra e abre as alças, e soltar depois disso nunca vira página.
   Arrastar vira página, mas arrastos que começam nos 24 px das bordas ficam para
   o gesto de voltar do sistema. Toques em sequência rápida são páginas

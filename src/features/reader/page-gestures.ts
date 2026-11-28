@@ -1,7 +1,7 @@
 /** Tap shorter than this turns the page or toggles the bars. */
 export const tapMaxMs = 250;
 /** A still press held this long selects the word under the finger. */
-export const holdMs = 1_000;
+export const holdMs = 500;
 /** Finger travel (px) beyond which a press is a drag, not a tap or a hold. */
 export const movementTolerance = 10;
 /** Drags starting this close (px) to a screen edge belong to the system "back" gesture. */

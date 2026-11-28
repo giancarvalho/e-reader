@@ -58,7 +58,7 @@ const menu = (page: Page) => page.getByRole("dialog", { name: "Ações do trecho
 
 test("a hold between two words selects the nearest word", async ({ page }) => {
   const frame = await openChapter(page);
-  await hold(page, frame, await pointOnLine(frame, 5, "gap"), 1_100);
+  await hold(page, frame, await pointOnLine(frame, 5, "gap"), 700);
   await expect.poll(() => selected(frame)).toMatch(/^\p{L}+$/u);
   await expect(menu(page)).toBeVisible();
 });
@@ -66,7 +66,7 @@ test("a hold between two words selects the nearest word", async ({ page }) => {
 test("the click iOS sends after a hold does not clear the new selection", async ({ page }) => {
   const frame = await openChapter(page);
   const point = await pointOnLine(frame, 5, "word");
-  await hold(page, frame, point, 1_100);
+  await hold(page, frame, point, 700);
   await page.waitForTimeout(40);
   const bounds = (await (await frame.frameElement()).boundingBox())!;
   await page.mouse.click(bounds.x + point.x, bounds.y + point.y);
