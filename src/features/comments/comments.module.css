@@ -1,7 +1,22 @@
 .author {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--space-12);
+  min-inline-size: 0;
+}
+
+/* On narrow screens the name keeps room for itself and the actions move to their own line. */
+.header > .author { flex: 1 1 calc(var(--space-48) * 3); }
+
+.authorText {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.authorText p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .thread {
@@ -29,6 +44,7 @@
 
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-8);
